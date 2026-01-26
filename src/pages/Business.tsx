@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   TrendingUp, 
   Users, 
@@ -66,6 +67,17 @@ const pricingTiers = [
 ];
 
 const BusinessPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStartTrial = () => {
+    if (user) {
+      navigate('/business/onboarding');
+    } else {
+      navigate('/auth?mode=signup&redirect=/business/onboarding');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -93,7 +105,11 @@ const BusinessPage = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
+              <Button 
+                size="lg" 
+                className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl"
+                onClick={handleStartTrial}
+              >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
@@ -225,6 +241,7 @@ const BusinessPage = () => {
                     <Button 
                       className={`w-full ${tier.popular ? 'bg-gradient-primary' : ''}`}
                       variant={tier.popular ? 'default' : 'outline'}
+                      onClick={handleStartTrial}
                     >
                       Start Free Trial
                     </Button>
@@ -252,7 +269,11 @@ const BusinessPage = () => {
               Join Polished today and start growing your beauty business. 
               Your first 14 days are on us.
             </p>
-            <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
+            <Button 
+              size="lg" 
+              className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl"
+              onClick={handleStartTrial}
+            >
               Start Your Free Trial
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
