@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Search from "./pages/Search";
 import Favorites from "./pages/Favorites";
@@ -10,7 +11,13 @@ import Bookings from "./pages/Bookings";
 import Messages from "./pages/Messages";
 import Business from "./pages/Business";
 import BusinessAnalytics from "./pages/BusinessAnalytics";
+import BusinessProfile from "./pages/BusinessProfile";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
+import ClientOnboarding from "./pages/ClientOnboarding";
+import BusinessOnboarding from "./pages/BusinessOnboarding";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -18,21 +25,29 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/bookings" element={<Bookings />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/business" element={<Business />} />
-          <Route path="/business/analytics" element={<BusinessAnalytics />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/bookings" element={<Bookings />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/business" element={<Business />} />
+            <Route path="/business/analytics" element={<BusinessAnalytics />} />
+            <Route path="/business/:id" element={<BusinessProfile />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/onboarding" element={<ClientOnboarding />} />
+            <Route path="/business/onboarding" element={<BusinessOnboarding />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
