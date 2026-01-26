@@ -1,11 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Search as SearchIcon, 
   Grid,
   List,
   Map,
-  X
+  X,
+  MapPin,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BusinessCard } from '@/components/ui/BusinessCard';
@@ -13,7 +16,9 @@ import { SearchFilters } from '@/components/ui/SearchFilters';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { BookingFlow } from '@/components/booking/BookingFlow';
 import { categories, mockBusinesses } from '@/data/mockData';
+import { useLocation } from '@/hooks/useLocation';
 import type { Business } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -26,11 +31,77 @@ interface CurrentFilters {
   minRating?: number;
 }
 
+interface BusinessWithDistance extends Business {
+  distance: number | null;
+}
+
 const SearchPage = () => {
+  const navigate = useNavigate();
+  const { userLocation, locationError, isLoadingLocation, requestLocation, calculateDistance, formatDistance } = useLocation();
+  
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>(mockBusinesses);
   const [currentFilters, setCurrentFilters] = useState<CurrentFilters>({});
+  const [maxDistance, setMaxDistance] = useState<number>(9999);
+  const [bookingBusiness, setBookingBusiness] = useState<Business | null>(null);
+
+  // Calculate distances and sort businesses
+  const businessesWithDistance = useMemo((): BusinessWithDistance[] => {
+    return mockBusinesses.map(business => ({
+      ...business,
+      distance: calculateDistance(business.location.lat, business.location.lng)
+    })).sort((a, b) => {
+      // Sort by distance if available, otherwise keep original order
+      if (a.distance !== null && b.distance !== null) {
+        return a.distance - b.distance;
+      }
+      return 0;
+    });
+  }, [calculateDistance]);
+
+  // Apply all filters
+  const filteredBusinesses = useMemo(() => {
+    let results = [...businessesWithDistance];
+
+    // Text search
+    if (currentFilters.query) {
+      const query = currentFilters.query.toLowerCase();
+      results = results.filter(b => 
+        b.name.toLowerCase().includes(query) ||
+        b.description.toLowerCase().includes(query) ||
+        b.categories.some((c: string) => c.toLowerCase().includes(query))
+      );
+    }
+
+    // Black-owned filter
+    if (currentFilters.isBlackOwned) {
+      results = results.filter(b => b.isBlackOwned);
+    }
+
+    // Promotions filter
+    if (currentFilters.hasPromotions) {
+      results = results.filter(b => b.promotions && b.promotions.length > 0);
+    }
+
+    // Rating filter
+    if (currentFilters.minRating && currentFilters.minRating > 0) {
+      results = results.filter(b => b.rating >= currentFilters.minRating!);
+    }
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      results = results.filter(b => 
+        b.categories.some(c => selectedCategories.includes(c))
+      );
+    }
+
+    // Distance filter
+    if (maxDistance < 9999 && userLocation) {
+      results = results.filter(b => b.distance !== null && b.distance <= maxDistance);
+    }
+
+    return results;
+  }, [businessesWithDistance, currentFilters, selectedCategories, maxDistance, userLocation]);
 
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories(prev => 
@@ -44,55 +115,20 @@ const SearchPage = () => {
     setSelectedCategories([]);
   };
 
-  // Apply all filters to businesses
-  const applyFilters = useCallback((filters: CurrentFilters, cats: string[]) => {
-    let results = [...mockBusinesses];
-
-    // Text search
-    if (filters.query) {
-      const query = filters.query.toLowerCase();
-      results = results.filter(b => 
-        b.name.toLowerCase().includes(query) ||
-        b.description.toLowerCase().includes(query) ||
-        b.categories.some((c: string) => c.toLowerCase().includes(query))
-      );
-    }
-
-    // Black-owned filter
-    if (filters.isBlackOwned) {
-      results = results.filter(b => b.isBlackOwned);
-    }
-
-    // Promotions filter
-    if (filters.hasPromotions) {
-      results = results.filter(b => b.promotions && b.promotions.length > 0);
-    }
-
-    // Rating filter
-    if (filters.minRating && filters.minRating > 0) {
-      results = results.filter(b => b.rating >= filters.minRating);
-    }
-
-    // Category filter - the key fix!
-    if (cats.length > 0) {
-      results = results.filter(b => 
-        b.categories.some(c => cats.includes(c))
-      );
-    }
-
-    return results;
-  }, []);
-
-  // Handle search filter changes from SearchFilters component
   const handleFiltersChange = (filters: CurrentFilters) => {
     setCurrentFilters(filters);
   };
 
-  // Re-apply all filters when categories OR search filters change
-  useEffect(() => {
-    const filtered = applyFilters(currentFilters, selectedCategories);
-    setFilteredBusinesses(filtered);
-  }, [selectedCategories, currentFilters, applyFilters]);
+  const handleViewProfile = (businessId: string) => {
+    navigate(`/business/${businessId}`);
+  };
+
+  const handleBook = (businessId: string) => {
+    const business = mockBusinesses.find(b => b.id === businessId);
+    if (business) {
+      setBookingBusiness(business);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,13 +139,66 @@ const SearchPage = () => {
           <div className="mb-8">
             <h1 className="font-display text-3xl font-bold">Find Services</h1>
             <p className="text-muted-foreground mt-2">
-              {filteredBusinesses.length} {filteredBusinesses.length === 1 ? 'business' : 'businesses'} near you
+              {filteredBusinesses.length} {filteredBusinesses.length === 1 ? 'business' : 'businesses'} 
+              {userLocation ? ' near you' : ' available'}
             </p>
+          </div>
+
+          {/* Location Banner */}
+          <div className="mb-6">
+            {!userLocation && !isLoadingLocation && (
+              <div className="flex items-center justify-between p-4 rounded-xl bg-primary/10 border border-primary/20">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="font-medium">Enable location</p>
+                    <p className="text-sm text-muted-foreground">
+                      See businesses sorted by distance
+                    </p>
+                  </div>
+                </div>
+                <Button onClick={requestLocation} size="sm">
+                  Enable
+                </Button>
+              </div>
+            )}
+            {isLoadingLocation && (
+              <div className="flex items-center gap-2 p-4 rounded-xl bg-muted">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm">Getting your location...</span>
+              </div>
+            )}
+            {locationError && (
+              <div className="flex items-center justify-between p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+                <p className="text-sm text-destructive">{locationError}</p>
+                <Button variant="outline" size="sm" onClick={requestLocation}>
+                  Try Again
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="mb-8">
             <SearchFilters onFiltersChange={handleFiltersChange} />
           </div>
+
+          {/* Distance Filter */}
+          {userLocation && (
+            <div className="mb-6">
+              <label className="text-sm font-medium mr-3">Distance:</label>
+              <select 
+                value={maxDistance} 
+                onChange={e => setMaxDistance(Number(e.target.value))}
+                className="p-2 rounded-lg border border-border bg-background text-sm"
+              >
+                <option value={5}>Within 5 miles</option>
+                <option value={10}>Within 10 miles</option>
+                <option value={25}>Within 25 miles</option>
+                <option value={50}>Within 50 miles</option>
+                <option value={9999}>Any distance</option>
+              </select>
+            </div>
+          )}
 
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -169,7 +258,19 @@ const SearchPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <BusinessCard business={business} />
+                  <div className="relative">
+                    <BusinessCard 
+                      business={business} 
+                      onViewProfile={handleViewProfile}
+                      onBook={handleBook}
+                    />
+                    {business.distance !== null && (
+                      <div className="absolute top-3 right-14 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {formatDistance(business.distance)}
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -184,7 +285,20 @@ const SearchPage = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
-                  <BusinessCard business={business} variant="compact" />
+                  <div className="relative">
+                    <BusinessCard 
+                      business={business} 
+                      variant="compact" 
+                      onViewProfile={handleViewProfile}
+                      onBook={handleBook}
+                    />
+                    {business.distance !== null && (
+                      <div className="absolute top-4 right-4 bg-muted px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {formatDistance(business.distance)}
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               ))}
             </div>
@@ -217,6 +331,15 @@ const SearchPage = () => {
 
       <Footer />
       <BottomNav />
+
+      {/* Booking Flow Modal */}
+      {bookingBusiness && (
+        <BookingFlow 
+          business={bookingBusiness}
+          isOpen={!!bookingBusiness}
+          onClose={() => setBookingBusiness(null)}
+        />
+      )}
     </div>
   );
 };
