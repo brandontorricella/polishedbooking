@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/Header';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { BookingFlow } from '@/components/booking/BookingFlow';
 import { mockBusinesses, mockReviews } from '@/data/mockData';
 import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,7 @@ const BusinessProfile = () => {
   const [business, setBusiness] = useState<Business | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [showBookingFlow, setShowBookingFlow] = useState(false);
 
   useEffect(() => {
     // For now, use mock data. In production, fetch from Supabase
@@ -114,7 +116,10 @@ const BusinessProfile = () => {
 
         {/* Quick Actions */}
         <div className="flex gap-3 mb-8">
-          <Button className="flex-1 h-12 bg-gradient-primary hover:opacity-90 rounded-xl">
+          <Button 
+            className="flex-1 h-12 bg-gradient-primary hover:opacity-90 rounded-xl"
+            onClick={() => setShowBookingFlow(true)}
+          >
             <Calendar className="w-5 h-5 mr-2" />
             Book Now
           </Button>
@@ -162,7 +167,15 @@ const BusinessProfile = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold">${service.price}</p>
-                    <Button size="sm" className="mt-2 bg-gradient-primary hover:opacity-90">
+                    <Button 
+                      size="sm" 
+                      className="mt-2 bg-gradient-primary hover:opacity-90"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedService(service);
+                        setShowBookingFlow(true);
+                      }}
+                    >
                       Book
                     </Button>
                   </div>
@@ -289,13 +302,29 @@ const BusinessProfile = () => {
 
       {/* Sticky Book Button (Mobile) */}
       <div className="fixed bottom-20 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border md:hidden safe-bottom">
-        <Button className="w-full h-14 bg-gradient-primary hover:opacity-90 rounded-xl text-lg">
+        <Button 
+          className="w-full h-14 bg-gradient-primary hover:opacity-90 rounded-xl text-lg"
+          onClick={() => setShowBookingFlow(true)}
+        >
           <Calendar className="w-5 h-5 mr-2" />
           Book Appointment
         </Button>
       </div>
 
       <BottomNav />
+
+      {/* Booking Flow Modal */}
+      {business && (
+        <BookingFlow 
+          business={business}
+          isOpen={showBookingFlow}
+          onClose={() => {
+            setShowBookingFlow(false);
+            setSelectedService(null);
+          }}
+          initialService={selectedService || undefined}
+        />
+      )}
     </div>
   );
 };
