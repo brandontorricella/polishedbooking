@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   ArrowRight, 
   ArrowLeft,
@@ -20,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const businessCategories = [
   'Hair Styling & Cuts',
@@ -57,10 +58,13 @@ const subscriptionTiers = [
 
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
-  const { user, updateProfile } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { user, session, updateProfile } = useAuth();
   const { toast } = useToast();
+  const { createCheckout } = useSubscription();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [businessId, setBusinessId] = useState<string | null>(null);
 
   // Business info
   const [businessName, setBusinessName] = useState('');
@@ -101,7 +105,7 @@ const BusinessOnboarding = () => {
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
-    const { error } = await supabase.from('businesses').insert({
+    const { data: business, error } = await supabase.from('businesses').insert({
       owner_id: user.id,
       name: businessName,
       description: businessDescription,
@@ -114,7 +118,7 @@ const BusinessOnboarding = () => {
       subscription_status: 'trialing',
       trial_ends_at: trialEndsAt.toISOString(),
       is_published: true,
-    });
+    }).select().single();
 
     if (error) {
       toast({
@@ -126,6 +130,8 @@ const BusinessOnboarding = () => {
       return;
     }
 
+    setBusinessId(business.id);
+
     // Update user profile to business role
     await updateProfile({
       role: 'business',
@@ -133,13 +139,24 @@ const BusinessOnboarding = () => {
       privacy_accepted_at: new Date().toISOString(),
     });
 
-    toast({
-      title: 'Business created!',
-      description: 'Your 14-day free trial has started.',
-    });
+    // Redirect to Stripe Checkout for payment setup
+    try {
+      await createCheckout(selectedTier as 'basic' | 'pro' | 'elite', business.id);
+      
+      toast({
+        title: 'Business created!',
+        description: 'Complete payment setup to activate your subscription.',
+      });
+    } catch (err) {
+      // Even if Stripe fails, business is created with trial
+      toast({
+        title: 'Business created!',
+        description: 'Your 14-day free trial has started. Add payment later in settings.',
+      });
+      navigate('/business/analytics');
+    }
 
     setIsLoading(false);
-    navigate('/business/analytics');
   };
 
   return (

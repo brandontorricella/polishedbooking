@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Sparkles },
@@ -27,6 +29,7 @@ const navItems = [
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
@@ -69,12 +72,32 @@ export const Header = () => {
                 For Business
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90">
-                <User className="w-4 h-4 mr-2" />
-                Sign In
-              </Button>
-            </Link>
+            
+            {user ? (
+              <>
+                <NotificationBell />
+                <Link to="/profile">
+                  <Button variant="ghost" size="icon" className="rounded-lg">
+                    <User className="w-5 h-5" />
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-lg hidden sm:flex"
+                  onClick={() => signOut()}
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90">
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <Button 
