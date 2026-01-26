@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search as SearchIcon, 
   Grid,
   List,
-  Map
+  Map,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BusinessCard } from '@/components/ui/BusinessCard';
@@ -18,10 +19,18 @@ import { cn } from '@/lib/utils';
 
 type ViewMode = 'grid' | 'list' | 'map';
 
+interface CurrentFilters {
+  query?: string;
+  isBlackOwned?: boolean;
+  hasPromotions?: boolean;
+  minRating?: number;
+}
+
 const SearchPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>(mockBusinesses);
+  const [currentFilters, setCurrentFilters] = useState<CurrentFilters>({});
 
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories(prev => 
@@ -31,38 +40,59 @@ const SearchPage = () => {
     );
   };
 
-  const handleFiltersChange = (filters: any) => {
+  const clearCategories = () => {
+    setSelectedCategories([]);
+  };
+
+  // Apply all filters to businesses
+  const applyFilters = useCallback((filters: CurrentFilters, cats: string[]) => {
     let results = [...mockBusinesses];
 
+    // Text search
     if (filters.query) {
       const query = filters.query.toLowerCase();
       results = results.filter(b => 
         b.name.toLowerCase().includes(query) ||
         b.description.toLowerCase().includes(query) ||
-        b.categories.some((c: string) => c.includes(query))
+        b.categories.some((c: string) => c.toLowerCase().includes(query))
       );
     }
 
+    // Black-owned filter
     if (filters.isBlackOwned) {
       results = results.filter(b => b.isBlackOwned);
     }
 
+    // Promotions filter
     if (filters.hasPromotions) {
       results = results.filter(b => b.promotions && b.promotions.length > 0);
     }
 
+    // Rating filter
     if (filters.minRating && filters.minRating > 0) {
       results = results.filter(b => b.rating >= filters.minRating);
     }
 
-    if (selectedCategories.length > 0) {
+    // Category filter - the key fix!
+    if (cats.length > 0) {
       results = results.filter(b => 
-        b.categories.some(c => selectedCategories.includes(c))
+        b.categories.some(c => cats.includes(c))
       );
     }
 
-    setFilteredBusinesses(results);
+    return results;
+  }, []);
+
+  // Handle search filter changes from SearchFilters component
+  const handleFiltersChange = (filters: CurrentFilters) => {
+    setCurrentFilters(filters);
   };
+
+  // Re-apply all filters when categories OR search filters change
+  useEffect(() => {
+    const filtered = applyFilters(currentFilters, selectedCategories);
+    setFilteredBusinesses(filtered);
+  }, [selectedCategories, currentFilters, applyFilters]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,7 +103,7 @@ const SearchPage = () => {
           <div className="mb-8">
             <h1 className="font-display text-3xl font-bold">Find Services</h1>
             <p className="text-muted-foreground mt-2">
-              {filteredBusinesses.length} businesses near you
+              {filteredBusinesses.length} {filteredBusinesses.length === 1 ? 'business' : 'businesses'} near you
             </p>
           </div>
 
@@ -82,22 +112,38 @@ const SearchPage = () => {
           </div>
 
           <div className="mb-8">
-            <h3 className="font-medium mb-4">Categories</h3>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <Button
-                  key={cat.id}
-                  variant={selectedCategories.includes(cat.id) ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleCategoryToggle(cat.id)}
-                  className={cn(
-                    "rounded-full",
-                    selectedCategories.includes(cat.id) && "bg-gradient-primary"
-                  )}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium">Categories</h3>
+              {selectedCategories.length > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearCategories}
+                  className="text-primary hover:text-primary/80"
                 >
-                  {cat.name}
+                  <X className="w-4 h-4 mr-1" />
+                  Clear ({selectedCategories.length})
                 </Button>
-              ))}
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => {
+                const isSelected = selectedCategories.includes(cat.id);
+                return (
+                  <Button
+                    key={cat.id}
+                    variant={isSelected ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleCategoryToggle(cat.id)}
+                    className={cn(
+                      "rounded-full transition-all",
+                      isSelected && "bg-gradient-primary shadow-pink"
+                    )}
+                  >
+                    {cat.name}
+                  </Button>
+                );
+              })}
             </div>
           </div>
 
@@ -114,7 +160,7 @@ const SearchPage = () => {
           </div>
 
           {/* Results */}
-          {viewMode === 'grid' && (
+          {viewMode === 'grid' && filteredBusinesses.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBusinesses.map((business, index) => (
                 <motion.div
@@ -129,7 +175,7 @@ const SearchPage = () => {
             </div>
           )}
 
-          {viewMode === 'list' && (
+          {viewMode === 'list' && filteredBusinesses.length > 0 && (
             <div className="space-y-4">
               {filteredBusinesses.map((business, index) => (
                 <motion.div
@@ -158,7 +204,12 @@ const SearchPage = () => {
             <div className="text-center py-16">
               <SearchIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <h3 className="font-display text-xl font-semibold mb-2">No results found</h3>
-              <p className="text-muted-foreground">Try adjusting your filters or search terms</p>
+              <p className="text-muted-foreground mb-4">Try adjusting your filters or search terms</p>
+              {selectedCategories.length > 0 && (
+                <Button variant="outline" onClick={clearCategories}>
+                  Clear Category Filters
+                </Button>
+              )}
             </div>
           )}
         </div>

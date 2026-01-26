@@ -26,6 +26,7 @@ import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,13 +43,13 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, profile, signOut, updateProfile, loading } = useAuth();
   const { toast } = useToast();
+  const { isDark, toggleTheme } = useTheme();
   
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     if (!user && !loading) {
@@ -206,7 +207,7 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    {darkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
+                    {isDark ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
                   </div>
                   <div>
                     <p className="font-medium">Dark Mode</p>
@@ -214,8 +215,8 @@ const Profile = () => {
                   </div>
                 </div>
                 <Switch
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
+                  checked={isDark}
+                  onCheckedChange={toggleTheme}
                 />
               </div>
             </motion.div>
