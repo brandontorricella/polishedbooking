@@ -5,30 +5,31 @@
 @tailwind utilities;
 
 /* Polished - Luxury Beauty & Wellness Design System */
+/* Pink primary with black backgrounds for mobile-first luxury feel */
 
 @layer base {
   :root {
-    /* Core palette - Warm luxury with rose gold accents */
+    /* Core palette - Pink accent with cream backgrounds */
     --background: 30 33% 98%;
-    --foreground: 20 25% 12%;
+    --foreground: 0 0% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 25% 12%;
+    --card-foreground: 0 0% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 25% 12%;
+    --popover-foreground: 0 0% 8%;
 
-    /* Rose gold primary */
-    --primary: 15 55% 55%;
+    /* Pink primary */
+    --primary: 340 75% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Warm cream secondary */
-    --secondary: 35 30% 94%;
-    --secondary-foreground: 20 25% 20%;
+    /* Soft pink secondary */
+    --secondary: 340 30% 95%;
+    --secondary-foreground: 0 0% 15%;
 
-    /* Soft sage muted */
-    --muted: 40 20% 94%;
-    --muted-foreground: 20 10% 45%;
+    /* Soft muted */
+    --muted: 340 15% 94%;
+    --muted-foreground: 0 0% 40%;
 
     /* Gold accent */
     --accent: 38 70% 55%;
@@ -37,87 +38,93 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 20% 88%;
-    --input: 30 20% 88%;
-    --ring: 15 55% 55%;
+    --border: 340 15% 88%;
+    --input: 340 15% 88%;
+    --ring: 340 75% 55%;
 
     --radius: 0.75rem;
 
     /* Polished specific tokens */
-    --rose-gold: 15 55% 55%;
-    --rose-gold-light: 15 45% 75%;
+    --pink: 340 75% 55%;
+    --pink-light: 340 60% 75%;
+    --pink-dark: 340 80% 45%;
+    --hot-pink: 330 85% 60%;
+    --blush: 340 50% 95%;
     --champagne: 38 45% 88%;
-    --blush: 355 50% 95%;
     --sage: 140 20% 88%;
-    --midnight: 220 25% 15%;
+    --midnight: 0 0% 8%;
     --cream: 40 40% 97%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(15 55% 55%), hsl(38 70% 55%));
-    --gradient-hero: linear-gradient(180deg, hsl(355 50% 95%) 0%, hsl(30 33% 98%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(340 75% 55%), hsl(330 85% 60%));
+    --gradient-hero: linear-gradient(180deg, hsl(340 50% 95%) 0%, hsl(30 33% 98%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(40 40% 97%));
     --gradient-gold: linear-gradient(90deg, hsl(38 70% 55%), hsl(45 80% 60%));
+    --gradient-pink: linear-gradient(135deg, hsl(340 75% 55%), hsl(340 80% 45%));
 
     /* Shadows */
-    --shadow-soft: 0 4px 20px -2px hsl(20 25% 12% / 0.08);
-    --shadow-elevated: 0 12px 40px -8px hsl(20 25% 12% / 0.12);
-    --shadow-glow: 0 0 30px hsl(15 55% 55% / 0.15);
+    --shadow-soft: 0 4px 20px -2px hsl(0 0% 8% / 0.08);
+    --shadow-elevated: 0 12px 40px -8px hsl(0 0% 8% / 0.12);
+    --shadow-glow: 0 0 30px hsl(340 75% 55% / 0.2);
+    --shadow-pink: 0 4px 20px -2px hsl(340 75% 55% / 0.25);
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 15 55% 55%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 340 75% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 35 30% 94%;
-    --sidebar-accent-foreground: 20 25% 20%;
-    --sidebar-border: 30 20% 88%;
-    --sidebar-ring: 15 55% 55%;
+    --sidebar-accent: 340 30% 94%;
+    --sidebar-accent-foreground: 0 0% 15%;
+    --sidebar-border: 340 15% 88%;
+    --sidebar-ring: 340 75% 55%;
   }
 
   .dark {
-    --background: 220 25% 8%;
-    --foreground: 30 20% 96%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 96%;
 
-    --card: 220 25% 12%;
-    --card-foreground: 30 20% 96%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 220 25% 12%;
-    --popover-foreground: 30 20% 96%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 15 55% 60%;
-    --primary-foreground: 220 25% 8%;
+    --primary: 340 75% 60%;
+    --primary-foreground: 0 0% 5%;
 
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 30 20% 96%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 220 20% 18%;
-    --muted-foreground: 30 15% 60%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
 
     --accent: 38 70% 55%;
-    --accent-foreground: 220 25% 8%;
+    --accent-foreground: 0 0% 5%;
 
     --destructive: 0 62% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 15 55% 60%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 340 75% 60%;
 
-    --rose-gold: 15 55% 60%;
-    --rose-gold-light: 15 45% 45%;
-    --champagne: 38 35% 30%;
-    --blush: 355 30% 20%;
-    --sage: 140 15% 25%;
-    --midnight: 220 25% 8%;
-    --cream: 40 15% 15%;
+    --pink: 340 75% 60%;
+    --pink-light: 340 60% 50%;
+    --pink-dark: 340 80% 40%;
+    --hot-pink: 330 85% 55%;
+    --blush: 340 30% 15%;
+    --champagne: 38 35% 25%;
+    --sage: 140 15% 20%;
+    --midnight: 0 0% 5%;
+    --cream: 40 15% 12%;
 
-    --sidebar-background: 220 25% 10%;
-    --sidebar-foreground: 30 20% 90%;
-    --sidebar-primary: 15 55% 60%;
-    --sidebar-primary-foreground: 220 25% 8%;
-    --sidebar-accent: 220 20% 18%;
-    --sidebar-accent-foreground: 30 20% 90%;
-    --sidebar-border: 220 20% 20%;
-    --sidebar-ring: 15 55% 60%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 340 75% 60%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 340 75% 60%;
   }
 }
 
@@ -164,6 +171,10 @@
     background: var(--gradient-gold);
   }
 
+  .bg-gradient-pink {
+    background: var(--gradient-pink);
+  }
+
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
@@ -176,9 +187,23 @@
     box-shadow: var(--shadow-glow);
   }
 
+  .shadow-pink {
+    box-shadow: var(--shadow-pink);
+  }
+
   .glass {
     background: hsl(0 0% 100% / 0.8);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Mobile-first tap targets */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Safe area for mobile bottom nav */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }
