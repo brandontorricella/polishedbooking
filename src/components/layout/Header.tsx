@@ -11,15 +11,16 @@ import {
   Settings,
   LogOut,
   Search,
-  Sparkles
+  Home
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import polishedLogo from '@/assets/polished-logo.png';
 
 const navItems = [
-  { href: '/', label: 'Home', icon: Sparkles },
+  { href: '/', label: 'Home', icon: Home },
   { href: '/search', label: 'Search', icon: Search },
   { href: '/favorites', label: 'Favorites', icon: Heart },
   { href: '/bookings', label: 'Bookings', icon: Calendar },
@@ -37,9 +38,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img src={polishedLogo} alt="Polished" className="w-10 h-10 object-contain" />
             <span className="font-display text-xl font-semibold text-gradient">Polished</span>
           </Link>
 
