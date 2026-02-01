@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SplashScreen } from "@/components/SplashScreen";
 import Index from "./pages/Index";
 import Search from "./pages/Search";
 import Favorites from "./pages/Favorites";
@@ -23,7 +25,36 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    // Initialize app
+    const initialize = async () => {
+      // Simulate app initialization
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setIsInitialized(true);
+    };
+    initialize();
+  }, []);
+
+  const handleSplashComplete = () => {
+    if (isInitialized) {
+      setShowSplash(false);
+    }
+  };
+
+  if (showSplash) {
+    return (
+      <SplashScreen 
+        onComplete={handleSplashComplete} 
+        isInitialized={isInitialized} 
+      />
+    );
+  }
+
+  return (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <TooltipProvider>
@@ -53,6 +84,7 @@ const App = () => (
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

@@ -12,6 +12,7 @@ interface UserLocation {
 
 interface UseLocationReturn {
   userLocation: UserLocation | null;
+  setUserLocation: (location: UserLocation | null) => void;
   locationError: string | null;
   isLoadingLocation: boolean;
   requestLocation: () => Promise<void>;
@@ -115,6 +116,7 @@ export const useLocation = (): UseLocationReturn => {
 
   return {
     userLocation,
+    setUserLocation,
     locationError,
     isLoadingLocation,
     requestLocation,

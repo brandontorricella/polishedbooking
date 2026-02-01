@@ -206,4 +206,25 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
+
+  /* Leaflet map customizations */
+  .leaflet-container {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .leaflet-popup-content {
+    margin: 0;
+    min-width: 200px;
+  }
+
+  .custom-marker,
+  .user-marker {
+    background: transparent;
+  }
 }

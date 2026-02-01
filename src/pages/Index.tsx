@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,14 +11,44 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { categories, mockBusinesses } from '@/data/mockData';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { saveIntendedDestination } from '@/components/auth/AuthGate';
 import heroImage from '@/assets/hero-beauty.jpg';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const { toast } = useToast();
+  
   const featuredBusinesses = mockBusinesses.filter(b => b.isFeatured);
   const blackOwnedBusinesses = mockBusinesses.filter(b => b.isBlackOwned);
   const promotions = mockBusinesses
     .flatMap(b => (b.promotions || []).map(p => ({ ...p, business: b })))
     .slice(0, 3);
+
+  // Auth gate for Find Services button
+  const handleFindServicesClick = () => {
+    if (!user) {
+      // Not logged in → redirect to consumer auth
+      saveIntendedDestination('/search');
+      navigate('/auth?mode=signup&role=client');
+      return;
+    }
+    
+    if (profile?.role === 'business') {
+      // Business accounts cannot access consumer discovery
+      toast({
+        title: 'Access Restricted',
+        description: 'Business accounts cannot browse services. Please use a personal account.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Standard user → proceed to discovery
+    navigate('/search');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -58,12 +88,14 @@ const Index = () => {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Link to="/search">
-                  <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
-                    Find Services
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl w-full sm:w-auto"
+                  onClick={handleFindServicesClick}
+                >
+                  {user && profile?.role === 'client' ? 'Browse Services' : 'Find Services'}
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
                 <Link to="/business">
                   <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
                     For Businesses
