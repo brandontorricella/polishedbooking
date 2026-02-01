@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import polishedLogo from '@/assets/polished-logo.png';
 
+const SPLASH_SHOWN_KEY = 'polished_splash_shown';
+
 interface SplashScreenProps {
   onComplete: () => void;
   isInitialized?: boolean;
@@ -15,6 +17,8 @@ export const SplashScreen = ({ onComplete, isInitialized = true }: SplashScreenP
     const timer = setTimeout(() => {
       if (isInitialized) {
         setFadeOut(true);
+        // Mark as shown for future visits
+        localStorage.setItem(SPLASH_SHOWN_KEY, 'true');
         // Allow fade animation to complete
         setTimeout(onComplete, 500);
       }
@@ -34,7 +38,8 @@ export const SplashScreen = ({ onComplete, isInitialized = true }: SplashScreenP
 
   return (
     <motion.div
-      className="fixed inset-0 bg-midnight z-[9999] flex items-center justify-center"
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ backgroundColor: '#0D0D0D' }}
       animate={{ opacity: fadeOut ? 0 : 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
@@ -60,4 +65,9 @@ export const SplashScreen = ({ onComplete, isInitialized = true }: SplashScreenP
       </motion.div>
     </motion.div>
   );
+};
+
+// Helper to check if splash should be shown
+export const shouldShowSplash = (): boolean => {
+  return !localStorage.getItem(SPLASH_SHOWN_KEY);
 };
