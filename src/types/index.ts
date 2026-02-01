@@ -73,6 +73,7 @@ export interface Business {
   portfolioImages: string[];
   createdAt: Date;
   promotions?: Promotion[];
+  distance?: number; // Added for proximity sorting
 }
 
 export interface Service {

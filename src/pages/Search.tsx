@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Search as SearchIcon, 
   Grid,
   List,
-  Map,
+  Map as MapIcon,
   X,
   MapPin,
   Loader2
@@ -17,6 +17,8 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { BookingFlow } from '@/components/booking/BookingFlow';
+import { BusinessMap } from '@/components/map/BusinessMap';
+import { LocationPermissionModal } from '@/components/location/LocationPermissionModal';
 import { categories, mockBusinesses } from '@/data/mockData';
 import { useLocation } from '@/hooks/useLocation';
 import type { Business } from '@/types';
@@ -37,13 +39,14 @@ interface BusinessWithDistance extends Business {
 
 const SearchPage = () => {
   const navigate = useNavigate();
-  const { userLocation, locationError, isLoadingLocation, requestLocation, calculateDistance, formatDistance } = useLocation();
+  const { userLocation, locationError, isLoadingLocation, requestLocation, setUserLocation, calculateDistance, formatDistance } = useLocation();
   
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [currentFilters, setCurrentFilters] = useState<CurrentFilters>({});
   const [maxDistance, setMaxDistance] = useState<number>(9999);
   const [bookingBusiness, setBookingBusiness] = useState<Business | null>(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
 
   // Calculate distances and sort businesses
   const businessesWithDistance = useMemo((): BusinessWithDistance[] => {
@@ -238,12 +241,28 @@ const SearchPage = () => {
 
           <div className="flex items-center justify-between mb-6">
             <span className="text-sm text-muted-foreground">{filteredBusinesses.length} results</span>
-            <div className="flex items-center gap-2">
-              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('grid')}>
-                <Grid className="w-4 h-4" />
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
+              <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('grid')} className="rounded-md">
+                <Grid className="w-4 h-4 mr-1" />
+                Grid
               </Button>
-              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" onClick={() => setViewMode('list')}>
-                <List className="w-4 h-4" />
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="rounded-md">
+                <List className="w-4 h-4 mr-1" />
+                List
+              </Button>
+              <Button 
+                variant={viewMode === 'map' ? 'default' : 'ghost'} 
+                size="sm" 
+                onClick={() => {
+                  if (!userLocation) {
+                    setShowLocationModal(true);
+                  }
+                  setViewMode('map');
+                }}
+                className="rounded-md"
+              >
+                <MapIcon className="w-4 h-4 mr-1" />
+                Map
               </Button>
             </div>
           </div>
@@ -305,12 +324,13 @@ const SearchPage = () => {
           )}
 
           {viewMode === 'map' && (
-            <div className="h-[500px] bg-muted rounded-2xl flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <Map className="w-12 h-12 mx-auto mb-4" />
-                <p>Map view coming soon</p>
-                <p className="text-sm">Enable location services to see businesses near you</p>
-              </div>
+            <div className="h-[calc(100vh-300px)] min-h-[400px] rounded-2xl overflow-hidden border border-border">
+              <BusinessMap
+                businesses={filteredBusinesses}
+                userLocation={userLocation}
+                onBusinessSelect={(business) => navigate(`/business/${business.id}`)}
+                className="w-full h-full"
+              />
             </div>
           )}
 
@@ -340,6 +360,20 @@ const SearchPage = () => {
           onClose={() => setBookingBusiness(null)}
         />
       )}
+
+      {/* Location Permission Modal */}
+      <LocationPermissionModal
+        open={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onLocationGranted={(coords) => {
+          setUserLocation(coords);
+          setShowLocationModal(false);
+        }}
+        onManualLocation={(location) => {
+          setUserLocation({ lat: location.lat, lng: location.lng });
+          setShowLocationModal(false);
+        }}
+      />
     </div>
   );
 };
