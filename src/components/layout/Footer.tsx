@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, Instagram, Twitter, Facebook, Mail } from 'lucide-react';
+import { Instagram, Twitter, Facebook, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import polishedLogo from '@/assets/polished-logo.png';
 
 export const Footer = () => {
   return (
@@ -11,9 +12,7 @@ export const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary-foreground" />
-              </div>
+              <img src={polishedLogo} alt="Polished" className="w-10 h-10 object-contain" />
               <span className="font-display text-xl font-semibold">Polished</span>
             </Link>
             <p className="text-cream/70 text-sm leading-relaxed">
