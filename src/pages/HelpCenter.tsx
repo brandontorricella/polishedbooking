@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     question: 'How do I list my business?',
-    answer: "Tap 'For Businesses' in the footer, then 'List Your Business' to start your free 14-day trial. No credit card required.",
+    answer: "Tap 'For Businesses' in the footer, then 'List Your Business' to start your free 1-month trial. No credit card required.",
   },
   {
     question: 'How do payments work?',
