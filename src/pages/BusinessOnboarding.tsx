@@ -491,7 +491,7 @@ const BusinessOnboarding = () => {
                 <h4 className="font-medium mb-2">Trial Summary</h4>
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>✓ Full access to all {selectedTier === 'basic' ? 'Basic' : selectedTier === 'pro' ? 'Pro' : 'Elite'} features</li>
-                  <li>✓ 14-day free trial</li>
+                  <li>✓ 1-month free trial</li>
                   <li>✓ Cancel anytime before trial ends</li>
                   <li>✓ Your business will be visible to clients immediately</li>
                 </ul>

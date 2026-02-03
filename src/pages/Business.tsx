@@ -113,13 +113,10 @@ const BusinessPage = () => {
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                Watch Demo
-              </Button>
             </div>
 
             <p className="text-sm text-muted-foreground mt-4">
-              14-day free trial • No credit card required to start
+              1-month free trial • No credit card required to start
             </p>
           </motion.div>
         </div>
@@ -267,7 +264,7 @@ const BusinessPage = () => {
             </h2>
             <p className="text-xl text-cream/70 max-w-2xl mx-auto mb-8">
               Join Polished today and start growing your beauty business. 
-              Your first 14 days are on us.
+              Your first month is on us.
             </p>
             <Button 
               size="lg" 
