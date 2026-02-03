@@ -101,9 +101,9 @@ const BusinessOnboarding = () => {
     
     setIsLoading(true);
 
-    // Calculate trial end date (14 days from now)
+    // Calculate trial end date (30 days / 1 month from now)
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
 
     const { data: business, error } = await supabase.from('businesses').insert({
       owner_id: user.id,
@@ -151,7 +151,7 @@ const BusinessOnboarding = () => {
       // Even if Stripe fails, business is created with trial
       toast({
         title: 'Business created!',
-        description: 'Your 14-day free trial has started. Add payment later in settings.',
+        description: 'Your 30-day free trial has started. Add payment later in settings.',
       });
       navigate('/business/analytics');
     }
@@ -406,7 +406,7 @@ const BusinessOnboarding = () => {
                 Choose your plan
               </h1>
               <p className="text-muted-foreground text-center mb-8">
-                Start with a 14-day free trial. Cancel anytime before it ends.
+                Start with a 30-day free trial. Cancel anytime before it ends.
               </p>
 
               <div className="grid md:grid-cols-3 gap-4 mb-8">
@@ -483,7 +483,7 @@ const BusinessOnboarding = () => {
                 at <strong className="text-foreground">${subscriptionTiers.find(t => t.id === selectedTier)?.price}/month</strong>.
               </p>
               <p className="text-muted-foreground mb-8">
-                Your 14-day free trial starts now. You won't be charged until the trial ends. 
+                Your 30-day free trial starts now. You won't be charged until the trial ends. 
                 Cancel anytime before then to avoid billing.
               </p>
 
