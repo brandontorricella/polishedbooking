@@ -76,7 +76,7 @@ const PricingPage = () => {
               Simple, Transparent <span className="text-gradient">Pricing</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Start with a 14-day free trial. No credit card required until trial ends.
+              Start with a 30-day free trial. No credit card required until trial ends.
             </p>
           </motion.div>
 
