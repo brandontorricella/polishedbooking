@@ -253,8 +253,8 @@ const Index = () => {
             </div>
             <Link to="/search?blackOwned=true">
               <Button 
-                variant="outline" 
-                className="gap-2 border-cream text-cream hover:bg-cream hover:text-midnight"
+                variant="ghost" 
+                className="gap-2 border border-cream/80 bg-transparent text-cream hover:bg-cream hover:text-midnight"
               >
                 Explore All <ChevronRight className="w-4 h-4" />
               </Button>
