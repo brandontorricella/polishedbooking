@@ -22,6 +22,8 @@ import BusinessOnboarding from "./pages/BusinessOnboarding";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
+import HelpCenter from "./pages/HelpCenter";
 
 const queryClient = new QueryClient();
 
@@ -75,8 +77,10 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/onboarding" element={<ClientOnboarding />} />
               <Route path="/business/onboarding" element={<BusinessOnboarding />} />
+              <Route path="/business/pricing" element={<Pricing />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/help" element={<HelpCenter />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -11,13 +11,15 @@ interface BusinessCardProps {
   onViewProfile?: (id: string) => void;
   onBook?: (id: string) => void;
   variant?: 'default' | 'featured' | 'compact';
+  showDistance?: boolean;
 }
 
 export const BusinessCard = ({ 
   business, 
   onViewProfile, 
   onBook,
-  variant = 'default' 
+  variant = 'default',
+  showDistance = false
 }: BusinessCardProps) => {
   const [isSaved, setIsSaved] = useState(false);
 
@@ -145,6 +147,9 @@ export const BusinessCard = ({
         <div className="flex items-center gap-1 mt-3 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4" />
           <span>{business.location.city}, {business.location.state}</span>
+          {showDistance && business.distance !== undefined && (
+            <span className="ml-1">• {business.distance.toFixed(1)} mi</span>
+          )}
           {business.serviceSetting === 'mobile' || business.serviceSetting === 'both' ? (
             <Badge variant="outline" className="ml-2 text-xs">Mobile Available</Badge>
           ) : null}
