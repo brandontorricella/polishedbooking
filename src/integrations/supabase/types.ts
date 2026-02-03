@@ -239,6 +239,39 @@ export type Database = {
           },
         ]
       }
+      email_subscribers: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          preferences: Json | null
+          subscribed_at: string | null
+          unsubscribed_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          preferences?: Json | null
+          subscribed_at?: string | null
+          unsubscribed_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          preferences?: Json | null
+          subscribed_at?: string | null
+          unsubscribed_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -560,6 +593,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriber_business_interests: {
+        Row: {
+          business_id: string | null
+          created_at: string | null
+          id: string
+          interaction_type: string | null
+          subscriber_id: string | null
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          subscriber_id?: string | null
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type?: string | null
+          subscriber_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriber_business_interests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriber_business_interests_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "email_subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_inquiries: {
+        Row: {
+          created_at: string | null
+          customer_email: string
+          customer_name: string
+          id: string
+          message: string
+          status: string | null
+          subject: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_email: string
+          customer_name: string
+          id?: string
+          message: string
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_email?: string
+          customer_name?: string
+          id?: string
+          message?: string
+          status?: string | null
+          subject?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

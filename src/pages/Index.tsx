@@ -1,28 +1,51 @@
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BusinessCard } from '@/components/ui/BusinessCard';
-import { CategoryCard } from '@/components/ui/CategoryCard';
-import { SearchFilters } from '@/components/ui/SearchFilters';
 import { PromotionCard } from '@/components/promotions/PromotionCard';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { StayUpdatedWidget } from '@/components/subscription/StayUpdatedWidget';
 import { categories, mockBusinesses } from '@/data/mockData';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useLocationBasedBusinesses } from '@/hooks/useLocationBasedBusinesses';
 import { saveIntendedDestination } from '@/components/auth/AuthGate';
+import { Skeleton } from '@/components/ui/skeleton';
 import heroImage from '@/assets/hero-beauty.jpg';
+
+// Service category data with icons and colors
+const serviceCategories = [
+  { id: 'hair_styling', name: 'Hair', icon: '💇‍♀️', color: 'bg-blush' },
+  { id: 'nails', name: 'Nails', icon: '💅', color: 'bg-lavender' },
+  { id: 'makeup', name: 'Makeup', icon: '💄', color: 'bg-rose-100' },
+  { id: 'lashes', name: 'Lashes', icon: '👁️', color: 'bg-violet-100' },
+  { id: 'eyebrows', name: 'Brows', icon: '✨', color: 'bg-amber-100' },
+  { id: 'facials', name: 'Skincare', icon: '🧴', color: 'bg-emerald-100' },
+  { id: 'waxing', name: 'Waxing', icon: '🌸', color: 'bg-pink-100' },
+  { id: 'massage', name: 'Massage', icon: '💆', color: 'bg-sky-100' },
+  { id: 'barbering', name: 'Barbering', icon: '✂️', color: 'bg-slate-100' },
+  { id: 'spray_tan', name: 'Body', icon: '🌟', color: 'bg-orange-100' },
+];
+
+const BusinessCardSkeleton = () => (
+  <div className="rounded-2xl border border-border bg-card p-4">
+    <Skeleton className="h-40 w-full rounded-xl mb-4" />
+    <Skeleton className="h-5 w-3/4 mb-2" />
+    <Skeleton className="h-4 w-1/2 mb-4" />
+    <Skeleton className="h-4 w-1/4" />
+  </div>
+);
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const { topRated, blackOwned, loading, locationDenied, location } = useLocationBasedBusinesses();
   
-  const featuredBusinesses = mockBusinesses.filter(b => b.isFeatured);
-  const blackOwnedBusinesses = mockBusinesses.filter(b => b.isBlackOwned);
   const promotions = mockBusinesses
     .flatMap(b => (b.promotions || []).map(p => ({ ...p, business: b })))
     .slice(0, 3);
@@ -30,14 +53,12 @@ const Index = () => {
   // Auth gate for Find Services button
   const handleFindServicesClick = () => {
     if (!user) {
-      // Not logged in → redirect to consumer auth
       saveIntendedDestination('/search');
       navigate('/auth?mode=signup&role=client');
       return;
     }
     
     if (profile?.role === 'business') {
-      // Business accounts cannot access consumer discovery
       toast({
         title: 'Access Restricted',
         description: 'Business accounts cannot browse services. Please use a personal account.',
@@ -46,8 +67,12 @@ const Index = () => {
       return;
     }
     
-    // Standard user → proceed to discovery
     navigate('/search');
+  };
+
+  // Handle category click - navigate to search with category filter
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/search?category=${categoryId}`);
   };
 
   return (
@@ -56,7 +81,6 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="relative min-h-[85vh] flex items-center pt-16">
-        {/* Background */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-hero" />
           <img 
@@ -80,11 +104,11 @@ const Index = () => {
               </Badge>
               
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
-                Discover <span className="text-gradient">Beauty</span> & <span className="text-gradient">Wellness</span> Near You
+                Find <span className="text-gradient">Beauty</span> Services Near You
               </h1>
               
               <p className="mt-6 text-xl text-muted-foreground max-w-xl">
-                Book appointments with top-rated beauty professionals. From hair styling to spa treatments, find your perfect match.
+                Book with top-rated beauty professionals in your area
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -133,51 +157,51 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Search Section */}
-      <section className="py-12 bg-card border-y border-border">
+      {/* Browse by Service - Category Cards */}
+      <section className="py-16 bg-card border-y border-border">
         <div className="container mx-auto px-4">
-          <SearchFilters />
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="font-display text-3xl font-bold">Browse Categories</h2>
-              <p className="text-muted-foreground mt-2">Find the perfect service for you</p>
-            </div>
-            <Link to="/search">
-              <Button variant="ghost" className="gap-2">
-                View All <ChevronRight className="w-4 h-4" />
-              </Button>
-            </Link>
+          <div className="text-center mb-8">
+            <h2 className="font-display text-3xl font-bold">Browse by Service</h2>
+            <p className="text-muted-foreground mt-2">Tap a category to find specialists</p>
           </div>
           
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-            {categories.slice(0, 8).map((cat, index) => (
-              <motion.div
-                key={cat.id}
+          <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-3 max-w-4xl mx-auto">
+            {serviceCategories.map((category, index) => (
+              <motion.button
+                key={category.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                transition={{ duration: 0.3, delay: index * 0.03 }}
+                onClick={() => handleCategoryClick(category.id)}
+                className={`flex flex-col items-center gap-2 p-3 rounded-xl ${category.color} hover:scale-105 transition-transform cursor-pointer`}
               >
-                <CategoryCard {...cat} variant="compact" />
-              </motion.div>
+                <span className="text-2xl">{category.icon}</span>
+                <span className="text-xs font-medium text-foreground">{category.name}</span>
+              </motion.button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Businesses */}
+      {/* Top Rated Businesses - Location Aware */}
       <section className="py-16 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
               <Badge className="mb-2 bg-accent text-accent-foreground">Featured</Badge>
-              <h2 className="font-display text-3xl font-bold">Top Rated Professionals</h2>
-              <p className="text-muted-foreground mt-2">Highly rated and recommended by our community</p>
+              <h2 className="font-display text-3xl font-bold">
+                Top Rated {!locationDenied && location ? 'Near You' : 'Professionals'}
+              </h2>
+              <p className="text-muted-foreground mt-2 flex items-center gap-2">
+                {!locationDenied && location ? (
+                  <>
+                    <MapPin className="w-4 h-4" />
+                    Based on your location
+                  </>
+                ) : (
+                  'Highly rated and recommended by our community'
+                )}
+              </p>
             </div>
             <Link to="/search?featured=true">
               <Button variant="ghost" className="gap-2">
@@ -187,16 +211,28 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredBusinesses.map((business, index) => (
-              <motion.div
-                key={business.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <BusinessCard business={business} variant="featured" />
-              </motion.div>
-            ))}
+            {loading ? (
+              <>
+                <BusinessCardSkeleton />
+                <BusinessCardSkeleton />
+                <BusinessCardSkeleton />
+              </>
+            ) : (
+              topRated.slice(0, 3).map((business, index) => (
+                <motion.div
+                  key={business.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                >
+                  <BusinessCard 
+                    business={business} 
+                    variant="featured"
+                    showDistance={!locationDenied && !!business.distance}
+                  />
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -210,27 +246,43 @@ const Index = () => {
                 <span className="text-2xl">✊🏿</span>
                 <Badge className="bg-cream/20 text-cream border-0">Black-Owned</Badge>
               </div>
-              <h2 className="font-display text-3xl font-bold">Support Black-Owned Businesses</h2>
+              <h2 className="font-display text-3xl font-bold">
+                Black-Owned {!locationDenied && location ? 'Near You' : 'Businesses'}
+              </h2>
               <p className="text-cream/70 mt-2">Discover talented professionals in our community</p>
             </div>
             <Link to="/search?blackOwned=true">
-              <Button variant="outline" className="gap-2 border-cream/30 text-cream hover:bg-cream/10">
+              <Button 
+                variant="outline" 
+                className="gap-2 border-cream text-cream hover:bg-cream hover:text-midnight"
+              >
                 Explore All <ChevronRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blackOwnedBusinesses.map((business, index) => (
-              <motion.div
-                key={business.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <BusinessCard business={business} />
-              </motion.div>
-            ))}
+            {loading ? (
+              <>
+                <BusinessCardSkeleton />
+                <BusinessCardSkeleton />
+                <BusinessCardSkeleton />
+              </>
+            ) : (
+              blackOwned.slice(0, 3).map((business, index) => (
+                <motion.div
+                  key={business.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                >
+                  <BusinessCard 
+                    business={business}
+                    showDistance={!locationDenied && !!business.distance}
+                  />
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -303,6 +355,7 @@ const Index = () => {
 
       <Footer />
       <BottomNav />
+      <StayUpdatedWidget />
     </div>
   );
 };
