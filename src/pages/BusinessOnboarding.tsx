@@ -59,12 +59,14 @@ const subscriptionTiers = [
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, session, updateProfile } = useAuth();
+  const { user, profile, session, updateProfile } = useAuth();
   const { toast } = useToast();
   const { createCheckout } = useSubscription();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [hasUsedTrial, setHasUsedTrial] = useState<boolean | null>(null);
+  const [checkingTrial, setCheckingTrial] = useState(true);
 
   // Business info
   const [businessName, setBusinessName] = useState('');
@@ -88,6 +90,36 @@ const BusinessOnboarding = () => {
     }
   }, [user, navigate]);
 
+  // Check if user has already used a free trial
+  useEffect(() => {
+    const checkTrialUsage = async () => {
+      if (!user || !profile?.email) {
+        setCheckingTrial(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.rpc('has_used_trial', { 
+          check_email: profile.email 
+        });
+        
+        if (error) {
+          console.error('Error checking trial usage:', error);
+          setHasUsedTrial(false);
+        } else {
+          setHasUsedTrial(data === true);
+        }
+      } catch (err) {
+        console.error('Error checking trial:', err);
+        setHasUsedTrial(false);
+      }
+      
+      setCheckingTrial(false);
+    };
+
+    checkTrialUsage();
+  }, [user, profile?.email]);
+
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => 
       prev.includes(category) 
@@ -97,13 +129,26 @@ const BusinessOnboarding = () => {
   };
 
   const handleCreateBusiness = async () => {
-    if (!user) return;
+    if (!user || !profile?.email) return;
     
     setIsLoading(true);
 
-    // Calculate trial end date (30 days / 1 month from now)
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+    // Check if this email has already used a trial
+    const { data: trialUsed, error: trialCheckError } = await supabase.rpc('has_used_trial', { 
+      check_email: profile.email 
+    });
+
+    if (trialCheckError) {
+      console.error('Error checking trial:', trialCheckError);
+    }
+
+    const isEligibleForTrial = !trialUsed;
+
+    // Calculate trial end date (30 days / 1 month from now) - only if eligible
+    const trialEndsAt = isEligibleForTrial ? new Date() : null;
+    if (trialEndsAt) {
+      trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+    }
 
     const { data: business, error } = await supabase.from('businesses').insert({
       owner_id: user.id,
@@ -115,9 +160,9 @@ const BusinessOnboarding = () => {
       state,
       zip,
       subscription_tier: selectedTier as 'basic' | 'pro' | 'elite',
-      subscription_status: 'trialing',
-      trial_ends_at: trialEndsAt.toISOString(),
-      is_published: true,
+      subscription_status: isEligibleForTrial ? 'trialing' : 'unpaid',
+      trial_ends_at: trialEndsAt?.toISOString() || null,
+      is_published: isEligibleForTrial, // Only publish if they have a trial
     }).select().single();
 
     if (error) {
@@ -132,6 +177,15 @@ const BusinessOnboarding = () => {
 
     setBusinessId(business.id);
 
+    // Record trial usage if eligible
+    if (isEligibleForTrial) {
+      await supabase.rpc('record_trial_usage', {
+        p_email: profile.email,
+        p_user_id: user.id,
+        p_business_id: business.id
+      });
+    }
+
     // Update user profile to business role
     await updateProfile({
       role: 'business',
@@ -143,17 +197,32 @@ const BusinessOnboarding = () => {
     try {
       await createCheckout(selectedTier as 'basic' | 'pro' | 'elite', business.id);
       
-      toast({
-        title: 'Business created!',
-        description: 'Complete payment setup to activate your subscription.',
-      });
+      if (isEligibleForTrial) {
+        toast({
+          title: 'Business created!',
+          description: 'Complete payment setup to activate your subscription.',
+        });
+      } else {
+        toast({
+          title: 'Business created!',
+          description: 'Complete payment to activate your subscription. Free trial already used.',
+        });
+      }
     } catch (err) {
-      // Even if Stripe fails, business is created with trial
-      toast({
-        title: 'Business created!',
-        description: 'Your 30-day free trial has started. Add payment later in settings.',
-      });
-      navigate('/business/analytics');
+      if (isEligibleForTrial) {
+        toast({
+          title: 'Business created!',
+          description: 'Your 30-day free trial has started. Add payment later in settings.',
+        });
+        navigate('/business/analytics');
+      } else {
+        toast({
+          title: 'Business created!',
+          description: 'Please add payment to make your business visible.',
+          variant: 'destructive',
+        });
+        navigate('/business/analytics');
+      }
     }
 
     setIsLoading(false);
@@ -405,9 +474,18 @@ const BusinessOnboarding = () => {
               <h1 className="font-display text-3xl font-bold text-center mb-2">
                 Choose your plan
               </h1>
-              <p className="text-muted-foreground text-center mb-8">
-                Start with a 30-day free trial. Cancel anytime before it ends.
+              <p className="text-muted-foreground text-center mb-2">
+                {hasUsedTrial 
+                  ? 'Select your plan. Payment required to start.'
+                  : 'Start with a 30-day free trial. Cancel anytime before it ends.'
+                }
               </p>
+              {hasUsedTrial && (
+                <p className="text-sm text-destructive text-center mb-8 bg-destructive/10 p-3 rounded-lg">
+                  A free trial has already been used with this email. Payment will be required to activate your business listing.
+                </p>
+              )}
+              {!hasUsedTrial && <div className="mb-8" />}
 
               <div className="grid md:grid-cols-3 gap-4 mb-8">
                 {subscriptionTiers.map((tier) => (
@@ -476,24 +554,34 @@ const BusinessOnboarding = () => {
               </div>
 
               <h1 className="font-display text-3xl font-bold mb-4">
-                Start Your Free Trial
+                {hasUsedTrial ? 'Complete Your Subscription' : 'Start Your Free Trial'}
               </h1>
               <p className="text-muted-foreground mb-4">
                 You've selected the <strong className="text-foreground">{subscriptionTiers.find(t => t.id === selectedTier)?.name}</strong> plan 
                 at <strong className="text-foreground">${subscriptionTiers.find(t => t.id === selectedTier)?.price}/month</strong>.
               </p>
-              <p className="text-muted-foreground mb-8">
-                Your 30-day free trial starts now. You won't be charged until the trial ends. 
-                Cancel anytime before then to avoid billing.
-              </p>
+              {hasUsedTrial ? (
+                <p className="text-muted-foreground mb-8">
+                  A free trial has already been used with this email. Your subscription will begin immediately upon payment.
+                </p>
+              ) : (
+                <p className="text-muted-foreground mb-8">
+                  Your 30-day free trial starts now. You won't be charged until the trial ends. 
+                  Cancel anytime before then to avoid billing.
+                </p>
+              )}
 
               <div className="bg-muted/50 rounded-xl p-4 mb-8 text-left">
-                <h4 className="font-medium mb-2">Trial Summary</h4>
+                <h4 className="font-medium mb-2">{hasUsedTrial ? 'Subscription Summary' : 'Trial Summary'}</h4>
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>✓ Full access to all {selectedTier === 'basic' ? 'Basic' : selectedTier === 'pro' ? 'Pro' : 'Elite'} features</li>
-                  <li>✓ 1-month free trial</li>
-                  <li>✓ Cancel anytime before trial ends</li>
-                  <li>✓ Your business will be visible to clients immediately</li>
+                  {hasUsedTrial ? (
+                    <li>✓ Payment required to activate</li>
+                  ) : (
+                    <li>✓ 1-month free trial</li>
+                  )}
+                  <li>✓ Cancel anytime</li>
+                  <li>✓ Your business will be visible to clients {hasUsedTrial ? 'after payment' : 'immediately'}</li>
                 </ul>
               </div>
 
@@ -512,7 +600,7 @@ const BusinessOnboarding = () => {
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      Start Free Trial
+                      {hasUsedTrial ? 'Continue to Payment' : 'Start Free Trial'}
                       <ArrowRight className="w-5 h-5" />
                     </span>
                   )}

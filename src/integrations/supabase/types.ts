@@ -666,6 +666,30 @@ export type Database = {
         }
         Relationships: []
       }
+      trial_usage: {
+        Row: {
+          business_id: string | null
+          email: string
+          id: string
+          used_at: string
+          user_id: string | null
+        }
+        Insert: {
+          business_id?: string | null
+          email: string
+          id?: string
+          used_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          business_id?: string | null
+          email?: string
+          id?: string
+          used_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -690,6 +714,11 @@ export type Database = {
     }
     Functions: {
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      has_used_trial: { Args: { check_email: string }; Returns: boolean }
+      record_trial_usage: {
+        Args: { p_business_id: string; p_email: string; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       booking_status: "pending" | "confirmed" | "completed" | "canceled"
