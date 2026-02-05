@@ -54,10 +54,6 @@ const TermsOfService = () => {
                 <ul className="space-y-2 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>Must be 18 years or older to use Polished.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                     <span>Free users can access app features without any payment.</span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -144,7 +140,7 @@ const TermsOfService = () => {
                 <h2 className="font-display text-xl font-semibold mb-4">Contact Us</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   If you have any questions about these Terms of Service, please contact us at{' '}
-                  <a href="mailto:legal@polished.app" className="text-primary hover:underline">
+                  <a href="mailto:btorricella816@gmail.com" className="text-primary hover:underline">
                     legal@polished.app
                   </a>
                 </p>

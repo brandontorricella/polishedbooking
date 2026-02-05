@@ -118,7 +118,7 @@ const PrivacyPolicy = () => {
                 <h2 className="font-display text-xl font-semibold mb-4">Contact Us</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   If you have any questions about this Privacy Policy, please contact us at{' '}
-                  <a href="mailto:privacy@polished.app" className="text-primary hover:underline">
+                  <a href="mailto:btorricella816@gmail.com" className="text-primary hover:underline">
                     privacy@polished.app
                   </a>
                 </p>
