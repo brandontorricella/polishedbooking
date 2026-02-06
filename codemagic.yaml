@@ -1,0 +1,114 @@
+# Codemagic CI/CD configuration for Polished App
+# iOS and Android builds with Superwall SDK integration
+
+workflows:
+  ios-release:
+    name: iOS Release Build
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: app.lovable.4b68f67ff99e438ca615c52490432989
+      groups:
+        - app_secrets
+      vars:
+        BUNDLE_ID: "app.lovable.4b68f67ff99e438ca615c52490432989"
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      node: 18.17.0
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build web assets
+        script: |
+          npm run build
+      - name: Sync Capacitor
+        script: |
+          npx cap sync ios
+      - name: Install CocoaPods
+        script: |
+          cd ios/App && pod install
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+      - name: Build iOS app
+        script: |
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+
+  android-release:
+    name: Android Release Build
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      android_signing:
+        - polished_keystore
+      groups:
+        - app_secrets
+      vars:
+        PACKAGE_NAME: "app.lovable.polished"
+      java: 17
+      node: 18.17.0
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build web assets
+        script: |
+          npm run build
+      - name: Sync Capacitor
+        script: |
+          npx cap sync android
+      - name: Build Android AAB
+        script: |
+          cd android && ./gradlew bundleRelease
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/mapping.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+
+  development:
+    name: Development Build
+    max_build_duration: 30
+    instance_type: linux_x2
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'develop'
+          include: true
+    environment:
+      node: 18.17.0
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Type check
+        script: |
+          npm run typecheck || true
+      - name: Build
+        script: |
+          npm run build
+      - name: Sync Capacitor
+        script: |
+          npx cap sync
+    artifacts:
+      - dist/**

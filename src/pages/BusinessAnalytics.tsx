@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight } from 'lucide-react';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSuperwall } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -62,7 +62,7 @@ const BusinessAnalyticsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, loading: authLoading } = useAuth();
-  const { subscription, isLoading, checkSubscription, openCustomerPortal, isTrialing, daysRemaining } = useSubscription();
+  const { subscription, isLoading, refreshSubscription, showPaywall, isTrialing, daysRemaining } = useSuperwall();
 
   const isAuthenticated = !!user;
   const isBusinessUser = profile?.role === 'business';
@@ -80,17 +80,16 @@ const BusinessAnalyticsPage = () => {
     }
   }, [authLoading, isAuthenticated, isClientUser, navigate, toast]);
 
-  // Check for success redirect from Stripe
+  // Check for success redirect
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
       toast({
-        title: 'Payment setup complete!',
+        title: 'Subscription Active!',
         description: 'Your subscription is now active.',
       });
-      // Refresh subscription status
-      checkSubscription();
+      refreshSubscription();
     }
-  }, [searchParams, toast, checkSubscription]);
+  }, [searchParams, toast, refreshSubscription]);
 
   // Don't render for client users
   if (!authLoading && isAuthenticated && isClientUser) {
@@ -102,6 +101,12 @@ const BusinessAnalyticsPage = () => {
 
   // Show sample dashboard for non-authenticated users
   const showSampleDashboard = !isAuthenticated;
+
+  const handleManageSubscription = () => {
+    if (subscription) {
+      showPaywall(subscription.tier);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,7 +134,7 @@ const BusinessAnalyticsPage = () => {
                   <Calendar className="w-4 h-4 mr-2" />
                   Last 30 Days
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => checkSubscription()}>
+                <Button variant="outline" size="sm" onClick={() => refreshSubscription()}>
                   <RefreshCw className="w-4 h-4 mr-2" />
                   Refresh
                 </Button>
@@ -163,12 +168,12 @@ const BusinessAnalyticsPage = () => {
                         {daysRemaining} days remaining in your trial
                       </p>
                     )}
-                    {subscription?.subscription_end && !isTrialing && (
+                    {subscription?.subscriptionEndDate && !isTrialing && (
                       <p className="text-sm text-muted-foreground">
-                        Renews on {new Date(subscription.subscription_end).toLocaleDateString()}
+                        Renews on {new Date(subscription.subscriptionEndDate).toLocaleDateString()}
                       </p>
                     )}
-                    {!subscription?.subscribed && !isTrialing && (
+                    {!subscription?.isActive && !isTrialing && (
                       <p className="text-sm text-muted-foreground">
                         No active subscription
                       </p>
@@ -177,7 +182,7 @@ const BusinessAnalyticsPage = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={openCustomerPortal}
+                    onClick={handleManageSubscription}
                     disabled={isLoading}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />

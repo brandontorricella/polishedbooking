@@ -6,9 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { useSuperwall } from '@/hooks/useSuperwall';
+import { useAuth } from '@/hooks/useAuth';
 
 const pricingTiers = [
   {
+    id: 'basic',
     name: 'Basic',
     price: 29,
     description: 'Everything you need to get started',
@@ -24,6 +27,7 @@ const pricingTiers = [
     recommended: false,
   },
   {
+    id: 'pro',
     name: 'Pro',
     price: 59,
     description: 'For growing businesses',
@@ -40,6 +44,7 @@ const pricingTiers = [
     recommended: true,
   },
   {
+    id: 'elite',
     name: 'Elite',
     price: 99,
     description: 'Maximum visibility & features',
@@ -59,6 +64,48 @@ const pricingTiers = [
 
 const PricingPage = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const { showPaywall, isSubscribed, subscription } = useSuperwall();
+
+  const handleSelectTier = async (tierId: string) => {
+    // If user is not logged in, redirect to signup
+    if (!user) {
+      navigate(`/business/onboarding?tier=${tierId}`);
+      return;
+    }
+
+    // If user is a client, redirect to business onboarding
+    if (profile?.role === 'client') {
+      navigate(`/business/onboarding?tier=${tierId}`);
+      return;
+    }
+
+    // If user is already a business, show paywall for upgrade/change
+    if (profile?.role === 'business') {
+      const purchased = await showPaywall(tierId as 'basic' | 'pro' | 'elite');
+      if (purchased) {
+        navigate('/business/analytics?success=true');
+      }
+      return;
+    }
+
+    // Default: go to onboarding
+    navigate(`/business/onboarding?tier=${tierId}`);
+  };
+
+  const getButtonText = (tierId: string) => {
+    if (!user || profile?.role !== 'business') {
+      return 'Start Free Trial';
+    }
+    if (subscription?.tier === tierId) {
+      return 'Current Plan';
+    }
+    return 'Switch Plan';
+  };
+
+  const isCurrentPlan = (tierId: string) => {
+    return isSubscribed && subscription?.tier === tierId;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,7 +123,7 @@ const PricingPage = () => {
               Simple, Transparent <span className="text-gradient">Pricing</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Start with a 30-day free trial. No credit card required until trial ends.
+              Start with a 30-day free trial. Payment info required to start trial.
             </p>
           </motion.div>
 
@@ -84,6 +131,8 @@ const PricingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {pricingTiers.map((tier, index) => {
               const Icon = tier.icon;
+              const isCurrent = isCurrentPlan(tier.id);
+              
               return (
                 <motion.div
                   key={tier.name}
@@ -91,12 +140,19 @@ const PricingPage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   className={`relative rounded-2xl border ${
-                    tier.recommended
-                      ? 'border-primary bg-card shadow-elevated'
-                      : 'border-border bg-card'
+                    isCurrent
+                      ? 'border-green-500 bg-green-500/5 shadow-elevated'
+                      : tier.recommended
+                        ? 'border-primary bg-card shadow-elevated'
+                        : 'border-border bg-card'
                   } p-6 flex flex-col`}
                 >
-                  {tier.recommended && (
+                  {isCurrent && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white">
+                      Your Plan
+                    </Badge>
+                  )}
+                  {!isCurrent && tier.recommended && (
                     <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                       Most Popular
                     </Badge>
@@ -104,9 +160,19 @@ const PricingPage = () => {
 
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      tier.recommended ? 'bg-primary/10' : 'bg-secondary'
+                      isCurrent 
+                        ? 'bg-green-500/10'
+                        : tier.recommended 
+                          ? 'bg-primary/10' 
+                          : 'bg-secondary'
                     }`}>
-                      <Icon className={`w-6 h-6 ${tier.recommended ? 'text-primary' : 'text-foreground'}`} />
+                      <Icon className={`w-6 h-6 ${
+                        isCurrent 
+                          ? 'text-green-500' 
+                          : tier.recommended 
+                            ? 'text-primary' 
+                            : 'text-foreground'
+                      }`} />
                     </div>
                     <div>
                       <h3 className="font-display text-xl font-bold">{tier.name}</h3>
@@ -123,7 +189,11 @@ const PricingPage = () => {
                     {tier.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3">
                         <Check className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                          tier.recommended ? 'text-primary' : 'text-muted-foreground'
+                          isCurrent
+                            ? 'text-green-500'
+                            : tier.recommended 
+                              ? 'text-primary' 
+                              : 'text-muted-foreground'
                         }`} />
                         <span className="text-sm">{feature}</span>
                       </li>
@@ -131,15 +201,18 @@ const PricingPage = () => {
                   </ul>
 
                   <Button
-                    onClick={() => navigate(`/business/onboarding?tier=${tier.name.toLowerCase()}`)}
+                    onClick={() => handleSelectTier(tier.id)}
+                    disabled={isCurrent}
                     className={`w-full ${
-                      tier.recommended
-                        ? 'bg-gradient-primary hover:opacity-90'
-                        : ''
+                      isCurrent
+                        ? 'bg-green-500/20 text-green-700 cursor-default'
+                        : tier.recommended
+                          ? 'bg-gradient-primary hover:opacity-90'
+                          : ''
                     }`}
-                    variant={tier.recommended ? 'default' : 'outline'}
+                    variant={isCurrent ? 'secondary' : tier.recommended ? 'default' : 'outline'}
                   >
-                    Start Free Trial
+                    {getButtonText(tier.id)}
                   </Button>
                 </motion.div>
               );
