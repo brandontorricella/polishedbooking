@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Settings, 
-  User, 
   Bell, 
   Shield, 
   CreditCard,
@@ -13,11 +12,11 @@ import {
   Moon,
   Sun,
   Trash2,
-  Globe
+  Globe,
+  Crown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -27,6 +26,9 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSuperwall } from '@/hooks/useSuperwall';
+import { supabase } from '@/integrations/supabase/client';
+import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,15 +43,20 @@ import {
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, profile, signOut, updateProfile, loading } = useAuth();
+  const { user, profile, signOut, updateProfile, loading, session } = useAuth();
   const { toast } = useToast();
   const { isDark, toggleTheme } = useTheme();
+  const { isSubscribed, showPaywall, subscription } = useSuperwall();
   
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
+
+  const isBusinessUser = profile?.role === 'business';
 
   useEffect(() => {
     if (!user && !loading) {
@@ -60,6 +67,14 @@ const Profile = () => {
       setPhone(profile.phone || '');
     }
   }, [user, profile, loading, navigate]);
+
+  // Auto-show paywall for business users without active subscription
+  useEffect(() => {
+    if (!loading && isBusinessUser && !isSubscribed && subscription !== null) {
+      // Subscription check is complete and business doesn't have active subscription
+      showPaywall(subscription?.tier || 'basic');
+    }
+  }, [loading, isBusinessUser, isSubscribed, subscription, showPaywall]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -81,6 +96,43 @@ const Profile = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: 'Account Deleted',
+          description: isBusinessUser 
+            ? 'Your account has been deleted. Your email is saved for trial tracking purposes.'
+            : 'Your account and all data have been deleted.',
+        });
+        // Sign out and redirect
+        await signOut();
+        navigate('/');
+      } else {
+        throw new Error(data.error || 'Failed to delete account');
+      }
+    } catch (err) {
+      console.error('Delete account error:', err);
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to delete account',
+        variant: 'destructive',
+      });
+    }
+    
+    setIsDeleting(false);
   };
 
   if (loading) {
@@ -170,6 +222,48 @@ const Profile = () => {
               )}
             </div>
           </motion.div>
+
+          {/* Subscription Management for Business Users */}
+          {isBusinessUser && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="mb-6"
+            >
+              <button 
+                onClick={() => setShowSubscriptionManager(!showSubscriptionManager)}
+                className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Crown className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium">Subscription</p>
+                    <p className="text-sm text-muted-foreground">
+                      {isSubscribed 
+                        ? `${subscription?.tier?.charAt(0).toUpperCase()}${subscription?.tier?.slice(1)} Plan`
+                        : 'No active subscription'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${showSubscriptionManager ? 'rotate-90' : ''}`} />
+              </button>
+              
+              {showSubscriptionManager && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-4"
+                >
+                  <SubscriptionManager />
+                </motion.div>
+              )}
+            </motion.div>
+          )}
 
           {/* Settings Sections */}
           <div className="space-y-4">
@@ -276,12 +370,15 @@ const Profile = () => {
                 <AlertDialogTrigger asChild>
                   <button 
                     className="w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                    disabled={isDeleting}
                   >
                     <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
                       <Trash2 className="w-5 h-5 text-destructive" />
                     </div>
                     <div>
-                      <span className="font-medium text-destructive">Delete Account</span>
+                      <span className="font-medium text-destructive">
+                        {isDeleting ? 'Deleting...' : 'Delete Account'}
+                      </span>
                       <p className="text-sm text-muted-foreground">Permanently remove your data</p>
                     </div>
                   </button>
@@ -292,11 +389,19 @@ const Profile = () => {
                     <AlertDialogDescription>
                       This action cannot be undone. This will permanently delete your account 
                       and remove your data from our servers.
+                      {isBusinessUser && (
+                        <span className="block mt-2 text-amber-600">
+                          Note: Your email will be saved to prevent future free trial abuse.
+                        </span>
+                      )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    <AlertDialogAction 
+                      onClick={handleDeleteAccount}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
                       Delete Account
                     </AlertDialogAction>
                   </AlertDialogFooter>
