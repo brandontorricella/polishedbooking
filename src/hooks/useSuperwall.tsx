@@ -18,6 +18,8 @@ interface SuperwallContextValue {
   isLoading: boolean;
   error: string | null;
   showPaywall: (tier: 'basic' | 'pro' | 'elite') => Promise<boolean>;
+  changeTier: (newTier: 'basic' | 'pro' | 'elite') => Promise<boolean>;
+  cancelSubscription: () => Promise<boolean>;
   restorePurchases: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
   isTrialing: boolean;
@@ -41,6 +43,7 @@ interface SuperwallBridge {
     status: string;
   }>;
   restorePurchases: () => Promise<void>;
+  cancelSubscription: () => Promise<{ success: boolean }>;
 }
 
 // Mock bridge for development - will be replaced with actual native implementation
@@ -57,6 +60,18 @@ const mockSuperwallBridge: SuperwallBridge = {
     const confirmed = window.confirm(
       `[Development Mode]\n\nSuperwall Paywall: ${placement}\n\nSimulate successful subscription?`
     );
+    if (confirmed) {
+      // Save mock subscription state
+      const tier = placement.replace('_subscription', '');
+      const mockState = {
+        isActive: true,
+        productId: `${tier}_monthly`,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        trialEndAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'trialing',
+      };
+      localStorage.setItem('superwall_mock_subscription', JSON.stringify(mockState));
+    }
     return { purchased: confirmed };
   },
   getSubscriptionStatus: async () => {
@@ -75,6 +90,23 @@ const mockSuperwallBridge: SuperwallBridge = {
   },
   restorePurchases: async () => {
     console.log('[Superwall] Restore purchases called');
+  },
+  cancelSubscription: async () => {
+    console.log('[Superwall] Cancel subscription called');
+    const confirmed = window.confirm(
+      '[Development Mode]\n\nAre you sure you want to cancel your subscription?\n\nYour business will be hidden from clients.'
+    );
+    if (confirmed) {
+      // Update mock state to canceled
+      const mockState = localStorage.getItem('superwall_mock_subscription');
+      if (mockState) {
+        const parsed = JSON.parse(mockState);
+        parsed.isActive = false;
+        parsed.status = 'canceled';
+        localStorage.setItem('superwall_mock_subscription', JSON.stringify(parsed));
+      }
+    }
+    return { success: confirmed };
   },
 };
 
@@ -260,6 +292,51 @@ export const SuperwallProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [refreshSubscription]);
 
+  // Change subscription tier
+  const changeTier = useCallback(async (newTier: 'basic' | 'pro' | 'elite'): Promise<boolean> => {
+    if (!user || profile?.role !== 'business') {
+      setError('Business account required');
+      return false;
+    }
+
+    // Show paywall for the new tier
+    const purchased = await showPaywall(newTier);
+    return purchased;
+  }, [user, profile, showPaywall]);
+
+  // Cancel subscription
+  const cancelSubscription = useCallback(async (): Promise<boolean> => {
+    if (!user || profile?.role !== 'business') {
+      setError('Business account required');
+      return false;
+    }
+
+    try {
+      const bridge = getSuperwallBridge();
+      const result = await bridge.cancelSubscription();
+      
+      if (result.success) {
+        // Update backend immediately
+        await supabase
+          .from('businesses')
+          .update({
+            subscription_status: 'canceled',
+            is_published: false,
+          })
+          .eq('owner_id', user.id);
+
+        // Refresh subscription state
+        await refreshSubscription();
+      }
+
+      return result.success;
+    } catch (err) {
+      console.error('[Superwall] Cancel error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to cancel subscription');
+      return false;
+    }
+  }, [user, profile, refreshSubscription]);
+
   // Computed values
   const isTrialing = subscription?.state === 'trialing';
   const isSubscribed = subscription?.isActive ?? false;
@@ -279,6 +356,8 @@ export const SuperwallProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         error,
         showPaywall,
+        changeTier,
+        cancelSubscription,
         restorePurchases,
         refreshSubscription,
         isTrialing,

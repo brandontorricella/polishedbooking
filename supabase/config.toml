@@ -34,3 +34,6 @@ verify_jwt = false
 
 [functions.sync-subscription]
 verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

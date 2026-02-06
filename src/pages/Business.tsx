@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useSuperwall } from '@/hooks/useSuperwall';
 import { 
   TrendingUp, 
   Users, 
@@ -68,7 +70,26 @@ const pricingTiers = [
 
 const BusinessPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
+  const { isSubscribed, isLoading: subLoading, showPaywall, subscription } = useSuperwall();
+
+  const isBusinessUser = profile?.role === 'business';
+  const isLoading = authLoading || subLoading;
+
+  // Redirect business users without subscription to paywall
+  useEffect(() => {
+    if (!isLoading && isBusinessUser && !isSubscribed && subscription !== null) {
+      // Show paywall for unpaid business users
+      showPaywall(subscription?.tier || 'basic');
+    }
+  }, [isLoading, isBusinessUser, isSubscribed, subscription, showPaywall]);
+
+  // If business user is logged in and subscribed, redirect to analytics
+  useEffect(() => {
+    if (!isLoading && isBusinessUser && isSubscribed) {
+      navigate('/business/analytics');
+    }
+  }, [isLoading, isBusinessUser, isSubscribed, navigate]);
 
   const handleStartTrial = () => {
     if (user) {
