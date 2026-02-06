@@ -1,10 +1,10 @@
 import { AlertTriangle, Sparkles, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSuperwall } from '@/hooks/useSuperwall';
 import { cn } from '@/lib/utils';
 
 export const SubscriptionBanner = () => {
-  const { subscription, isTrialing, daysRemaining, openCustomerPortal, isLoading } = useSubscription();
+  const { subscription, isTrialing, daysRemaining, showPaywall, isLoading } = useSuperwall();
 
   if (isLoading || !subscription) return null;
 
@@ -38,13 +38,13 @@ export const SubscriptionBanner = () => {
               }
             </p>
             <p className="text-xs text-muted-foreground">
-              Add a payment method to continue using {subscription.tier} features
+              Your subscription will continue automatically after trial ends
             </p>
           </div>
         </div>
         <Button 
           size="sm" 
-          onClick={openCustomerPortal}
+          onClick={() => showPaywall(subscription.tier)}
           className={cn(
             isUrgent 
               ? "bg-destructive hover:bg-destructive/90" 
@@ -52,33 +52,33 @@ export const SubscriptionBanner = () => {
           )}
         >
           <CreditCard className="w-4 h-4 mr-2" />
-          Add Payment
+          Manage Subscription
         </Button>
       </div>
     );
   }
 
-  // Show past_due warning
-  if (subscription.status === 'past_due') {
+  // Show expired warning
+  if (subscription.state === 'expired' || subscription.state === 'canceled') {
     return (
       <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-3 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <AlertTriangle className="w-5 h-5 text-destructive" />
           <div>
             <p className="text-sm font-medium text-destructive">
-              Payment failed - please update your payment method
+              Your subscription has {subscription.state === 'expired' ? 'expired' : 'been canceled'}
             </p>
             <p className="text-xs text-muted-foreground">
-              Your subscription will be canceled if payment is not received
+              Your business profile is no longer visible to clients
             </p>
           </div>
         </div>
         <Button 
           size="sm" 
           variant="destructive"
-          onClick={openCustomerPortal}
+          onClick={() => showPaywall(subscription.tier)}
         >
-          Update Payment
+          Reactivate
         </Button>
       </div>
     );

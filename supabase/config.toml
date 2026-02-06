@@ -20,15 +20,6 @@ port = 54323
 enabled = true
 site_url = "http://localhost:3000"
 
-[functions.create-checkout]
-verify_jwt = false
-
-[functions.check-subscription]
-verify_jwt = false
-
-[functions.customer-portal]
-verify_jwt = false
-
 [functions.send-notification]
 verify_jwt = false
 
@@ -39,4 +30,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-support-email]
+verify_jwt = false
+
+[functions.sync-subscription]
 verify_jwt = false

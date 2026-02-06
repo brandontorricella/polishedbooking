@@ -66,7 +66,7 @@ const PrivacyPolicy = () => {
                 <ul className="space-y-2 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>Payment information for business subscriptions is securely processed through our payment provider (Stripe).</span>
+                    <span>Payment information for business subscriptions is securely processed through the App Store and Google Play.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />

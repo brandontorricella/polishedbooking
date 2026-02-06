@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Sparkles, 
   Building2,
-  Camera,
   MapPin,
   DollarSign,
   Check,
@@ -20,7 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSuperwall } from '@/hooks/useSuperwall';
 
 const businessCategories = [
   'Hair Styling & Cuts',
@@ -59,9 +58,9 @@ const subscriptionTiers = [
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, profile, session, updateProfile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const { toast } = useToast();
-  const { createCheckout } = useSubscription();
+  const { showPaywall, refreshSubscription } = useSuperwall();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [businessId, setBusinessId] = useState<string | null>(null);
@@ -144,12 +143,13 @@ const BusinessOnboarding = () => {
 
     const isEligibleForTrial = !trialUsed;
 
-    // Calculate trial end date (30 days / 1 month from now) - only if eligible
+    // Calculate trial end date (30 days from now) - only if eligible
     const trialEndsAt = isEligibleForTrial ? new Date() : null;
     if (trialEndsAt) {
       trialEndsAt.setDate(trialEndsAt.getDate() + 30);
     }
 
+    // Create business - initially unpublished until payment is confirmed
     const { data: business, error } = await supabase.from('businesses').insert({
       owner_id: user.id,
       name: businessName,
@@ -160,9 +160,9 @@ const BusinessOnboarding = () => {
       state,
       zip,
       subscription_tier: selectedTier as 'basic' | 'pro' | 'elite',
-      subscription_status: isEligibleForTrial ? 'trialing' : 'unpaid',
-      trial_ends_at: trialEndsAt?.toISOString() || null,
-      is_published: isEligibleForTrial, // Only publish if they have a trial
+      subscription_status: 'unpaid', // Always start unpaid - Superwall handles activation
+      trial_ends_at: null,
+      is_published: false, // Not published until payment confirmed
     }).select().single();
 
     if (error) {
@@ -177,15 +177,6 @@ const BusinessOnboarding = () => {
 
     setBusinessId(business.id);
 
-    // Record trial usage if eligible
-    if (isEligibleForTrial) {
-      await supabase.rpc('record_trial_usage', {
-        p_email: profile.email,
-        p_user_id: user.id,
-        p_business_id: business.id
-      });
-    }
-
     // Update user profile to business role
     await updateProfile({
       role: 'business',
@@ -193,36 +184,37 @@ const BusinessOnboarding = () => {
       privacy_accepted_at: new Date().toISOString(),
     });
 
-    // Redirect to Stripe Checkout for payment setup
-    try {
-      await createCheckout(selectedTier as 'basic' | 'pro' | 'elite', business.id);
-      
+    // Show Superwall paywall for payment collection
+    const purchased = await showPaywall(selectedTier as 'basic' | 'pro' | 'elite');
+
+    if (purchased) {
+      // Record trial usage if eligible
       if (isEligibleForTrial) {
-        toast({
-          title: 'Business created!',
-          description: 'Complete payment setup to activate your subscription.',
-        });
-      } else {
-        toast({
-          title: 'Business created!',
-          description: 'Complete payment to activate your subscription. Free trial already used.',
+        await supabase.rpc('record_trial_usage', {
+          p_email: profile.email,
+          p_user_id: user.id,
+          p_business_id: business.id
         });
       }
-    } catch (err) {
-      if (isEligibleForTrial) {
-        toast({
-          title: 'Business created!',
-          description: 'Your 30-day free trial has started. Add payment later in settings.',
-        });
-        navigate('/business/analytics');
-      } else {
-        toast({
-          title: 'Business created!',
-          description: 'Please add payment to make your business visible.',
-          variant: 'destructive',
-        });
-        navigate('/business/analytics');
-      }
+
+      // Refresh subscription to sync state
+      await refreshSubscription();
+
+      toast({
+        title: 'Welcome to Polished!',
+        description: isEligibleForTrial 
+          ? 'Your 30-day free trial has started. Your business is now visible to clients!'
+          : 'Your subscription is now active. Your business is now visible to clients!',
+      });
+      navigate('/business/analytics');
+    } else {
+      // User dismissed paywall - business remains unpublished
+      toast({
+        title: 'Business created',
+        description: 'Complete your subscription to make your business visible to clients.',
+        variant: 'destructive',
+      });
+      navigate('/business/analytics');
     }
 
     setIsLoading(false);
@@ -477,7 +469,7 @@ const BusinessOnboarding = () => {
               <p className="text-muted-foreground text-center mb-2">
                 {hasUsedTrial 
                   ? 'Select your plan. Payment required to start.'
-                  : 'Start with a 30-day free trial. Cancel anytime before it ends.'
+                  : 'Start with a 30-day free trial. Payment info required upfront.'
                 }
               </p>
               {hasUsedTrial && (
@@ -485,7 +477,11 @@ const BusinessOnboarding = () => {
                   A free trial has already been used with this email. Payment will be required to activate your business listing.
                 </p>
               )}
-              {!hasUsedTrial && <div className="mb-8" />}
+              {!hasUsedTrial && (
+                <p className="text-sm text-muted-foreground text-center mb-8">
+                  Your card will only be charged after the trial ends if you don't cancel.
+                </p>
+              )}
 
               <div className="grid md:grid-cols-3 gap-4 mb-8">
                 {subscriptionTiers.map((tier) => (
@@ -562,12 +558,11 @@ const BusinessOnboarding = () => {
               </p>
               {hasUsedTrial ? (
                 <p className="text-muted-foreground mb-8">
-                  A free trial has already been used with this email. Your subscription will begin immediately upon payment.
+                  A free trial has already been used with this email. Your subscription will begin immediately.
                 </p>
               ) : (
                 <p className="text-muted-foreground mb-8">
-                  Your 30-day free trial starts now. You won't be charged until the trial ends. 
-                  Cancel anytime before then to avoid billing.
+                  Your 30-day free trial starts now. You'll need to provide payment info, but you won't be charged until the trial ends.
                 </p>
               )}
 
@@ -576,12 +571,12 @@ const BusinessOnboarding = () => {
                 <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>✓ Full access to all {selectedTier === 'basic' ? 'Basic' : selectedTier === 'pro' ? 'Pro' : 'Elite'} features</li>
                   {hasUsedTrial ? (
-                    <li>✓ Payment required to activate</li>
+                    <li>✓ Billed immediately upon confirmation</li>
                   ) : (
-                    <li>✓ 1-month free trial</li>
+                    <li>✓ 30-day free trial</li>
                   )}
-                  <li>✓ Cancel anytime</li>
-                  <li>✓ Your business will be visible to clients {hasUsedTrial ? 'after payment' : 'immediately'}</li>
+                  <li>✓ Cancel anytime from the app</li>
+                  <li>✓ Your business will be visible to clients after payment setup</li>
                 </ul>
               </div>
 
