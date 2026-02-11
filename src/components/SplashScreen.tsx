@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import polishedLogo from '@/assets/polished-logo.png';
+import polishedLogo from '@/assets/logo-transparent.png';
 
 const SPLASH_SHOWN_KEY = 'polished_splash_shown';
 
@@ -39,7 +39,7 @@ export const SplashScreen = ({ onComplete, isInitialized = true }: SplashScreenP
   return (
     <motion.div
       className="fixed inset-0 z-[9999] flex items-center justify-center"
-      style={{ backgroundColor: '#0D0D0D' }}
+      style={{ backgroundColor: '#000000' }}
       animate={{ opacity: fadeOut ? 0 : 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
@@ -52,7 +52,7 @@ export const SplashScreen = ({ onComplete, isInitialized = true }: SplashScreenP
         <motion.img
           src={polishedLogo}
           alt="Polished"
-          className="w-44 h-auto"
+          className="w-[180px] h-auto"
           animate={{ 
             opacity: [1, 0.8, 1],
           }}

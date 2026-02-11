@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import polishedLogo from '@/assets/polished-logo.png';
+import polishedLogo from '@/assets/logo-transparent.png';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Instagram, Twitter, Facebook, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import polishedLogo from '@/assets/polished-logo.png';
+import polishedLogo from '@/assets/logo-transparent.png';
 
 export const Footer = () => {
   return (
