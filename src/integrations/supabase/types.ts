@@ -71,6 +71,87 @@ export type Database = {
           },
         ]
       }
+      bundle_bookings: {
+        Row: {
+          booking_id: string
+          bundle_id: string
+          created_at: string
+          discount_applied: number
+          final_total: number
+          id: string
+          original_total: number
+        }
+        Insert: {
+          booking_id: string
+          bundle_id: string
+          created_at?: string
+          discount_applied?: number
+          final_total: number
+          id?: string
+          original_total: number
+        }
+        Update: {
+          booking_id?: string
+          bundle_id?: string
+          created_at?: string
+          discount_applied?: number
+          final_total?: number
+          id?: string
+          original_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_bookings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bundle_bookings_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "service_bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bundle_items: {
+        Row: {
+          bundle_id: string
+          id: string
+          service_id: string
+          sort_order: number
+        }
+        Insert: {
+          bundle_id: string
+          id?: string
+          service_id: string
+          sort_order?: number
+        }
+        Update: {
+          bundle_id?: string
+          id?: string
+          service_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "service_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bundle_items_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           address: string | null
@@ -540,6 +621,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_bundles: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_bundles_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
