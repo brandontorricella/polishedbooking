@@ -4,7 +4,9 @@ import type { Business } from '@/types';
 import { Badge } from './badge';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/hooks/useAuth';
 
 interface BusinessCardProps {
   business: Business;
@@ -21,7 +23,19 @@ export const BusinessCard = ({
   variant = 'default',
   showDistance = false
 }: BusinessCardProps) => {
-  const [isSaved, setIsSaved] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const isSaved = isFavorite(business.id);
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    await toggleFavorite(business.id);
+  };
 
   const priceDisplay = '$'.repeat(business.priceRange);
 
@@ -81,10 +95,10 @@ export const BusinessCard = ({
         
         {/* Save Button */}
         <button
-          onClick={(e) => { e.stopPropagation(); setIsSaved(!isSaved); }}
+          onClick={handleToggleFavorite}
           className="absolute top-3 right-3 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
         >
-          <Heart className={cn("w-5 h-5", isSaved ? "fill-primary text-primary" : "text-foreground")} />
+          <Heart className={cn("w-5 h-5 transition-all", isSaved ? "fill-primary text-primary scale-110" : "text-foreground")} />
         </button>
 
         {/* Badges */}
