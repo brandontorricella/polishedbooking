@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Check,
   Sparkles,
-  Calendar
+  Calendar,
+  Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,9 @@ import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { useServiceBundles, type ServiceBundle } from '@/hooks/useServiceBundles';
+import { BundleCard } from '@/components/bundles/BundleCard';
+import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +39,8 @@ const BusinessProfile = () => {
   const [business, setBusiness] = useState<Business | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showBookingFlow, setShowBookingFlow] = useState(false);
+  const [selectedBundle, setSelectedBundle] = useState<ServiceBundle | null>(null);
+  const { bundles } = useServiceBundles(id);
 
   useEffect(() => {
     // For now, use mock data. In production, fetch from Supabase
@@ -142,6 +148,11 @@ const BusinessProfile = () => {
         <Tabs defaultValue="services" className="space-y-6">
           <TabsList className="w-full justify-start bg-muted/50">
             <TabsTrigger value="services">Services</TabsTrigger>
+            {bundles.length > 0 && (
+              <TabsTrigger value="bundles">
+                <Package className="w-4 h-4 mr-1" /> Bundles
+              </TabsTrigger>
+            )}
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
