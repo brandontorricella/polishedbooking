@@ -5,11 +5,12 @@ import { Footer } from '@/components/layout/Footer';
 import { AnalyticsDashboard } from '@/components/business/AnalyticsDashboard';
 import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner';
 import { BundleManager } from '@/components/bundles/BundleManager';
+import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
 import { mockAnalytics } from '@/data/mockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star } from 'lucide-react';
 import { useSuperwall } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -231,6 +232,9 @@ const BusinessAnalyticsPage = () => {
                   <TabsTrigger value="bookings">Bookings</TabsTrigger>
                   <TabsTrigger value="bundles">
                     <Package className="w-4 h-4 mr-1" /> Bundles
+                  </TabsTrigger>
+                  <TabsTrigger value="loyalty">
+                    <Star className="w-4 h-4 mr-1" /> Loyalty
                   </TabsTrigger>
                   <TabsTrigger value="revenue">Revenue</TabsTrigger>
                   <TabsTrigger value="clients">Clients</TabsTrigger>
