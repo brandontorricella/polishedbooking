@@ -260,6 +260,16 @@ const BusinessAnalyticsPage = () => {
                   )}
                 </TabsContent>
 
+                <TabsContent value="loyalty">
+                  {businessId ? (
+                    <LoyaltyManager businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage your loyalty program</p>
+                    </div>
+                  )}
+                </TabsContent>
+
                 <TabsContent value="revenue">
                   <div className="p-8 bg-card rounded-2xl border border-border text-center">
                     <p className="text-muted-foreground">Detailed revenue analytics coming soon</p>
