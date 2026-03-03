@@ -145,8 +145,11 @@ const BusinessProfile = () => {
           </Button>
         </div>
 
+        {/* Loyalty Points */}
+        {id && <LoyaltyPointsCard businessId={id} businessName={business.name} />}
+
         {/* Tabs */}
-        <Tabs defaultValue="services" className="space-y-6">
+        <Tabs defaultValue="services" className="space-y-6 mt-6">
           <TabsList className="w-full justify-start bg-muted/50">
             <TabsTrigger value="services">Services</TabsTrigger>
             {bundles.length > 0 && (
