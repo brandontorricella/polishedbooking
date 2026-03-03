@@ -353,6 +353,47 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_programs: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          min_redemption_points: number
+          points_per_dollar: number
+          redemption_rate: number
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_redemption_points?: number
+          points_per_dollar?: number
+          redemption_rate?: number
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          min_redemption_points?: number
+          points_per_dollar?: number
+          redemption_rate?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_programs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -420,6 +461,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      points_transactions: {
+        Row: {
+          booking_id: string | null
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          points: number
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points: number
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          points?: number
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "points_transactions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       portfolio_images: {
         Row: {
@@ -837,6 +926,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "user_favorites_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_loyalty_points: {
+        Row: {
+          business_id: string
+          id: string
+          lifetime_points: number
+          points_balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          lifetime_points?: number
+          points_balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          lifetime_points?: number
+          points_balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_loyalty_points_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
