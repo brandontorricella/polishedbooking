@@ -30,6 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useServiceBundles, type ServiceBundle } from '@/hooks/useServiceBundles';
 import { BundleCard } from '@/components/bundles/BundleCard';
 import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
+import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
