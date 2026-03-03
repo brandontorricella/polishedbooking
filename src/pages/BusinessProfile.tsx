@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Star, 
@@ -24,11 +24,15 @@ import { BookingFlow } from '@/components/booking/BookingFlow';
 import { mockBusinesses, mockReviews } from '@/data/mockData';
 import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/hooks/useAuth';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [business, setBusiness] = useState<Business | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showBookingFlow, setShowBookingFlow] = useState(false);
 
@@ -67,9 +71,12 @@ const BusinessProfile = () => {
             size="icon" 
             variant="secondary" 
             className="rounded-full bg-background/80 backdrop-blur-sm"
-            onClick={() => setIsSaved(!isSaved)}
+            onClick={async () => {
+              if (!user) { navigate('/auth'); return; }
+              await toggleFavorite(business.id);
+            }}
           >
-            <Heart className={cn("w-5 h-5", isSaved && "fill-primary text-primary")} />
+            <Heart className={cn("w-5 h-5 transition-all", business && isFavorite(business.id) && "fill-primary text-primary")} />
           </Button>
           <Button size="icon" variant="secondary" className="rounded-full bg-background/80 backdrop-blur-sm">
             <Share2 className="w-5 h-5" />
