@@ -202,6 +202,16 @@ const BusinessProfile = () => {
             ))}
           </TabsContent>
 
+          {/* Bundles Tab */}
+          {bundles.length > 0 && (
+            <TabsContent value="bundles" className="space-y-4">
+              <p className="text-sm text-muted-foreground">Save when you book multiple services together</p>
+              {bundles.map(bundle => (
+                <BundleCard key={bundle.id} bundle={bundle} onBook={setSelectedBundle} />
+              ))}
+            </TabsContent>
+          )}
+
           {/* Portfolio Tab */}
           <TabsContent value="portfolio">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -341,6 +351,16 @@ const BusinessProfile = () => {
             setSelectedService(null);
           }}
           initialService={selectedService || undefined}
+        />
+      )}
+
+      {/* Bundle Booking Flow Modal */}
+      {business && selectedBundle && (
+        <BundleBookingFlow
+          bundle={selectedBundle}
+          business={business}
+          isOpen={!!selectedBundle}
+          onClose={() => setSelectedBundle(null)}
         />
       )}
     </div>
