@@ -1,19 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AnalyticsDashboard } from '@/components/business/AnalyticsDashboard';
 import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner';
+import { BundleManager } from '@/components/bundles/BundleManager';
 import { mockAnalytics } from '@/data/mockData';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package } from 'lucide-react';
 import { useSuperwall } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 const tierDetails = {
   basic: { name: 'Basic', icon: Sparkles, color: 'text-blue-500' },
@@ -63,6 +65,31 @@ const BusinessAnalyticsPage = () => {
   const { toast } = useToast();
   const { user, profile, loading: authLoading } = useAuth();
   const { subscription, isLoading, refreshSubscription, showPaywall, isTrialing, daysRemaining } = useSuperwall();
+  const [businessId, setBusinessId] = useState<string | null>(null);
+  const [businessServices, setBusinessServices] = useState<{ id: string; name: string; price: number; duration: number }[]>([]);
+
+  // Fetch business data for the logged-in owner
+  useEffect(() => {
+    if (!user) return;
+    const fetchBusiness = async () => {
+      const { data } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', user.id)
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setBusinessId(data.id);
+        const { data: svcData } = await supabase
+          .from('services')
+          .select('id, name, price, duration')
+          .eq('business_id', data.id)
+          .eq('is_active', true);
+        setBusinessServices((svcData || []).map(s => ({ ...s, price: Number(s.price) })));
+      }
+    };
+    fetchBusiness();
+  }, [user]);
 
   const isAuthenticated = !!user;
   const isBusinessUser = profile?.role === 'business';
@@ -202,6 +229,9 @@ const BusinessAnalyticsPage = () => {
                 <TabsList>
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="bookings">Bookings</TabsTrigger>
+                  <TabsTrigger value="bundles">
+                    <Package className="w-4 h-4 mr-1" /> Bundles
+                  </TabsTrigger>
                   <TabsTrigger value="revenue">Revenue</TabsTrigger>
                   <TabsTrigger value="clients">Clients</TabsTrigger>
                 </TabsList>
@@ -214,6 +244,16 @@ const BusinessAnalyticsPage = () => {
                   <div className="p-8 bg-card rounded-2xl border border-border text-center">
                     <p className="text-muted-foreground">Detailed booking analytics coming soon</p>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="bundles">
+                  {businessId ? (
+                    <BundleManager businessId={businessId} services={businessServices} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage bundles</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="revenue">
