@@ -254,6 +254,9 @@ const BusinessAnalyticsPage = () => {
                   <TabsTrigger value="followups">
                     <Send className="w-4 h-4 mr-1" /> Follow-ups
                   </TabsTrigger>
+                  <TabsTrigger value="gallery">
+                    <Image className="w-4 h-4 mr-1" /> Gallery
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview">
