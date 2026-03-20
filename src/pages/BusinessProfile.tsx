@@ -158,6 +158,18 @@ const BusinessProfile = () => {
         {/* Loyalty Points */}
         {id && <LoyaltyPointsCard businessId={id} businessName={business.name} />}
 
+        {/* Staff Section */}
+        {id && (
+          <div className="mt-6">
+            <StaffSection
+              businessId={id}
+              onBookWithStaff={(staffId) => {
+                setShowBookingFlow(true);
+              }}
+            />
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs defaultValue="services" className="space-y-6 mt-6">
           <TabsList className="w-full justify-start bg-muted/50">

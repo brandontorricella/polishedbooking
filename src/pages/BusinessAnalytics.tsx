@@ -312,6 +312,16 @@ const BusinessAnalyticsPage = () => {
                     </div>
                   )}
                 </TabsContent>
+
+                <TabsContent value="staff">
+                  {businessId ? (
+                    <StaffManager businessId={businessId} services={businessServices} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage staff</p>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           </div>
