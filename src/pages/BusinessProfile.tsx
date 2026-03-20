@@ -377,6 +377,17 @@ const BusinessProfile = () => {
           onClose={() => setSelectedBundle(null)}
         />
       )}
+
+      {/* Waitlist Modal */}
+      {business && id && (
+        <JoinWaitlistModal
+          open={showWaitlistModal}
+          onOpenChange={setShowWaitlistModal}
+          businessId={id}
+          businessName={business.name}
+          services={business.services.map(s => ({ id: s.id, name: s.name }))}
+        />
+      )}
     </div>
   );
 };

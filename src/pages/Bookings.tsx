@@ -124,6 +124,10 @@ const BookingsPage = () => {
                   </div>
                 )}
               </TabsContent>
+
+              <TabsContent value="waitlist">
+                <MyWaitlist />
+              </TabsContent>
             </Tabs>
           )}
         </div>
