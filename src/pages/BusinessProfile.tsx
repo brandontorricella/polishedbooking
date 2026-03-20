@@ -34,6 +34,7 @@ import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
 import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
 import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
 import { StaffSection } from '@/components/staff/StaffSection';
+import { GallerySection } from '@/components/gallery/GallerySection';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -239,8 +240,9 @@ const BusinessProfile = () => {
             </TabsContent>
           )}
 
-          {/* Portfolio Tab */}
-          <TabsContent value="portfolio">
+          {/* Portfolio / Gallery Tab */}
+          <TabsContent value="portfolio" className="space-y-6">
+            {id && <GallerySection businessId={id} />}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {business.portfolioImages.map((image, index) => (
                 <motion.div

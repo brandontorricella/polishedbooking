@@ -10,11 +10,12 @@ import { ClientNotesManager } from '@/components/clients/ClientNotesManager';
 import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistManager';
 import { StaffManager } from '@/components/staff/StaffManager';
 import { FollowupManager } from '@/components/followups/FollowupManager';
+import { GalleryManager } from '@/components/gallery/GalleryManager';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image } from 'lucide-react';
 import { useSuperwall } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -253,6 +254,9 @@ const BusinessAnalyticsPage = () => {
                   <TabsTrigger value="followups">
                     <Send className="w-4 h-4 mr-1" /> Follow-ups
                   </TabsTrigger>
+                  <TabsTrigger value="gallery">
+                    <Image className="w-4 h-4 mr-1" /> Gallery
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview">
@@ -333,6 +337,16 @@ const BusinessAnalyticsPage = () => {
                   ) : (
                     <div className="p-8 bg-card rounded-2xl border border-border text-center">
                       <p className="text-muted-foreground">Set up your business profile to manage follow-ups</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="gallery">
+                  {businessId ? (
+                    <GalleryManager businessId={businessId} services={businessServices} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage your gallery</p>
                     </div>
                   )}
                 </TabsContent>
