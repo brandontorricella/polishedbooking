@@ -286,9 +286,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsContent>
 
                 <TabsContent value="clients">
-                  <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                    <p className="text-muted-foreground">Detailed client analytics coming soon</p>
-                  </div>
+                  {businessId ? (
+                    <ClientNotesManager businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage clients</p>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>
