@@ -242,6 +242,9 @@ const BusinessAnalyticsPage = () => {
                   <TabsTrigger value="clients">
                     <Users className="w-4 h-4 mr-1" /> Clients
                   </TabsTrigger>
+                  <TabsTrigger value="waitlist">
+                    <Hourglass className="w-4 h-4 mr-1" /> Waitlist
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview">
