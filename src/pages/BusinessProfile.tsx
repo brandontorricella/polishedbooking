@@ -34,6 +34,7 @@ import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
 import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
 import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
 import { StaffSection } from '@/components/staff/StaffSection';
+import { GallerySection } from '@/components/gallery/GallerySection';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
