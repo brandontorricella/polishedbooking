@@ -340,7 +340,16 @@ const BusinessAnalyticsPage = () => {
                     </div>
                   )}
                 </TabsContent>
-              </Tabs>
+
+                <TabsContent value="gallery">
+                  {businessId ? (
+                    <GalleryManager businessId={businessId} services={businessServices} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage your gallery</p>
+                    </div>
+                  )}
+                </TabsContent>
             </div>
           </div>
         </div>

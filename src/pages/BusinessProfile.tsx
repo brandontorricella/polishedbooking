@@ -240,8 +240,9 @@ const BusinessProfile = () => {
             </TabsContent>
           )}
 
-          {/* Portfolio Tab */}
-          <TabsContent value="portfolio">
+          {/* Portfolio / Gallery Tab */}
+          <TabsContent value="portfolio" className="space-y-6">
+            {id && <GallerySection businessId={id} />}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {business.portfolioImages.map((image, index) => (
                 <motion.div
