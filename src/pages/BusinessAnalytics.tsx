@@ -250,6 +250,9 @@ const BusinessAnalyticsPage = () => {
                   <TabsTrigger value="staff">
                     <UserCheck className="w-4 h-4 mr-1" /> Staff
                   </TabsTrigger>
+                  <TabsTrigger value="followups">
+                    <Send className="w-4 h-4 mr-1" /> Follow-ups
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview">
