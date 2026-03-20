@@ -593,6 +593,108 @@ export type Database = {
           },
         ]
       }
+      gallery_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "gallery_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gallery_posts: {
+        Row: {
+          after_image_url: string
+          before_image_url: string
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_featured: boolean | null
+          is_published: boolean | null
+          likes_count: number | null
+          service_id: string | null
+          staff_id: string | null
+          title: string | null
+          updated_at: string
+          views_count: number | null
+        }
+        Insert: {
+          after_image_url: string
+          before_image_url: string
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          likes_count?: number | null
+          service_id?: string | null
+          staff_id?: string | null
+          title?: string | null
+          updated_at?: string
+          views_count?: number | null
+        }
+        Update: {
+          after_image_url?: string
+          before_image_url?: string
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          likes_count?: number | null
+          service_id?: string | null
+          staff_id?: string | null
+          title?: string | null
+          updated_at?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_posts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gallery_posts_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gallery_posts_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_programs: {
         Row: {
           business_id: string
