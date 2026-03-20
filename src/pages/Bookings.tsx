@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Loader2 } from 'lucide-react';
+import { Calendar, Loader2, Hourglass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { BookingCard } from '@/components/booking/BookingCard';
+import { MyWaitlist } from '@/components/waitlist/MyWaitlist';
 import { useBookings } from '@/hooks/useBookings';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -67,7 +68,7 @@ const BookingsPage = () => {
             </div>
           ) : (
             <Tabs defaultValue="upcoming" className="space-y-6">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsList className="grid w-full max-w-md grid-cols-3">
                 <TabsTrigger value="upcoming">
                   Upcoming
                   {upcomingBookings.length > 0 && (
@@ -77,6 +78,9 @@ const BookingsPage = () => {
                   )}
                 </TabsTrigger>
                 <TabsTrigger value="past">Past</TabsTrigger>
+                <TabsTrigger value="waitlist">
+                  <Hourglass className="w-3.5 h-3.5 mr-1" /> Waitlist
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="upcoming" className="space-y-4">
@@ -119,6 +123,10 @@ const BookingsPage = () => {
                     <p className="text-muted-foreground">Your booking history will appear here</p>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="waitlist">
+                <MyWaitlist />
               </TabsContent>
             </Tabs>
           )}

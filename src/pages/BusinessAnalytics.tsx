@@ -7,11 +7,12 @@ import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner
 import { BundleManager } from '@/components/bundles/BundleManager';
 import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
 import { ClientNotesManager } from '@/components/clients/ClientNotesManager';
+import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistManager';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass } from 'lucide-react';
 import { useSuperwall } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -241,6 +242,9 @@ const BusinessAnalyticsPage = () => {
                   <TabsTrigger value="clients">
                     <Users className="w-4 h-4 mr-1" /> Clients
                   </TabsTrigger>
+                  <TabsTrigger value="waitlist">
+                    <Hourglass className="w-4 h-4 mr-1" /> Waitlist
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview">
@@ -291,6 +295,16 @@ const BusinessAnalyticsPage = () => {
                   ) : (
                     <div className="p-8 bg-card rounded-2xl border border-border text-center">
                       <p className="text-muted-foreground">Set up your business profile to manage clients</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="waitlist">
+                  {businessId ? (
+                    <BusinessWaitlistManager businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage your waitlist</p>
                     </div>
                   )}
                 </TabsContent>

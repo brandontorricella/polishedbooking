@@ -14,7 +14,8 @@ import {
   Check,
   Sparkles,
   Calendar,
-  Package
+  Package,
+  Hourglass
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +32,7 @@ import { useServiceBundles, type ServiceBundle } from '@/hooks/useServiceBundles
 import { BundleCard } from '@/components/bundles/BundleCard';
 import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
 import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
+import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +44,7 @@ const BusinessProfile = () => {
   const [showBookingFlow, setShowBookingFlow] = useState(false);
   const [selectedBundle, setSelectedBundle] = useState<ServiceBundle | null>(null);
   const { bundles } = useServiceBundles(id);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
 
   useEffect(() => {
     // For now, use mock data. In production, fetch from Supabase
@@ -136,6 +139,13 @@ const BusinessProfile = () => {
           >
             <Calendar className="w-5 h-5 mr-2" />
             Book Now
+          </Button>
+          <Button 
+            variant="outline" 
+            className="h-12 rounded-xl"
+            onClick={() => user ? setShowWaitlistModal(true) : navigate('/auth')}
+          >
+            <Hourglass className="w-5 h-5" />
           </Button>
           <Button variant="outline" className="h-12 rounded-xl">
             <MessageCircle className="w-5 h-5" />
@@ -365,6 +375,17 @@ const BusinessProfile = () => {
           business={business}
           isOpen={!!selectedBundle}
           onClose={() => setSelectedBundle(null)}
+        />
+      )}
+
+      {/* Waitlist Modal */}
+      {business && id && (
+        <JoinWaitlistModal
+          open={showWaitlistModal}
+          onOpenChange={setShowWaitlistModal}
+          businessId={id}
+          businessName={business.name}
+          services={business.services.map(s => ({ id: s.id, name: s.name }))}
         />
       )}
     </div>
