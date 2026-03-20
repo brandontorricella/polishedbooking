@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_daily_stats: {
+        Row: {
+          bookings_canceled: number | null
+          bookings_completed: number | null
+          business_id: string
+          date: string
+          day_of_week: number | null
+          id: string
+          new_favorites: number | null
+          new_reviews: number | null
+          profile_views: number | null
+          revenue: number | null
+          unique_visitors: number | null
+        }
+        Insert: {
+          bookings_canceled?: number | null
+          bookings_completed?: number | null
+          business_id: string
+          date: string
+          day_of_week?: number | null
+          id?: string
+          new_favorites?: number | null
+          new_reviews?: number | null
+          profile_views?: number | null
+          revenue?: number | null
+          unique_visitors?: number | null
+        }
+        Update: {
+          bookings_canceled?: number | null
+          bookings_completed?: number | null
+          business_id?: string
+          date?: string
+          day_of_week?: number | null
+          id?: string
+          new_favorites?: number | null
+          new_reviews?: number | null
+          profile_views?: number | null
+          revenue?: number | null
+          unique_visitors?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_daily_stats_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           booking_date: string

@@ -6,7 +6,7 @@ import { AnalyticsDashboard } from '@/components/business/AnalyticsDashboard';
 import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner';
 import { BundleManager } from '@/components/bundles/BundleManager';
 import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
-import { mockAnalytics } from '@/data/mockData';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -241,7 +241,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsList>
 
                 <TabsContent value="overview">
-                  <AnalyticsDashboard data={mockAnalytics} />
+                  {businessId ? (
+                    <AnalyticsDashboard businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to view analytics</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="bookings">
