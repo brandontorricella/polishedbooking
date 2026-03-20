@@ -298,6 +298,16 @@ const BusinessAnalyticsPage = () => {
                     </div>
                   )}
                 </TabsContent>
+
+                <TabsContent value="waitlist">
+                  {businessId ? (
+                    <BusinessWaitlistManager businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage your waitlist</p>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           </div>
