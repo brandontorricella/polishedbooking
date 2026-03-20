@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { BookingCard } from '@/components/booking/BookingCard';
+import { MyWaitlist } from '@/components/waitlist/MyWaitlist';
 import { useBookings } from '@/hooks/useBookings';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
