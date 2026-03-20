@@ -350,6 +350,7 @@ const BusinessAnalyticsPage = () => {
                     </div>
                   )}
                 </TabsContent>
+              </Tabs>
             </div>
           </div>
         </div>
