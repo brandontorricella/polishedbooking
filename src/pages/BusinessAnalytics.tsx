@@ -8,6 +8,7 @@ import { BundleManager } from '@/components/bundles/BundleManager';
 import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
 import { ClientNotesManager } from '@/components/clients/ClientNotesManager';
 import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistManager';
+import { StaffManager } from '@/components/staff/StaffManager';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
