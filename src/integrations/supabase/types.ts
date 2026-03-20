@@ -1115,6 +1115,107 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist_entries: {
+        Row: {
+          business_id: string
+          created_at: string
+          expires_at: string | null
+          flexible_dates: boolean | null
+          id: string
+          notes: string | null
+          notified_at: string | null
+          preferred_date: string | null
+          preferred_time_end: string | null
+          preferred_time_start: string | null
+          service_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          expires_at?: string | null
+          flexible_dates?: boolean | null
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          preferred_date?: string | null
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          service_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          expires_at?: string | null
+          flexible_dates?: boolean | null
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          preferred_date?: string | null
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          service_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_entries_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist_notifications: {
+        Row: {
+          available_date: string
+          available_time: string
+          created_at: string
+          id: string
+          responded_at: string | null
+          response: string
+          waitlist_entry_id: string
+        }
+        Insert: {
+          available_date: string
+          available_time: string
+          created_at?: string
+          id?: string
+          responded_at?: string | null
+          response?: string
+          waitlist_entry_id: string
+        }
+        Update: {
+          available_date?: string
+          available_time?: string
+          created_at?: string
+          id?: string
+          responded_at?: string | null
+          response?: string
+          waitlist_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_notifications_waitlist_entry_id_fkey"
+            columns: ["waitlist_entry_id"]
+            isOneToOne: false
+            referencedRelation: "waitlist_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
