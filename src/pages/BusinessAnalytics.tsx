@@ -6,11 +6,12 @@ import { AnalyticsDashboard } from '@/components/business/AnalyticsDashboard';
 import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner';
 import { BundleManager } from '@/components/bundles/BundleManager';
 import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
+import { ClientNotesManager } from '@/components/clients/ClientNotesManager';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users } from 'lucide-react';
 import { useSuperwall } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -237,7 +238,9 @@ const BusinessAnalyticsPage = () => {
                     <Star className="w-4 h-4 mr-1" /> Loyalty
                   </TabsTrigger>
                   <TabsTrigger value="revenue">Revenue</TabsTrigger>
-                  <TabsTrigger value="clients">Clients</TabsTrigger>
+                  <TabsTrigger value="clients">
+                    <Users className="w-4 h-4 mr-1" /> Clients
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview">
@@ -283,9 +286,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsContent>
 
                 <TabsContent value="clients">
-                  <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                    <p className="text-muted-foreground">Detailed client analytics coming soon</p>
-                  </div>
+                  {businessId ? (
+                    <ClientNotesManager businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage clients</p>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>

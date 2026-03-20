@@ -335,6 +335,85 @@ export type Database = {
         }
         Relationships: []
       }
+      client_notes: {
+        Row: {
+          business_id: string
+          client_id: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_pinned: boolean | null
+          note_type: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_pinned?: boolean | null
+          note_type?: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_pinned?: boolean | null
+          note_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_notes_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_preferences: {
+        Row: {
+          business_id: string
+          client_id: string
+          created_at: string
+          id: string
+          preference_key: string
+          preference_value: string
+        }
+        Insert: {
+          business_id: string
+          client_id: string
+          created_at?: string
+          id?: string
+          preference_key: string
+          preference_value: string
+        }
+        Update: {
+          business_id?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          preference_key?: string
+          preference_value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_preferences_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           business_id: string
