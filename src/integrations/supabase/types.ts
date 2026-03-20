@@ -492,6 +492,107 @@ export type Database = {
         }
         Relationships: []
       }
+      followup_logs: {
+        Row: {
+          booking_id: string | null
+          business_id: string
+          discount_code: string | null
+          discount_used: boolean | null
+          id: string
+          message_type: string | null
+          rebooked: boolean | null
+          rebooked_at: string | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          business_id: string
+          discount_code?: string | null
+          discount_used?: boolean | null
+          id?: string
+          message_type?: string | null
+          rebooked?: boolean | null
+          rebooked_at?: string | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          business_id?: string
+          discount_code?: string | null
+          discount_used?: boolean | null
+          id?: string
+          message_type?: string | null
+          rebooked?: boolean | null
+          rebooked_at?: string | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_logs_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followup_logs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      followup_settings: {
+        Row: {
+          business_id: string
+          created_at: string
+          days_after_appointment: number | null
+          discount_percent: number | null
+          discount_valid_days: number | null
+          followup_message: string | null
+          id: string
+          include_discount: boolean | null
+          is_enabled: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          days_after_appointment?: number | null
+          discount_percent?: number | null
+          discount_valid_days?: number | null
+          followup_message?: string | null
+          id?: string
+          include_discount?: boolean | null
+          is_enabled?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          days_after_appointment?: number | null
+          discount_percent?: number | null
+          discount_valid_days?: number | null
+          followup_message?: string | null
+          id?: string
+          include_discount?: boolean | null
+          is_enabled?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "followup_settings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_programs: {
         Row: {
           business_id: string
