@@ -14,7 +14,8 @@ import {
   Check,
   Sparkles,
   Calendar,
-  Package
+  Package,
+  Hourglass
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
