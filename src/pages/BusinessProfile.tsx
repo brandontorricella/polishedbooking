@@ -33,6 +33,7 @@ import { BundleCard } from '@/components/bundles/BundleCard';
 import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
 import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
 import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
+import { StaffSection } from '@/components/staff/StaffSection';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -157,6 +158,18 @@ const BusinessProfile = () => {
 
         {/* Loyalty Points */}
         {id && <LoyaltyPointsCard businessId={id} businessName={business.name} />}
+
+        {/* Staff Section */}
+        {id && (
+          <div className="mt-6">
+            <StaffSection
+              businessId={id}
+              onBookWithStaff={(staffId) => {
+                setShowBookingFlow(true);
+              }}
+            />
+          </div>
+        )}
 
         {/* Tabs */}
         <Tabs defaultValue="services" className="space-y-6 mt-6">

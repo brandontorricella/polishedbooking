@@ -74,6 +74,7 @@ export type Database = {
           id: string
           notes: string | null
           service_id: string
+          staff_id: string | null
           status: Database["public"]["Enums"]["booking_status"] | null
           total_price: number
           updated_at: string
@@ -87,6 +88,7 @@ export type Database = {
           id?: string
           notes?: string | null
           service_id: string
+          staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
           total_price: number
           updated_at?: string
@@ -100,6 +102,7 @@ export type Database = {
           id?: string
           notes?: string | null
           service_id?: string
+          staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
           total_price?: number
           updated_at?: string
@@ -117,6 +120,13 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
             referencedColumns: ["id"]
           },
         ]
@@ -933,6 +943,171 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_members: {
+        Row: {
+          bio: string | null
+          business_id: string
+          created_at: string
+          display_order: number | null
+          email: string | null
+          id: string
+          is_accepting_bookings: boolean | null
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          profile_photo_url: string | null
+          title: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          business_id: string
+          created_at?: string
+          display_order?: number | null
+          email?: string | null
+          id?: string
+          is_accepting_bookings?: boolean | null
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          profile_photo_url?: string | null
+          title?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          business_id?: string
+          created_at?: string
+          display_order?: number | null
+          email?: string | null
+          id?: string
+          is_accepting_bookings?: boolean | null
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          profile_photo_url?: string | null
+          title?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_schedules: {
+        Row: {
+          day_of_week: number
+          end_time: string
+          id: string
+          is_available: boolean | null
+          staff_id: string
+          start_time: string
+        }
+        Insert: {
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_available?: boolean | null
+          staff_id: string
+          start_time: string
+        }
+        Update: {
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_available?: boolean | null
+          staff_id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_schedules_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_services: {
+        Row: {
+          custom_duration: number | null
+          custom_price: number | null
+          id: string
+          service_id: string
+          staff_id: string
+        }
+        Insert: {
+          custom_duration?: number | null
+          custom_price?: number | null
+          id?: string
+          service_id: string
+          staff_id: string
+        }
+        Update: {
+          custom_duration?: number | null
+          custom_price?: number | null
+          id?: string
+          service_id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_services_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_services_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_time_off: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          reason: string | null
+          staff_id: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          reason?: string | null
+          staff_id: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          reason?: string | null
+          staff_id?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_time_off_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
             referencedColumns: ["id"]
           },
         ]
