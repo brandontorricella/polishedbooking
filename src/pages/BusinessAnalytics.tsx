@@ -238,7 +238,9 @@ const BusinessAnalyticsPage = () => {
                     <Star className="w-4 h-4 mr-1" /> Loyalty
                   </TabsTrigger>
                   <TabsTrigger value="revenue">Revenue</TabsTrigger>
-                  <TabsTrigger value="clients">Clients</TabsTrigger>
+                  <TabsTrigger value="clients">
+                    <Users className="w-4 h-4 mr-1" /> Clients
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview">
