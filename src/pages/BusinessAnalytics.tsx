@@ -326,6 +326,16 @@ const BusinessAnalyticsPage = () => {
                     </div>
                   )}
                 </TabsContent>
+
+                <TabsContent value="followups">
+                  {businessId ? (
+                    <FollowupManager businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to manage follow-ups</p>
+                    </div>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           </div>
