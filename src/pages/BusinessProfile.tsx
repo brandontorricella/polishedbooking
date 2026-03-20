@@ -44,6 +44,7 @@ const BusinessProfile = () => {
   const [showBookingFlow, setShowBookingFlow] = useState(false);
   const [selectedBundle, setSelectedBundle] = useState<ServiceBundle | null>(null);
   const { bundles } = useServiceBundles(id);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
 
   useEffect(() => {
     // For now, use mock data. In production, fetch from Supabase
