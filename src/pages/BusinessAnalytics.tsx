@@ -241,7 +241,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsList>
 
                 <TabsContent value="overview">
-                  <AnalyticsDashboard data={mockAnalytics} />
+                  {businessId ? (
+                    <AnalyticsDashboard businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to view analytics</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="bookings">
