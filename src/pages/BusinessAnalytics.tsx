@@ -10,6 +10,7 @@ import { ClientNotesManager } from '@/components/clients/ClientNotesManager';
 import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistManager';
 import { StaffManager } from '@/components/staff/StaffManager';
 import { FollowupManager } from '@/components/followups/FollowupManager';
+import { GalleryManager } from '@/components/gallery/GalleryManager';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
