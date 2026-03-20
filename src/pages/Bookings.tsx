@@ -68,7 +68,7 @@ const BookingsPage = () => {
             </div>
           ) : (
             <Tabs defaultValue="upcoming" className="space-y-6">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsList className="grid w-full max-w-md grid-cols-3">
                 <TabsTrigger value="upcoming">
                   Upcoming
                   {upcomingBookings.length > 0 && (
@@ -78,6 +78,9 @@ const BookingsPage = () => {
                   )}
                 </TabsTrigger>
                 <TabsTrigger value="past">Past</TabsTrigger>
+                <TabsTrigger value="waitlist">
+                  <Hourglass className="w-3.5 h-3.5 mr-1" /> Waitlist
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="upcoming" className="space-y-4">
