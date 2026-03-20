@@ -6,7 +6,7 @@ import { AnalyticsDashboard } from '@/components/business/AnalyticsDashboard';
 import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner';
 import { BundleManager } from '@/components/bundles/BundleManager';
 import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
-import { mockAnalytics } from '@/data/mockData';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
