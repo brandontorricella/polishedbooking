@@ -1,31 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  CreditCard, 
-  Crown, 
-  Sparkles, 
-  Star, 
-  Check, 
-  AlertTriangle,
-  RefreshCw
+  CreditCard, Crown, Sparkles, Star, Check, AlertTriangle, ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useSuperwall } from '@/hooks/useSuperwall';
+import { useSubscription } from '@/hooks/useSuperwall';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 const tiers = [
   {
@@ -63,60 +46,40 @@ export const SubscriptionManager = () => {
     isSubscribed, 
     isTrialing, 
     daysRemaining,
-    changeTier,
-    cancelSubscription,
-    restorePurchases,
+    startCheckout,
+    manageSubscription,
+    refreshSubscription,
     isLoading 
-  } = useSuperwall();
+  } = useSubscription();
   const { toast } = useToast();
-  const [isChanging, setIsChanging] = useState(false);
-  const [isCanceling, setIsCanceling] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const currentTier = subscription?.tier || 'basic';
   const currentTierInfo = tiers.find(t => t.id === currentTier) || tiers[0];
   const TierIcon = currentTierInfo.icon;
 
-  const handleChangeTier = async (newTier: 'basic' | 'pro' | 'elite') => {
-    if (newTier === currentTier) return;
-    
-    setIsChanging(true);
-    const success = await changeTier(newTier);
-    
-    if (success) {
-      toast({
-        title: 'Plan Changed!',
-        description: `You are now on the ${newTier.charAt(0).toUpperCase() + newTier.slice(1)} plan.`,
-      });
+  const handleSelectTier = async (tierId: 'basic' | 'pro' | 'elite') => {
+    if (isSubscribed && tierId === currentTier) {
+      await manageSubscription();
+      return;
     }
-    setIsChanging(false);
+
+    if (isSubscribed) {
+      // Already subscribed - go to customer portal to change plan
+      await manageSubscription();
+      return;
+    }
+
+    // New subscription - go to checkout
+    setIsProcessing(true);
+    await startCheckout(tierId);
+    setIsProcessing(false);
   };
 
-  const handleCancelSubscription = async () => {
-    setIsCanceling(true);
-    const success = await cancelSubscription();
-    
-    if (success) {
-      toast({
-        title: 'Subscription Canceled',
-        description: 'Your business profile will be hidden from clients.',
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Cancellation Failed',
-        description: 'Please try again or contact support.',
-        variant: 'destructive',
-      });
-    }
-    setIsCanceling(false);
-  };
-
-  const handleRestorePurchases = async () => {
-    await restorePurchases();
-    toast({
-      title: 'Purchases Restored',
-      description: 'Your subscription status has been refreshed.',
-    });
+  const handleManageSubscription = async () => {
+    setIsProcessing(true);
+    await manageSubscription();
+    setIsProcessing(false);
   };
 
   if (isLoading) {
@@ -196,28 +159,28 @@ export const SubscriptionManager = () => {
       {/* Change Plan Section */}
       <Card className="border-border">
         <CardHeader>
-          <CardTitle className="font-display text-lg">Change Plan</CardTitle>
+          <CardTitle className="font-display text-lg">
+            {isSubscribed ? 'Change Plan' : 'Choose a Plan'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {tiers.map((tier) => {
               const Icon = tier.icon;
-              const isCurrent = tier.id === currentTier;
+              const isCurrent = tier.id === currentTier && isSubscribed;
               
               return (
                 <motion.button
                   key={tier.id}
                   whileHover={{ scale: isCurrent ? 1 : 1.02 }}
                   whileTap={{ scale: isCurrent ? 1 : 0.98 }}
-                  onClick={() => handleChangeTier(tier.id as 'basic' | 'pro' | 'elite')}
-                  disabled={isCurrent || isChanging || !isSubscribed}
+                  onClick={() => handleSelectTier(tier.id as 'basic' | 'pro' | 'elite')}
+                  disabled={isProcessing}
                   className={cn(
                     "p-4 rounded-xl border-2 text-left transition-all",
                     isCurrent
                       ? "border-primary bg-primary/5 cursor-default"
-                      : isSubscribed
-                        ? "border-border hover:border-primary/50"
-                        : "border-border opacity-50 cursor-not-allowed"
+                      : "border-border hover:border-primary/50"
                   )}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -234,64 +197,31 @@ export const SubscriptionManager = () => {
               );
             })}
           </div>
-          
-          {!isSubscribed && (
-            <p className="text-sm text-muted-foreground mt-4 text-center">
-              Reactivate your subscription to change plans
-            </p>
-          )}
         </CardContent>
       </Card>
 
       {/* Actions Section */}
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle className="font-display text-lg">Subscription Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button 
-            variant="outline" 
-            className="w-full justify-start"
-            onClick={handleRestorePurchases}
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Restore Purchases
-          </Button>
-
-          {isSubscribed && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start text-destructive hover:text-destructive"
-                  disabled={isCanceling}
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Your business profile will be hidden from clients immediately. 
-                    You can resubscribe at any time to restore visibility.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={handleCancelSubscription}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Cancel Subscription
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </CardContent>
-      </Card>
+      {isSubscribed && (
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="font-display text-lg">Subscription Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start"
+              onClick={handleManageSubscription}
+              disabled={isProcessing}
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Manage Subscription & Billing
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Change plans, update payment method, or cancel your subscription through our secure billing portal.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
