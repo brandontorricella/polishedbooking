@@ -94,19 +94,21 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     ? generateTimeSlots(businessHours.open, businessHours.close, selectedService.duration)
     : [];
 
+  const allSteps: BookingStep[] = depositRequired 
+    ? ['service', 'date', 'time', 'confirm', 'deposit']
+    : ['service', 'date', 'time', 'confirm'];
+
   const handleNext = () => {
-    const steps: BookingStep[] = ['service', 'date', 'time', 'confirm'];
-    const currentIndex = steps.indexOf(step);
-    if (currentIndex < steps.length - 1) {
-      setStep(steps[currentIndex + 1]);
+    const currentIndex = allSteps.indexOf(step);
+    if (currentIndex < allSteps.length - 1) {
+      setStep(allSteps[currentIndex + 1]);
     }
   };
 
   const handleBack = () => {
-    const steps: BookingStep[] = ['service', 'date', 'time', 'confirm'];
-    const currentIndex = steps.indexOf(step);
+    const currentIndex = allSteps.indexOf(step);
     if (currentIndex > 0) {
-      setStep(steps[currentIndex - 1]);
+      setStep(allSteps[currentIndex - 1]);
     }
   };
 
