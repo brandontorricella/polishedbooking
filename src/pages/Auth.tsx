@@ -27,6 +27,7 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading, signUp, signIn } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdmin();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

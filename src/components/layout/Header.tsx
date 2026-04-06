@@ -239,7 +239,15 @@ export const Header = () => {
               )}
 
               {user && (
-                <div className="pt-4 border-t border-cream/10 mt-4">
+                <div className="pt-4 border-t border-cream/10 mt-4 space-y-1">
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full justify-start bg-gradient-primary hover:opacity-90 text-cream" size="lg">
+                        <Shield className="w-5 h-5 mr-2" />
+                        Admin Dashboard
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-cream/60 hover:text-cream hover:bg-cream/10"
