@@ -26,7 +26,7 @@ export const GuestConversionBanner = ({
           </Button>
         </Link>
         <Link to="/auth?mode=login">
-          <Button size="sm" variant="outline" className="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+          <Button size="sm" variant="ghost" className="border border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent">
             Log In
           </Button>
         </Link>
