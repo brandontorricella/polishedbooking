@@ -79,37 +79,36 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center pt-16">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-hero" />
-          <img 
-            src={heroImage}
-            alt="Beauty salon"
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        </div>
+      <section className="relative min-h-[580px] flex items-center pt-16 overflow-hidden">
+        {/* Background image */}
+        <img 
+          src={heroImage}
+          alt="Beauty salon"
+          className="absolute inset-0 w-full h-full object-cover object-center brightness-[0.6]"
+        />
+        {/* Dark overlay with subtle pink tint */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/45 to-[hsl(330,85%,60%,0.15)]" />
 
         <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl py-16 md:py-20">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {/* Location pill - only show if we have a detected city */}
+              {/* Location pill */}
               {cityName && (
-                <Badge className="mb-6 bg-blush text-primary border-primary/20 px-4 py-1.5">
+                <Badge className="mb-6 bg-white/10 text-white border-white/20 backdrop-blur-sm px-4 py-1.5">
                   <MapPin className="w-4 h-4 mr-2" />
                   Now in {cityName}
                 </Badge>
               )}
               
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
-                Find <span className="text-gradient">Beauty</span> Services Near You
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
+                Find <span className="text-primary">Beauty</span> Services Near You
               </h1>
               
-              <p className="mt-6 text-xl text-muted-foreground max-w-xl">
+              <p className="mt-6 text-xl text-white/85 max-w-xl">
                 Book with top-rated beauty professionals in your area
               </p>
 
@@ -119,14 +118,14 @@ const Index = () => {
                     <Link to="/auth?mode=signup">
                       <Button 
                         size="lg" 
-                        className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl w-full sm:w-auto"
+                        className="bg-primary hover:bg-primary/90 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_25px_hsl(340,75%,55%,0.3)]"
                       >
                         Get Started Free
                         <ArrowRight className="w-5 h-5 ml-2" />
                       </Button>
                     </Link>
                     <Link to="/search">
-                      <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
+                      <Button size="lg" variant="outline" className="text-white border-white/80 hover:bg-white/10 hover:border-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto bg-transparent">
                         Browse Services
                       </Button>
                     </Link>
@@ -135,14 +134,14 @@ const Index = () => {
                   <>
                     <Button 
                       size="lg" 
-                      className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl w-full sm:w-auto"
+                      className="bg-primary hover:bg-primary/90 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_25px_hsl(340,75%,55%,0.3)]"
                       onClick={handleFindServicesClick}
                     >
                       Browse Services
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                     <Link to="/bookings">
-                      <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
+                      <Button size="lg" variant="outline" className="text-white border-white/80 hover:bg-white/10 hover:border-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto bg-transparent">
                         My Bookings
                       </Button>
                     </Link>
@@ -151,23 +150,17 @@ const Index = () => {
               </div>
 
               {/* Trust Indicators */}
-              <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              <div className="mt-10 flex flex-wrap items-center gap-8 text-sm text-white/90">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[1, 2, 3, 4].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-background bg-muted overflow-hidden">
-                        <img 
-                          src={`https://images.unsplash.com/photo-${1494790108377 + i}-be9c29b29330?w=50`}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gradient-to-br from-primary to-primary/60" />
                     ))}
                   </div>
                   <span>500+ Professionals</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 fill-accent text-accent" />
+                  <Star className="w-5 h-5 fill-primary text-primary" />
                   <span>4.9 Average Rating</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -189,7 +182,7 @@ const Index = () => {
 
       {/* How It Works - Guest Only */}
       {accountType === 'guest' && (
-        <section className="py-16 bg-card border-y border-border">
+        <section className="py-16 bg-background border-y border-border">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="font-display text-3xl font-bold">How It Works</h2>
@@ -223,7 +216,7 @@ const Index = () => {
       )}
 
       {/* Browse by Service - Category Cards */}
-      <section className={`py-16 ${accountType === 'guest' ? '' : 'bg-card border-y border-border'}`}>
+      <section className={`py-16 ${accountType === 'guest' ? '' : 'bg-background border-y border-border'}`}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="font-display text-3xl font-bold">Browse by Service</h2>
@@ -249,7 +242,7 @@ const Index = () => {
       </section>
 
       {/* Top Rated Businesses - Location Aware */}
-      <section className="py-16 bg-muted/50">
+      <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -393,7 +386,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-hero">
+      <section className="py-16 bg-[hsl(0,0%,5%)]">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -401,10 +394,10 @@ const Index = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">
-              Ready to Get <span className="text-gradient">Polished</span>?
+            <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
+              Ready to Get <span className="text-primary">Polished</span>?
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-8">
               Join thousands of clients who have discovered their perfect beauty professionals through Polished.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
