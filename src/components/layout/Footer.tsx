@@ -72,7 +72,7 @@ export const Footer = () => {
 
         <div className="border-t border-cream/10 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-cream/50">
-            © 2024 Polished. All rights reserved.
+            © {new Date().getFullYear()} Polished. All rights reserved. Access anywhere from your browser.
           </p>
           <div className="flex gap-6 text-sm text-cream/50">
             <Link to="/privacy" className="hover:text-cream transition-colors">Privacy Policy</Link>
