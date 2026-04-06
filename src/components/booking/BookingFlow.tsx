@@ -114,27 +114,25 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
 
   const handleConfirmBooking = async () => {
     if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to book an appointment.",
-        variant: "destructive",
-      });
+      toast({ title: "Sign in required", description: "Please sign in to book an appointment.", variant: "destructive" });
       navigate('/auth');
       return;
     }
 
     if (!selectedService || !selectedDate || !selectedTime) {
-      toast({
-        title: "Missing information",
-        description: "Please select a service, date, and time.",
-        variant: "destructive",
-      });
+      toast({ title: "Missing information", description: "Please select a service, date, and time.", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
+      const depositAmt = depositRequired
+        ? (businessAny.deposit_type === 'percentage'
+          ? (selectedService.price * (businessAny.deposit_amount || 25)) / 100
+          : (businessAny.deposit_amount || 25))
+        : 0;
+
       const { data, error } = await supabase
         .from('bookings')
         .insert({
@@ -145,30 +143,35 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
           booking_time: selectedTime,
           total_price: selectedService.price,
           notes: notes || null,
-          status: 'pending',
+          status: depositRequired ? 'pending' : 'confirmed',
+          deposit_amount: depositAmt,
+          remaining_balance: selectedService.price - depositAmt,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Booking confirmed!",
-        description: `Your appointment with ${business.name} is confirmed.`,
-      });
-
-      onClose();
-      navigate('/bookings');
+      if (depositRequired) {
+        setCreatedBookingId(data.id);
+        setStep('deposit');
+      } else {
+        toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.` });
+        onClose();
+        navigate('/bookings');
+      }
     } catch (error: any) {
       console.error('Booking error:', error);
-      toast({
-        title: "Booking failed",
-        description: error.message || "Unable to complete booking. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Booking failed", description: error.message || "Unable to complete booking.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDepositComplete = () => {
+    toast({ title: "Booking confirmed!", description: `Your deposit has been received. Appointment confirmed!` });
+    onClose();
+    navigate('/bookings');
   };
 
   const isDateDisabled = (date: Date) => {
