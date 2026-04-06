@@ -54,7 +54,7 @@ const BusinessProfile = () => {
   const { getOrCreateConversation } = useMessages();
 
   const isOwner = accountType === 'business' && ownerBusinessId === id && !previewAsCustomer;
-
+  const { reviews: dbReviews, stats: reviewStats, canReview, createReview, replyToReview, deleteReply, flagReview, sort: reviewSort, setSort: setReviewSort, loading: reviewsLoading } = useReviews(id);
   useEffect(() => {
     const found = mockBusinesses.find(b => b.id === id);
     setBusiness(found || mockBusinesses[0]);
@@ -69,6 +69,7 @@ const BusinessProfile = () => {
   }
 
   const reviews = mockReviews.filter(r => r.businessId === business.id);
+  // Use DB reviews on the reviews tab, mock reviews only for legacy display
 
   const requireAuth = (action: string, redirectTo?: string) => {
     if (accountType === 'guest') {
