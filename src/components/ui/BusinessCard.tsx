@@ -241,7 +241,13 @@ export const BusinessCard = ({
           </Button>
           <Button 
             className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
-            onClick={() => onBook?.(business.id)}
+            onClick={() => {
+              if (onBook) {
+                onBook(business.id);
+              } else {
+                navigate(`/business/${business.id}`);
+              }
+            }}
           >
             Book Now
           </Button>
