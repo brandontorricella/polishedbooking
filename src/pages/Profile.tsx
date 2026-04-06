@@ -13,7 +13,8 @@ import {
   Sun,
   Trash2,
   Globe,
-  Crown
+  Crown,
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
