@@ -2,10 +2,9 @@ import { useState, useEffect, useCallback, createContext, useContext, ReactNode 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
-// Superwall subscription states
 export type SubscriptionState = 'none' | 'trialing' | 'active' | 'expired' | 'canceled';
 
-export interface SuperwallSubscription {
+export interface StripeSubscription {
   state: SubscriptionState;
   tier: 'basic' | 'pro' | 'elite';
   trialEndDate: string | null;
@@ -13,163 +12,39 @@ export interface SuperwallSubscription {
   isActive: boolean;
 }
 
-interface SuperwallContextValue {
-  subscription: SuperwallSubscription | null;
+interface SubscriptionContextValue {
+  subscription: StripeSubscription | null;
   isLoading: boolean;
   error: string | null;
-  showPaywall: (tier: 'basic' | 'pro' | 'elite') => Promise<boolean>;
-  changeTier: (newTier: 'basic' | 'pro' | 'elite') => Promise<boolean>;
-  cancelSubscription: () => Promise<boolean>;
-  restorePurchases: () => Promise<void>;
+  startCheckout: (tier: 'basic' | 'pro' | 'elite') => Promise<void>;
+  manageSubscription: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
   isTrialing: boolean;
   isSubscribed: boolean;
   daysRemaining: number | null;
-}
-
-const SuperwallContext = createContext<SuperwallContextValue | null>(null);
-
-// Native bridge interface for Superwall SDK
-// This will be replaced with actual Capacitor plugin calls
-interface SuperwallBridge {
-  initialize: (apiKey: string) => Promise<void>;
-  identify: (userId: string) => Promise<void>;
-  presentPaywall: (placement: string, params?: Record<string, any>) => Promise<{ purchased: boolean }>;
-  getSubscriptionStatus: () => Promise<{
-    isActive: boolean;
-    productId: string | null;
-    expiresAt: string | null;
-    trialEndAt: string | null;
-    status: string;
-  }>;
+  // Legacy compatibility aliases
+  showPaywall: (tier: 'basic' | 'pro' | 'elite') => Promise<boolean>;
+  changeTier: (newTier: 'basic' | 'pro' | 'elite') => Promise<boolean>;
+  cancelSubscription: () => Promise<boolean>;
   restorePurchases: () => Promise<void>;
-  cancelSubscription: () => Promise<{ success: boolean }>;
 }
 
-// Mock bridge for development - will be replaced with actual native implementation
-const mockSuperwallBridge: SuperwallBridge = {
-  initialize: async () => {
-    console.log('[Superwall] Initialize called - SDK not configured');
-  },
-  identify: async (userId) => {
-    console.log('[Superwall] Identify user:', userId);
-  },
-  presentPaywall: async (placement) => {
-    console.log('[Superwall] Present paywall:', placement);
-    // In development, simulate successful purchase after confirmation
-    const confirmed = window.confirm(
-      `[Development Mode]\n\nSuperwall Paywall: ${placement}\n\nSimulate successful subscription?`
-    );
-    if (confirmed) {
-      // Save mock subscription state
-      const tier = placement.replace('_subscription', '');
-      const mockState = {
-        isActive: true,
-        productId: `${tier}_monthly`,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        trialEndAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'trialing',
-      };
-      localStorage.setItem('superwall_mock_subscription', JSON.stringify(mockState));
-    }
-    return { purchased: confirmed };
-  },
-  getSubscriptionStatus: async () => {
-    // Check local storage for development mock state
-    const mockState = localStorage.getItem('superwall_mock_subscription');
-    if (mockState) {
-      return JSON.parse(mockState);
-    }
-    return {
-      isActive: false,
-      productId: null,
-      expiresAt: null,
-      trialEndAt: null,
-      status: 'none',
-    };
-  },
-  restorePurchases: async () => {
-    console.log('[Superwall] Restore purchases called');
-  },
-  cancelSubscription: async () => {
-    console.log('[Superwall] Cancel subscription called');
-    const confirmed = window.confirm(
-      '[Development Mode]\n\nAre you sure you want to cancel your subscription?\n\nYour business will be hidden from clients.'
-    );
-    if (confirmed) {
-      // Update mock state to canceled
-      const mockState = localStorage.getItem('superwall_mock_subscription');
-      if (mockState) {
-        const parsed = JSON.parse(mockState);
-        parsed.isActive = false;
-        parsed.status = 'canceled';
-        localStorage.setItem('superwall_mock_subscription', JSON.stringify(parsed));
-      }
-    }
-    return { success: confirmed };
-  },
-};
+const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
 
-// Get the native bridge (Capacitor plugin) or fall back to mock
-const getSuperwallBridge = (): SuperwallBridge => {
-  // Check if we're in a native environment with the Superwall plugin
-  if (typeof window !== 'undefined' && (window as any).Capacitor?.Plugins?.Superwall) {
-    return (window as any).Capacitor.Plugins.Superwall as SuperwallBridge;
-  }
-  return mockSuperwallBridge;
-};
-
-export const SuperwallProvider = ({ children }: { children: ReactNode }) => {
+export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const { user, profile } = useAuth();
-  const [subscription, setSubscription] = useState<SuperwallSubscription | null>(null);
+  const [subscription, setSubscription] = useState<StripeSubscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Map Superwall status to our subscription state
-  const mapStatusToState = (status: string): SubscriptionState => {
-    switch (status) {
-      case 'active':
-        return 'active';
-      case 'trialing':
-        return 'trialing';
-      case 'expired':
-      case 'past_due':
-        return 'expired';
-      case 'canceled':
-        return 'canceled';
-      default:
-        return 'none';
-    }
-  };
-
-  // Sync subscription state to backend
-  const syncToBackend = useCallback(async (sub: SuperwallSubscription) => {
-    if (!user || !profile || profile.role !== 'business') return;
-
-    try {
-      // Update the business record with subscription state
-      const { error: updateError } = await supabase
-        .from('businesses')
-        .update({
-          subscription_status: sub.state === 'active' || sub.state === 'trialing' ? sub.state : 'canceled',
-          subscription_tier: sub.tier,
-          subscription_ends_at: sub.subscriptionEndDate,
-          trial_ends_at: sub.trialEndDate,
-          is_published: sub.isActive,
-        })
-        .eq('owner_id', user.id);
-
-      if (updateError) {
-        console.error('[Superwall] Failed to sync subscription to backend:', updateError);
-      }
-    } catch (err) {
-      console.error('[Superwall] Error syncing to backend:', err);
-    }
-  }, [user, profile]);
-
-  // Refresh subscription status
   const refreshSubscription = useCallback(async () => {
     if (!user) {
+      setSubscription(null);
+      setIsLoading(false);
+      return;
+    }
+
+    if (profile?.role !== 'business') {
       setSubscription(null);
       setIsLoading(false);
       return;
@@ -179,168 +54,155 @@ export const SuperwallProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
 
     try {
-      const bridge = getSuperwallBridge();
-      const status = await bridge.getSubscriptionStatus();
-
-      const tierFromProduct = (productId: string | null): 'basic' | 'pro' | 'elite' => {
-        if (!productId) return 'basic';
-        if (productId.includes('elite')) return 'elite';
-        if (productId.includes('pro')) return 'pro';
-        return 'basic';
-      };
-
-      const newSubscription: SuperwallSubscription = {
-        state: mapStatusToState(status.status),
-        tier: tierFromProduct(status.productId),
-        trialEndDate: status.trialEndAt,
-        subscriptionEndDate: status.expiresAt,
-        isActive: status.isActive,
-      };
-
-      setSubscription(newSubscription);
-
-      // Sync to backend
-      await syncToBackend(newSubscription);
-    } catch (err) {
-      console.error('[Superwall] Error refreshing subscription:', err);
-      setError(err instanceof Error ? err.message : 'Failed to check subscription');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, syncToBackend]);
-
-  // Initialize Superwall when user changes
-  useEffect(() => {
-    const initialize = async () => {
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setSubscription(null);
         setIsLoading(false);
         return;
       }
 
-      try {
-        const bridge = getSuperwallBridge();
-        
-        // Initialize with API key (to be configured)
-        // API key should be stored securely and injected during build
-        const apiKey = import.meta.env.VITE_SUPERWALL_API_KEY || '';
-        if (apiKey) {
-          await bridge.initialize(apiKey);
-        }
-
-        // Identify the user
-        await bridge.identify(user.id);
-
-        // Refresh subscription status
-        await refreshSubscription();
-      } catch (err) {
-        console.error('[Superwall] Initialization error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to initialize');
-        setIsLoading(false);
-      }
-    };
-
-    initialize();
-  }, [user, refreshSubscription]);
-
-  // Show paywall for a specific tier
-  const showPaywall = useCallback(async (tier: 'basic' | 'pro' | 'elite'): Promise<boolean> => {
-    if (!user) {
-      setError('User must be logged in');
-      return false;
-    }
-
-    // Only business accounts should see paywalls
-    if (profile?.role !== 'business') {
-      console.log('[Superwall] Paywall not shown - user is not a business account');
-      return false;
-    }
-
-    try {
-      const bridge = getSuperwallBridge();
-      const placement = `${tier}_subscription`;
-      
-      const result = await bridge.presentPaywall(placement, {
-        tier,
-        userId: user.id,
-        email: profile?.email,
+      const { data, error: fnError } = await supabase.functions.invoke('check-subscription', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
-      if (result.purchased) {
-        // Refresh subscription after purchase
-        await refreshSubscription();
-        return true;
+      if (fnError) {
+        console.error('[Subscription] Check error:', fnError);
+        // Fall back to database state
+        await loadFromDatabase();
+        return;
       }
 
-      return false;
+      if (data?.subscribed) {
+        setSubscription({
+          state: data.is_trialing ? 'trialing' : 'active',
+          tier: data.tier || 'basic',
+          trialEndDate: data.trial_end,
+          subscriptionEndDate: data.subscription_end,
+          isActive: true,
+        });
+      } else {
+        // Check database for existing state
+        await loadFromDatabase();
+      }
     } catch (err) {
-      console.error('[Superwall] Paywall error:', err);
-      setError(err instanceof Error ? err.message : 'Payment failed');
-      return false;
+      console.error('[Subscription] Error:', err);
+      await loadFromDatabase();
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, profile, refreshSubscription]);
+  }, [user, profile]);
 
-  // Restore purchases
-  const restorePurchases = useCallback(async () => {
+  const loadFromDatabase = async () => {
+    if (!user) return;
+    
     try {
-      const bridge = getSuperwallBridge();
-      await bridge.restorePurchases();
-      await refreshSubscription();
-    } catch (err) {
-      console.error('[Superwall] Restore error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to restore purchases');
+      const { data: biz } = await supabase
+        .from('businesses')
+        .select('subscription_status, subscription_tier, subscription_ends_at, trial_ends_at')
+        .eq('owner_id', user.id)
+        .maybeSingle();
+
+      if (biz) {
+        const isActive = biz.subscription_status === 'active' || biz.subscription_status === 'trialing';
+        setSubscription({
+          state: (biz.subscription_status as SubscriptionState) || 'none',
+          tier: (biz.subscription_tier as 'basic' | 'pro' | 'elite') || 'basic',
+          trialEndDate: biz.trial_ends_at,
+          subscriptionEndDate: biz.subscription_ends_at,
+          isActive,
+        });
+      } else {
+        setSubscription({ state: 'none', tier: 'basic', trialEndDate: null, subscriptionEndDate: null, isActive: false });
+      }
+    } catch {
+      setSubscription({ state: 'none', tier: 'basic', trialEndDate: null, subscriptionEndDate: null, isActive: false });
     }
+  };
+
+  useEffect(() => {
+    refreshSubscription();
   }, [refreshSubscription]);
 
-  // Change subscription tier
-  const changeTier = useCallback(async (newTier: 'basic' | 'pro' | 'elite'): Promise<boolean> => {
-    if (!user || profile?.role !== 'business') {
-      setError('Business account required');
-      return false;
-    }
+  // Periodic refresh every 60s
+  useEffect(() => {
+    if (!user || profile?.role !== 'business') return;
+    const interval = setInterval(refreshSubscription, 60000);
+    return () => clearInterval(interval);
+  }, [user, profile, refreshSubscription]);
 
-    // Show paywall for the new tier
-    const purchased = await showPaywall(newTier);
-    return purchased;
-  }, [user, profile, showPaywall]);
-
-  // Cancel subscription
-  const cancelSubscription = useCallback(async (): Promise<boolean> => {
-    if (!user || profile?.role !== 'business') {
-      setError('Business account required');
-      return false;
+  const startCheckout = useCallback(async (tier: 'basic' | 'pro' | 'elite') => {
+    if (!user) {
+      setError('User must be logged in');
+      return;
     }
 
     try {
-      const bridge = getSuperwallBridge();
-      const result = await bridge.cancelSubscription();
-      
-      if (result.success) {
-        // Update backend immediately
-        await supabase
-          .from('businesses')
-          .update({
-            subscription_status: 'canceled',
-            is_published: false,
-          })
-          .eq('owner_id', user.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
 
-        // Refresh subscription state
-        await refreshSubscription();
+      const { data, error: fnError } = await supabase.functions.invoke('create-checkout', {
+        body: { tier },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (fnError) throw fnError;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data?.error || 'Failed to create checkout session');
       }
-
-      return result.success;
-    } catch (err) {
-      console.error('[Superwall] Cancel error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to cancel subscription');
-      return false;
+    } catch (err: any) {
+      console.error('[Subscription] Checkout error:', err);
+      setError(err.message || 'Failed to start checkout');
     }
-  }, [user, profile, refreshSubscription]);
+  }, [user]);
 
-  // Computed values
+  const manageSubscription = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
+
+      const { data, error: fnError } = await supabase.functions.invoke('customer-portal', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (fnError) throw fnError;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data?.error || 'Failed to open customer portal');
+      }
+    } catch (err: any) {
+      console.error('[Subscription] Portal error:', err);
+      setError(err.message || 'Failed to open subscription management');
+    }
+  }, [user]);
+
+  // Legacy compatibility
+  const showPaywall = useCallback(async (tier: 'basic' | 'pro' | 'elite'): Promise<boolean> => {
+    await startCheckout(tier);
+    return false; // Redirects, so this won't actually return true
+  }, [startCheckout]);
+
+  const changeTier = useCallback(async (newTier: 'basic' | 'pro' | 'elite'): Promise<boolean> => {
+    await manageSubscription();
+    return false;
+  }, [manageSubscription]);
+
+  const cancelSubscription = useCallback(async (): Promise<boolean> => {
+    await manageSubscription();
+    return false;
+  }, [manageSubscription]);
+
+  const restorePurchases = useCallback(async () => {
+    await refreshSubscription();
+  }, [refreshSubscription]);
+
   const isTrialing = subscription?.state === 'trialing';
   const isSubscribed = subscription?.isActive ?? false;
-  
+
   const daysRemaining = (() => {
     if (!subscription?.trialEndDate && !subscription?.subscriptionEndDate) return null;
     const endDate = subscription.trialEndDate || subscription.subscriptionEndDate;
@@ -350,33 +212,40 @@ export const SuperwallProvider = ({ children }: { children: ReactNode }) => {
   })();
 
   return (
-    <SuperwallContext.Provider
+    <SubscriptionContext.Provider
       value={{
         subscription,
         isLoading,
         error,
-        showPaywall,
-        changeTier,
-        cancelSubscription,
-        restorePurchases,
+        startCheckout,
+        manageSubscription,
         refreshSubscription,
         isTrialing,
         isSubscribed,
         daysRemaining,
+        showPaywall,
+        changeTier,
+        cancelSubscription,
+        restorePurchases,
       }}
     >
       {children}
-    </SuperwallContext.Provider>
+    </SubscriptionContext.Provider>
   );
 };
 
-export const useSuperwall = () => {
-  const context = useContext(SuperwallContext);
+// Primary hook
+export const useSubscription = () => {
+  const context = useContext(SubscriptionContext);
   if (!context) {
-    throw new Error('useSuperwall must be used within a SuperwallProvider');
+    throw new Error('useSubscription must be used within a SubscriptionProvider');
   }
   return context;
 };
 
-// Re-export for backward compatibility during migration
-export const useSubscription = useSuperwall;
+// Legacy alias for backward compatibility
+export const useSuperwall = useSubscription;
+
+// Legacy types for backward compatibility
+export type SuperwallSubscription = StripeSubscription;
+export const SuperwallProvider = SubscriptionProvider;

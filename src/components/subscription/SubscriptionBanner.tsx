@@ -1,14 +1,13 @@
 import { AlertTriangle, Sparkles, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useSuperwall } from '@/hooks/useSuperwall';
+import { useSubscription } from '@/hooks/useSuperwall';
 import { cn } from '@/lib/utils';
 
 export const SubscriptionBanner = () => {
-  const { subscription, isTrialing, daysRemaining, showPaywall, isLoading } = useSuperwall();
+  const { subscription, isTrialing, daysRemaining, manageSubscription, isLoading } = useSubscription();
 
   if (isLoading || !subscription) return null;
 
-  // Show trial banner if trialing
   if (isTrialing && daysRemaining !== null) {
     const isUrgent = daysRemaining <= 3;
 
@@ -44,7 +43,7 @@ export const SubscriptionBanner = () => {
         </div>
         <Button 
           size="sm" 
-          onClick={() => showPaywall(subscription.tier)}
+          onClick={() => manageSubscription()}
           className={cn(
             isUrgent 
               ? "bg-destructive hover:bg-destructive/90" 
@@ -58,7 +57,6 @@ export const SubscriptionBanner = () => {
     );
   }
 
-  // Show expired warning
   if (subscription.state === 'expired' || subscription.state === 'canceled') {
     return (
       <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-3 flex items-center justify-between gap-4">
@@ -76,7 +74,7 @@ export const SubscriptionBanner = () => {
         <Button 
           size="sm" 
           variant="destructive"
-          onClick={() => showPaywall(subscription.tier)}
+          onClick={() => manageSubscription()}
         >
           Reactivate
         </Button>

@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image } from 'lucide-react';
-import { useSuperwall } from '@/hooks/useSuperwall';
+import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -70,7 +70,7 @@ const BusinessAnalyticsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, profile, loading: authLoading } = useAuth();
-  const { subscription, isLoading, refreshSubscription, showPaywall, isTrialing, daysRemaining } = useSuperwall();
+  const { subscription, isLoading, refreshSubscription, manageSubscription, isTrialing, daysRemaining } = useSubscription();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [businessServices, setBusinessServices] = useState<{ id: string; name: string; price: number; duration: number }[]>([]);
 
@@ -136,9 +136,7 @@ const BusinessAnalyticsPage = () => {
   const showSampleDashboard = !isAuthenticated;
 
   const handleManageSubscription = () => {
-    if (subscription) {
-      showPaywall(subscription.tier);
-    }
+    manageSubscription();
   };
 
   return (

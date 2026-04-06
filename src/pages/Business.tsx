@@ -2,19 +2,10 @@ import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useSuperwall } from '@/hooks/useSuperwall';
+import { useSubscription } from '@/hooks/useSuperwall';
 import { 
-  TrendingUp, 
-  Users, 
-  Calendar, 
-  Star, 
-  Check, 
-  ArrowRight,
-  Crown,
-  Sparkles,
-  BarChart3,
-  MessageSquare,
-  Zap
+  TrendingUp, Users, Calendar, Star, Check, ArrowRight, Crown, Sparkles,
+  BarChart3, MessageSquare, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +15,7 @@ import { Footer } from '@/components/layout/Footer';
 
 const pricingTiers = [
   {
+    id: 'basic',
     name: 'Basic',
     price: 29,
     description: 'Perfect for getting started',
@@ -37,6 +29,7 @@ const pricingTiers = [
     popular: false,
   },
   {
+    id: 'pro',
     name: 'Pro',
     price: 59,
     description: 'For growing businesses',
@@ -52,6 +45,7 @@ const pricingTiers = [
     popular: true,
   },
   {
+    id: 'elite',
     name: 'Elite',
     price: 99,
     description: 'For top professionals',
@@ -71,18 +65,10 @@ const pricingTiers = [
 const BusinessPage = () => {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
-  const { isSubscribed, isLoading: subLoading, showPaywall, subscription } = useSuperwall();
+  const { isSubscribed, isLoading: subLoading, startCheckout, subscription } = useSubscription();
 
   const isBusinessUser = profile?.role === 'business';
   const isLoading = authLoading || subLoading;
-
-  // Redirect business users without subscription to paywall
-  useEffect(() => {
-    if (!isLoading && isBusinessUser && !isSubscribed && subscription !== null) {
-      // Show paywall for unpaid business users
-      showPaywall(subscription?.tier || 'basic');
-    }
-  }, [isLoading, isBusinessUser, isSubscribed, subscription, showPaywall]);
 
   // If business user is logged in and subscribed, redirect to analytics
   useEffect(() => {
@@ -91,8 +77,10 @@ const BusinessPage = () => {
     }
   }, [isLoading, isBusinessUser, isSubscribed, navigate]);
 
-  const handleStartTrial = () => {
-    if (user) {
+  const handleStartTrial = (tierId?: string) => {
+    if (user && isBusinessUser) {
+      startCheckout((tierId as 'basic' | 'pro' | 'elite') || 'basic');
+    } else if (user) {
       navigate('/business/onboarding');
     } else {
       navigate('/auth?mode=signup&redirect=/business/onboarding');
@@ -122,14 +110,14 @@ const BusinessPage = () => {
             
             <p className="text-xl text-muted-foreground mb-8">
               Join thousands of beauty professionals using Polished to reach new clients, 
-              manage bookings, and grow their revenue.
+              manage bookings, and grow their revenue. Access from any device, anywhere.
             </p>
 
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl"
-                onClick={handleStartTrial}
+                onClick={() => handleStartTrial()}
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -137,7 +125,7 @@ const BusinessPage = () => {
             </div>
 
             <p className="text-sm text-muted-foreground mt-4">
-              1-month free trial • No credit card required to start
+              30-day free trial • Cancel anytime • Access from any browser
             </p>
           </motion.div>
         </div>
@@ -157,36 +145,12 @@ const BusinessPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              {
-                icon: Users,
-                title: 'Reach New Clients',
-                description: 'Get discovered by thousands of clients searching for services in your area.',
-              },
-              {
-                icon: Calendar,
-                title: 'Easy Booking Management',
-                description: 'Accept bookings 24/7 and manage your schedule with our intuitive calendar.',
-              },
-              {
-                icon: BarChart3,
-                title: 'Business Analytics',
-                description: 'Track your performance with detailed insights on bookings, revenue, and growth.',
-              },
-              {
-                icon: MessageSquare,
-                title: 'In-App Messaging',
-                description: 'Communicate directly with clients to build relationships and loyalty.',
-              },
-              {
-                icon: Zap,
-                title: 'AI Recommendations',
-                description: 'Get matched with ideal clients through our smart recommendation engine.',
-              },
-              {
-                icon: Star,
-                title: 'Reviews & Reputation',
-                description: 'Build trust with verified reviews and showcase your best work.',
-              },
+              { icon: Users, title: 'Reach New Clients', description: 'Get discovered by thousands of clients searching for services in your area.' },
+              { icon: Calendar, title: 'Easy Booking Management', description: 'Accept bookings 24/7 and manage your schedule with our intuitive calendar.' },
+              { icon: BarChart3, title: 'Business Analytics', description: 'Track your performance with detailed insights on bookings, revenue, and growth.' },
+              { icon: MessageSquare, title: 'In-App Messaging', description: 'Communicate directly with clients to build relationships and loyalty.' },
+              { icon: Zap, title: 'AI Recommendations', description: 'Get matched with ideal clients through our smart recommendation engine.' },
+              { icon: Star, title: 'Reviews & Reputation', description: 'Build trust with verified reviews and showcase your best work.' },
             ].map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -214,9 +178,7 @@ const BusinessPage = () => {
       <section className="py-20 bg-muted/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="font-display text-4xl font-bold mb-4">
-              Simple, Transparent Pricing
-            </h2>
+            <h2 className="font-display text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Choose the plan that works best for your business
             </p>
@@ -259,7 +221,7 @@ const BusinessPage = () => {
                     <Button 
                       className={`w-full ${tier.popular ? 'bg-gradient-primary' : ''}`}
                       variant={tier.popular ? 'default' : 'outline'}
-                      onClick={handleStartTrial}
+                      onClick={() => handleStartTrial(tier.id)}
                     >
                       Start Free Trial
                     </Button>
@@ -280,17 +242,15 @@ const BusinessPage = () => {
             viewport={{ once: true }}
           >
             <Sparkles className="w-12 h-12 mx-auto mb-6 text-accent" />
-            <h2 className="font-display text-4xl font-bold mb-4">
-              Ready to Get Started?
-            </h2>
+            <h2 className="font-display text-4xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-xl text-cream/70 max-w-2xl mx-auto mb-8">
               Join Polished today and start growing your beauty business. 
-              Your first month is on us.
+              Access your dashboard from any device, anywhere.
             </p>
             <Button 
               size="lg" 
               className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl"
-              onClick={handleStartTrial}
+              onClick={() => handleStartTrial()}
             >
               Start Your Free Trial
               <ArrowRight className="w-5 h-5 ml-2" />
