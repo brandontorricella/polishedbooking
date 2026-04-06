@@ -14,6 +14,7 @@ import { Header } from '@/components/layout/Header';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { BookingFlow } from '@/components/booking/BookingFlow';
 import { AuthPromptModal } from '@/components/auth/AuthPromptModal';
+import { BookNowButton } from '@/components/booking/BookNowButton';
 import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
 import { mockBusinesses, mockReviews } from '@/data/mockData';
 import { useReviews } from '@/hooks/useReviews';
@@ -294,13 +295,12 @@ const BusinessProfile = () => {
             </>
           ) : (
             <>
-              <Button 
-                className="flex-1 h-12 bg-gradient-primary hover:opacity-90 rounded-xl"
+              <BookNowButton
+                businessId={id!}
+                label="Book Now"
+                className="flex-1 h-12 rounded-xl"
                 onClick={handleBookClick}
-              >
-                <Calendar className="w-5 h-5 mr-2" />
-                Book Now
-              </Button>
+              />
               <Button 
                 variant="outline" 
                 className="h-12 rounded-xl"

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { BookNowButton } from '@/components/booking/BookNowButton';
 
 const SubscriptionBadge = ({ tier }: { tier?: string }) => {
   if (tier === 'elite') {
@@ -239,18 +240,10 @@ export const BusinessCard = ({
           >
             View Profile
           </Button>
-          <Button 
-            className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
-            onClick={() => {
-              if (onBook) {
-                onBook(business.id);
-              } else {
-                navigate(`/business/${business.id}`);
-              }
-            }}
-          >
-            Book Now
-          </Button>
+          <BookNowButton
+            businessId={business.id}
+            className="flex-1"
+          />
         </div>
       </div>
     </motion.div>
