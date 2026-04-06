@@ -303,7 +303,7 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `$${v}`} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} tickFormatter={(v) => `$${Math.round(v)}`} />
                   <Tooltip
                     contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                     formatter={(value: number) => [`$${value.toFixed(2)}`, 'Revenue']}
@@ -384,7 +384,7 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
               <BarChart data={byDayOfWeek}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `$${v}`} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} tickFormatter={(v) => `$${Math.round(v)}`} />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
                   formatter={(value: number) => [`$${value.toFixed(2)}`, 'Revenue']}

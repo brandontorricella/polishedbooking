@@ -285,6 +285,7 @@ export const AnalyticsDashboard = ({ businessId }: AnalyticsDashboardProps) => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} tick={{ fontSize: 10 }} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11}
+                    allowDecimals={activeMetric === 'revenue'}
                     tickFormatter={(v) => activeMetric === 'revenue' ? `$${v}` : String(v)} />
                   <Tooltip
                     contentStyle={{
@@ -313,6 +314,7 @@ export const AnalyticsDashboard = ({ businessId }: AnalyticsDashboardProps) => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} tick={{ fontSize: 10 }} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11}
+                    allowDecimals={activeMetric === 'revenue'}
                     tickFormatter={(v) => activeMetric === 'revenue' ? `$${v}` : String(v)} />
                   <Tooltip
                     contentStyle={{
