@@ -17,6 +17,8 @@ import Business from "./pages/Business";
 import BusinessAnalytics from "./pages/BusinessAnalytics";
 import BusinessProfile from "./pages/BusinessProfile";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import BusinessOnboarding from "./pages/BusinessOnboarding";
@@ -53,6 +55,8 @@ const App = () => {
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<Search />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/business" element={<Business />} />
                   <Route path="/business/:id" element={<BusinessProfile />} />
                   <Route path="/business/pricing" element={<Pricing />} />
