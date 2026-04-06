@@ -9,6 +9,7 @@ interface LocationBasedBusinessesResult {
   loading: boolean;
   locationDenied: boolean;
   location: { lat: number; lng: number } | null;
+  cityName: string | null;
 }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -21,7 +22,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 3959; // Earth's radius in miles
+  const R = 3959;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
   const a = 
@@ -32,8 +33,23 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c;
 }
 
+async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=10`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.address?.city || data.address?.town || data.address?.county || null;
+  } catch {
+    return null;
+  }
+}
+
 export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [cityName, setCityName] = useState<string | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
   const [topRated, setTopRated] = useState<Business[]>([]);
   const [blackOwned, setBlackOwned] = useState<Business[]>([]);
@@ -41,15 +57,19 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
 
   useEffect(() => {
     async function getLocationAndFetch() {
-      // Try to get location
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
+          async (position) => {
             const loc = {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
             setLocation(loc);
+            
+            // Reverse geocode to get city name
+            const city = await reverseGeocode(loc.lat, loc.lng);
+            setCityName(city);
+            
             fetchBusinessesForLocation(loc);
           },
           (error) => {
@@ -67,7 +87,6 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
 
     async function fetchBusinessesForLocation(loc: { lat: number; lng: number }) {
       try {
-        // Try to fetch from database
         const { data: businesses, error } = await supabase
           .from('businesses')
           .select('*')
@@ -76,13 +95,11 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
           .limit(20);
 
         if (error || !businesses || businesses.length === 0) {
-          // Fall back to mock data with location
           const businessesWithDistance = mockBusinesses.map(b => ({
             ...b,
             distance: calculateDistance(loc.lat, loc.lng, b.location.lat, b.location.lng)
           }));
 
-          // Sort by rating for top rated, then by distance
           const sorted = [...businessesWithDistance].sort((a, b) => {
             if (b.rating !== a.rating) return b.rating - a.rating;
             return (a.distance || 0) - (b.distance || 0);
@@ -96,7 +113,6 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
               .slice(0, 6)
           );
         } else {
-          // Process database results
           const businessesWithDistance = businesses.map(b => ({
             ...mapDbBusinessToType(b),
             distance: b.location_lat && b.location_lng 
@@ -106,7 +122,6 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
 
           const tierOrder = (t: string | null) => t === 'elite' ? 0 : t === 'pro' ? 1 : 2;
           const sorted = [...businessesWithDistance].sort((a, b) => {
-            // Elite first, then pro, then basic
             const tierDiff = tierOrder((a as any).subscriptionTier) - tierOrder((b as any).subscriptionTier);
             if (tierDiff !== 0) return tierDiff;
             if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
@@ -131,7 +146,6 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
 
     async function fetchRandomBusinesses() {
       try {
-        // Try database first
         const { data: businesses, error } = await supabase
           .from('businesses')
           .select('*')
@@ -140,7 +154,6 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
           .limit(20);
 
         if (error || !businesses || businesses.length === 0) {
-          // Fall back to mock data
           const shuffled = shuffleArray(mockBusinesses);
           setTopRated(shuffled.filter(b => b.rating >= 4.5).slice(0, 6));
           setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
@@ -152,7 +165,6 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
         }
       } catch (error) {
         console.error('Error fetching random businesses:', error);
-        // Final fallback to mock
         const shuffled = shuffleArray(mockBusinesses);
         setTopRated(shuffled.filter(b => b.rating >= 4.5).slice(0, 6));
         setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
@@ -164,10 +176,9 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
     getLocationAndFetch();
   }, []);
 
-  return { topRated, blackOwned, loading, locationDenied, location };
+  return { topRated, blackOwned, loading, locationDenied, location, cityName };
 }
 
-// Helper to map database business to app type
 function mapDbBusinessToType(db: any): Business {
   return {
     id: db.id,

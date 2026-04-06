@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BusinessCard } from '@/components/ui/BusinessCard';
@@ -47,7 +48,7 @@ const Index = () => {
   const { user, profile } = useAuth();
   const { accountType } = useAccountType();
   const { toast } = useToast();
-  const { topRated, blackOwned, loading, locationDenied, location } = useLocationBasedBusinesses();
+  const { topRated, blackOwned, loading, locationDenied, location, cityName } = useLocationBasedBusinesses();
   
   const promotions = mockBusinesses
     .flatMap(b => (b.promotions || []).map(p => ({ ...p, business: b })))
@@ -78,7 +79,7 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center pt-16">
+      <section className="relative min-h-[80vh] flex items-center pt-16">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-hero" />
           <img 
@@ -96,10 +97,13 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <Badge className="mb-6 bg-blush text-primary border-primary/20 px-4 py-1.5">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Now in Los Angeles
-              </Badge>
+              {/* Location pill - only show if we have a detected city */}
+              {cityName && (
+                <Badge className="mb-6 bg-blush text-primary border-primary/20 px-4 py-1.5">
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Now in {cityName}
+                </Badge>
+              )}
               
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight">
                 Find <span className="text-gradient">Beauty</span> Services Near You
@@ -147,7 +151,7 @@ const Index = () => {
               </div>
 
               {/* Trust Indicators */}
-              <div className="mt-12 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+              <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[1, 2, 3, 4].map(i => (
@@ -178,7 +182,7 @@ const Index = () => {
 
       {/* Guest conversion banner */}
       {accountType === 'guest' && (
-        <div className="container mx-auto px-4 -mt-4 relative z-10">
+        <div className="container mx-auto px-4 relative z-10">
           <GuestConversionBanner message="Sign up to book appointments, save favorites, and get personalized recommendations" />
         </div>
       )}
@@ -307,7 +311,7 @@ const Index = () => {
                 <span className="text-2xl">✊🏿</span>
                 <Badge className="bg-cream/20 text-cream border-0">Black-Owned</Badge>
               </div>
-              <h2 className="font-display text-3xl font-bold">
+              <h2 className="font-display text-3xl font-bold text-cream">
                 Black-Owned {!locationDenied && location ? 'Near You' : 'Businesses'}
               </h2>
               <p className="text-cream/70 mt-2">Discover talented professionals in our community</p>
@@ -329,7 +333,7 @@ const Index = () => {
                 <BusinessCardSkeleton />
                 <BusinessCardSkeleton />
               </>
-            ) : (
+            ) : blackOwned.length > 0 ? (
               blackOwned.slice(0, 3).map((business, index) => (
                 <motion.div
                   key={business.id}
@@ -342,6 +346,11 @@ const Index = () => {
                     showDistance={!locationDenied && !!business.distance}
                   />
                 </motion.div>
+              ))
+            ) : (
+              /* Show placeholder cards when no black-owned businesses found */
+              [1, 2, 3].map((i) => (
+                <BusinessCardSkeleton key={i} />
               ))
             )}
           </div>
@@ -384,7 +393,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-hero">
+      <section className="py-16 bg-gradient-hero">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

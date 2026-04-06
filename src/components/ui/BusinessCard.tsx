@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Star, MapPin, Heart, BadgeCheck, Crown, Tag, Award, Gem } from 'lucide-react';
+import { Star, MapPin, Heart, BadgeCheck, Crown, Tag, Award, Gem, Scissors } from 'lucide-react';
 import type { Business } from '@/types';
 import { Badge } from './badge';
 import { Button } from './button';
@@ -26,6 +26,26 @@ const SubscriptionBadge = ({ tier }: { tier?: string }) => {
     );
   }
   return null;
+};
+
+const BusinessCardImage = ({ imageUrl, businessName }: { imageUrl?: string; businessName: string }) => {
+  if (imageUrl) {
+    return (
+      <img 
+        src={imageUrl} 
+        alt={businessName}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+    );
+  }
+  return (
+    <div className="w-full h-full bg-gradient-to-br from-muted to-muted/60 dark:from-muted/80 dark:to-muted/40 flex flex-col items-center justify-center gap-2">
+      <Scissors className="w-8 h-8 text-muted-foreground/50" />
+      <span className="text-sm font-medium text-muted-foreground/60 px-4 text-center truncate max-w-full">
+        {businessName}
+      </span>
+    </div>
+  );
 };
 
 interface BusinessCardProps {
@@ -67,11 +87,9 @@ export const BusinessCard = ({
         className="flex gap-4 p-4 bg-card rounded-xl border border-border hover:shadow-soft transition-all cursor-pointer"
         onClick={() => onViewProfile ? onViewProfile(business.id) : navigate(`/business/${business.id}`)}
       >
-        <img 
-          src={business.profilePhotoUrl} 
-          alt={business.name}
-          className="w-20 h-20 rounded-lg object-cover"
-        />
+        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+          <BusinessCardImage imageUrl={business.profilePhotoUrl} businessName={business.name} />
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-foreground truncate">{business.name}</h3>
@@ -107,10 +125,9 @@ export const BusinessCard = ({
     >
       {/* Cover Image */}
       <div className="relative h-48 overflow-hidden">
-        <img 
-          src={business.coverPhotoUrl || business.profilePhotoUrl} 
-          alt={business.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        <BusinessCardImage 
+          imageUrl={business.coverPhotoUrl || business.profilePhotoUrl} 
+          businessName={business.name} 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
         
@@ -146,11 +163,7 @@ export const BusinessCard = ({
         {/* Profile Photo Overlay */}
         <div className="absolute -bottom-8 left-4">
           <div className="w-16 h-16 rounded-xl border-4 border-card overflow-hidden shadow-elevated">
-            <img 
-              src={business.profilePhotoUrl} 
-              alt={business.name}
-              className="w-full h-full object-cover"
-            />
+            <BusinessCardImage imageUrl={business.profilePhotoUrl} businessName={business.name} />
           </div>
         </div>
       </div>
