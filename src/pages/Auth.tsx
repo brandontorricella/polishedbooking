@@ -76,7 +76,7 @@ const AuthPage = () => {
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
     if (!error) {
-      navigate('/');
+      // Redirect is handled by the useEffect above after auth state updates
     } else {
       setLoginError(error.message);
     }
