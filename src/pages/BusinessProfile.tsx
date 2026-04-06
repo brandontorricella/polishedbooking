@@ -5,7 +5,7 @@ import {
   Star, MapPin, Clock, Phone, Globe, MessageCircle,
   Heart, Share2, ChevronRight, Check, Sparkles,
   Calendar, Package, Hourglass, Award, Gem,
-  Edit, Settings, Eye
+  Edit, Settings, Eye, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,12 +22,14 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useServiceBundles, type ServiceBundle } from '@/hooks/useServiceBundles';
+import { useMessages } from '@/hooks/useMessages';
 import { BundleCard } from '@/components/bundles/BundleCard';
 import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
 import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
 import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
 import { StaffSection } from '@/components/staff/StaffSection';
 import { GallerySection } from '@/components/gallery/GallerySection';
+import { toast } from 'sonner';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,6 +46,9 @@ const BusinessProfile = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMessage, setAuthModalMessage] = useState('');
   const [previewAsCustomer, setPreviewAsCustomer] = useState(false);
+  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const { getOrCreateConversation } = useMessages();
 
   const isOwner = accountType === 'business' && ownerBusinessId === id && !previewAsCustomer;
 
@@ -85,6 +90,36 @@ const BusinessProfile = () => {
   const handleWaitlistClick = () => {
     if (requireAuth('join the waitlist')) {
       setShowWaitlistModal(true);
+    }
+  };
+
+  const handleMessageClick = async () => {
+    if (!requireAuth('message this business')) return;
+    if (!id) return;
+    setIsStartingChat(true);
+    try {
+      const conversation = await getOrCreateConversation(id);
+      if (conversation) {
+        navigate(`/messages?conversation=${conversation.id}`);
+      }
+    } catch {
+      toast.error('Failed to start conversation');
+    } finally {
+      setIsStartingChat(false);
+    }
+  };
+
+  const handlePhoneClick = () => {
+    if (!requireAuth('contact this business')) return;
+    if (!business?.phone) {
+      toast.info('This business has no phone number listed');
+      return;
+    }
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = `tel:${business.phone.replace(/\D/g, '')}`;
+    } else {
+      setShowPhoneNumber(prev => !prev);
     }
   };
 
@@ -269,12 +304,28 @@ const BusinessProfile = () => {
               >
                 <Hourglass className="w-5 h-5" />
               </Button>
-              <Button variant="outline" className="h-12 rounded-xl">
-                <MessageCircle className="w-5 h-5" />
+              <Button
+                variant="outline"
+                className="h-12 rounded-xl"
+                onClick={handleMessageClick}
+                disabled={isStartingChat}
+              >
+                {isStartingChat ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />}
               </Button>
-              <Button variant="outline" className="h-12 rounded-xl">
-                <Phone className="w-5 h-5" />
-              </Button>
+              {business.phone ? (
+                showPhoneNumber ? (
+                  <a href={`tel:${business.phone.replace(/\D/g, '')}`} className="inline-flex">
+                    <Button variant="outline" className="h-12 rounded-xl text-sm font-medium gap-1.5">
+                      <Phone className="w-4 h-4" />
+                      {business.phone}
+                    </Button>
+                  </a>
+                ) : (
+                  <Button variant="outline" className="h-12 rounded-xl" onClick={handlePhoneClick}>
+                    <Phone className="w-5 h-5" />
+                  </Button>
+                )
+              ) : null}
             </>
           )}
         </div>
