@@ -25,6 +25,7 @@ export function GalleryManager({ businessId, services = [], staff = [], galleryL
   const { posts, loading, createPost, updatePost, deletePost, uploadImage } = useGalleryManagement(businessId);
   const [showUpload, setShowUpload] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -34,7 +35,6 @@ export function GalleryManager({ businessId, services = [], staff = [], galleryL
     );
   }
 
-  const navigate = useNavigate();
   const canAddMore = posts.length < galleryLimit;
 
   return (
