@@ -304,12 +304,28 @@ const BusinessProfile = () => {
               >
                 <Hourglass className="w-5 h-5" />
               </Button>
-              <Button variant="outline" className="h-12 rounded-xl">
-                <MessageCircle className="w-5 h-5" />
+              <Button
+                variant="outline"
+                className="h-12 rounded-xl"
+                onClick={handleMessageClick}
+                disabled={isStartingChat}
+              >
+                {isStartingChat ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageCircle className="w-5 h-5" />}
               </Button>
-              <Button variant="outline" className="h-12 rounded-xl">
-                <Phone className="w-5 h-5" />
-              </Button>
+              {business.phone ? (
+                showPhoneNumber ? (
+                  <a href={`tel:${business.phone.replace(/\D/g, '')}`} className="inline-flex">
+                    <Button variant="outline" className="h-12 rounded-xl text-sm font-medium gap-1.5">
+                      <Phone className="w-4 h-4" />
+                      {business.phone}
+                    </Button>
+                  </a>
+                ) : (
+                  <Button variant="outline" className="h-12 rounded-xl" onClick={handlePhoneClick}>
+                    <Phone className="w-5 h-5" />
+                  </Button>
+                )
+              ) : null}
             </>
           )}
         </div>
