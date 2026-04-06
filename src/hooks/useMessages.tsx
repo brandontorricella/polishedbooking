@@ -22,12 +22,37 @@ export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
+
+  // Resolve owned business for business users
+  useEffect(() => {
+    if (!user || profile?.role !== 'business') {
+      setOwnedBusinessId(null);
+      return;
+    }
+    const fetchBiz = async () => {
+      const { data } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', user.id)
+        .limit(1)
+        .maybeSingle();
+      setOwnedBusinessId(data?.id || null);
+    };
+    fetchBiz();
+  }, [user, profile?.role]);
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
     if (!user) return;
 
     try {
+      // Build OR filter: client conversations + business owner conversations
+      const filters = [`client_id.eq.${user.id}`];
+      if (ownedBusinessId) {
+        filters.push(`business_id.eq.${ownedBusinessId}`);
+      }
+
       const { data, error } = await supabase
         .from('conversations')
         .select(`
@@ -38,8 +63,8 @@ export const useMessages = () => {
             profile_photo_url
           )
         `)
-        .or(`client_id.eq.${user.id},business_id.eq.${user.id}`)
-        .order('last_message_at', { ascending: false });
+        .or(filters.join(','))
+        .order('last_message_at', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
       setConversations(data || []);
@@ -48,7 +73,7 @@ export const useMessages = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, ownedBusinessId]);
 
   // Fetch messages for a conversation
   const fetchMessages = useCallback(async (conversationId: string) => {
