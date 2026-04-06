@@ -226,6 +226,31 @@ const Profile = () => {
             </div>
           </motion.div>
 
+          {/* View My Storefront - Business Users */}
+          {isBusinessUser && businessId && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.03 }}
+              className="mb-6"
+            >
+              <Link to={`/business/${businessId}`}>
+                <div className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Eye className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">View My Storefront</p>
+                      <p className="text-sm text-muted-foreground">See how customers see your business profile</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </Link>
+            </motion.div>
+          )}
+
           {/* Subscription Management for Business Users */}
           {isBusinessUser && (
             <motion.div 
