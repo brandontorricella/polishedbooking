@@ -9,8 +9,10 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { StayUpdatedWidget } from '@/components/subscription/StayUpdatedWidget';
+import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
 import { categories, mockBusinesses } from '@/data/mockData';
 import { useAuth } from '@/hooks/useAuth';
+import { useAccountType } from '@/hooks/useAccountType';
 import { useToast } from '@/hooks/use-toast';
 import { useLocationBasedBusinesses } from '@/hooks/useLocationBasedBusinesses';
 import { saveIntendedDestination } from '@/components/auth/AuthGate';
@@ -43,6 +45,7 @@ const BusinessCardSkeleton = () => (
 const Index = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { accountType } = useAccountType();
   const { toast } = useToast();
   const { topRated, blackOwned, loading, locationDenied, location } = useLocationBasedBusinesses();
   
@@ -50,27 +53,22 @@ const Index = () => {
     .flatMap(b => (b.promotions || []).map(p => ({ ...p, business: b })))
     .slice(0, 3);
 
+  // Redirect business users to their dashboard
+  if (accountType === 'business') {
+    navigate('/business/analytics');
+    return null;
+  }
+
   // Auth gate for Find Services button
   const handleFindServicesClick = () => {
-    if (!user) {
+    if (accountType === 'guest') {
       saveIntendedDestination('/search');
       navigate('/auth?mode=signup&role=client');
       return;
     }
-    
-    if (profile?.role === 'business') {
-      toast({
-        title: 'Access Restricted',
-        description: 'Business accounts cannot browse services. Please use a personal account.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
     navigate('/search');
   };
 
-  // Handle category click - navigate to search with category filter
   const handleCategoryClick = (categoryId: string) => {
     navigate(`/search?category=${categoryId}`);
   };
@@ -112,19 +110,40 @@ const Index = () => {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl w-full sm:w-auto"
-                  onClick={handleFindServicesClick}
-                >
-                  {user && profile?.role === 'client' ? 'Browse Services' : 'Find Services'}
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-                <Link to="/business">
-                  <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
-                    For Businesses
-                  </Button>
-                </Link>
+                {accountType === 'guest' ? (
+                  <>
+                    <Link to="/auth?mode=signup">
+                      <Button 
+                        size="lg" 
+                        className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl w-full sm:w-auto"
+                      >
+                        Get Started Free
+                        <ArrowRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </Link>
+                    <Link to="/search">
+                      <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
+                        Browse Services
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl w-full sm:w-auto"
+                      onClick={handleFindServicesClick}
+                    >
+                      Browse Services
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                    <Link to="/bookings">
+                      <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
+                        My Bookings
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
 
               {/* Trust Indicators */}
@@ -157,8 +176,50 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Guest conversion banner */}
+      {accountType === 'guest' && (
+        <div className="container mx-auto px-4 -mt-4 relative z-10">
+          <GuestConversionBanner message="Sign up to book appointments, save favorites, and get personalized recommendations" />
+        </div>
+      )}
+
+      {/* How It Works - Guest Only */}
+      {accountType === 'guest' && (
+        <section className="py-16 bg-card border-y border-border">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="font-display text-3xl font-bold">How It Works</h2>
+              <p className="text-muted-foreground mt-2">Book your next beauty appointment in 3 easy steps</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              {[
+                { step: '1', title: 'Discover', description: 'Browse beauty professionals near you by service, location, and rating', icon: '🔍' },
+                { step: '2', title: 'Book', description: 'Choose a service, pick your date and time, and confirm your appointment', icon: '📅' },
+                { step: '3', title: 'Enjoy', description: 'Show up and enjoy your service. Leave a review to help others!', icon: '✨' },
+              ].map((item, index) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="text-center"
+                >
+                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center mx-auto mb-3">
+                    {item.step}
+                  </div>
+                  <h3 className="font-display text-xl font-semibold mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground text-sm">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Browse by Service - Category Cards */}
-      <section className="py-16 bg-card border-y border-border">
+      <section className={`py-16 ${accountType === 'guest' ? '' : 'bg-card border-y border-border'}`}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="font-display text-3xl font-bold">Browse by Service</h2>
@@ -338,16 +399,33 @@ const Index = () => {
               Join thousands of clients who have discovered their perfect beauty professionals through Polished.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/auth">
-                <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
-                  Create Free Account
-                </Button>
-              </Link>
-              <Link to="/business">
-                <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                  List Your Business
-                </Button>
-              </Link>
+              {accountType === 'guest' ? (
+                <>
+                  <Link to="/auth?mode=signup">
+                    <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
+                      Create Free Account
+                    </Button>
+                  </Link>
+                  <Link to="/business">
+                    <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
+                      List Your Business
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/search">
+                    <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
+                      Find Services
+                    </Button>
+                  </Link>
+                  <Link to="/bookings">
+                    <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
+                      View Bookings
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         </div>
