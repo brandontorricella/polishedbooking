@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  CreditCard, Crown, Sparkles, Star, Check, AlertTriangle, ExternalLink
+  CreditCard, Crown, Sparkles, Star, Check, AlertTriangle, ExternalLink, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { ConfirmPlanChangeModal } from './ConfirmPlanChangeModal';
 
 const tiers = [
   {
@@ -27,7 +29,7 @@ const tiers = [
     icon: Star,
     color: 'text-primary',
     bgColor: 'bg-primary/10',
-    features: ['Unlimited services', 'Priority placement', 'Promotions & deals'],
+    features: ['Everything in Basic', 'Unlimited services', 'Priority placement', 'Promotions & deals', 'Analytics dashboard'],
   },
   {
     id: 'elite',
@@ -36,9 +38,11 @@ const tiers = [
     icon: Crown,
     color: 'text-amber-500',
     bgColor: 'bg-amber-500/10',
-    features: ['Featured placement', 'Advanced analytics', 'Premium support'],
+    features: ['Everything in Pro', 'Featured placement', 'Advanced analytics', 'Premium support', 'Verified badge'],
   },
 ];
+
+const tierOrder: Record<string, number> = { basic: 1, pro: 2, elite: 3 };
 
 export const SubscriptionManager = () => {
   const { 
@@ -53,27 +57,86 @@ export const SubscriptionManager = () => {
   } = useSubscription();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [changingTo, setChangingTo] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+
+  // Check URL params for success/cancel
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      const plan = params.get('plan');
+      toast({
+        title: 'Plan Updated!',
+        description: plan ? `Successfully switched to ${plan} plan.` : 'Subscription updated successfully.',
+      });
+      window.history.replaceState({}, '', window.location.pathname);
+      refreshSubscription();
+    }
+    if (params.get('canceled') === 'true') {
+      toast({ title: 'Plan change canceled', variant: 'destructive' });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const currentTier = subscription?.tier || 'basic';
   const currentTierInfo = tiers.find(t => t.id === currentTier) || tiers[0];
   const TierIcon = currentTierInfo.icon;
 
-  const handleSelectTier = async (tierId: 'basic' | 'pro' | 'elite') => {
-    if (isSubscribed && tierId === currentTier) {
-      await manageSubscription();
+  const handleSwitchPlan = (tierId: string) => {
+    if (tierId === currentTier && isSubscribed) return;
+    
+    if (!isSubscribed) {
+      // No subscription — go to checkout
+      startCheckout(tierId as 'basic' | 'pro' | 'elite');
       return;
     }
 
-    if (isSubscribed) {
-      // Already subscribed - go to customer portal to change plan
-      await manageSubscription();
-      return;
-    }
+    // Show confirmation modal
+    setSelectedTier(tierId);
+    setShowConfirmModal(true);
+  };
 
-    // New subscription - go to checkout
+  const confirmSwitchPlan = async () => {
+    if (!selectedTier) return;
+    setShowConfirmModal(false);
+    setChangingTo(selectedTier);
     setIsProcessing(true);
-    await startCheckout(tierId);
-    setIsProcessing(false);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
+
+      const { data, error: fnError } = await supabase.functions.invoke('change-plan', {
+        body: { new_tier: selectedTier },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+        return;
+      }
+
+      if (data?.success) {
+        toast({ title: 'Plan Updated!', description: data.message });
+        await refreshSubscription();
+      } else if (data?.error) {
+        toast({ title: 'Error', description: data.error, variant: 'destructive' });
+      }
+    } catch (err: any) {
+      console.error('[ChangePlan] Error:', err);
+      toast({
+        title: 'Failed to change plan',
+        description: err.message || 'An error occurred. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
+      setChangingTo(null);
+      setSelectedTier(null);
+    }
   };
 
   const handleManageSubscription = async () => {
@@ -156,11 +219,11 @@ export const SubscriptionManager = () => {
         </CardContent>
       </Card>
 
-      {/* Change Plan Section */}
+      {/* Plan Cards */}
       <Card className="border-border">
         <CardHeader>
           <CardTitle className="font-display text-lg">
-            {isSubscribed ? 'Change Plan' : 'Choose a Plan'}
+            {isSubscribed ? 'Switch Plan' : 'Choose a Plan'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -168,18 +231,18 @@ export const SubscriptionManager = () => {
             {tiers.map((tier) => {
               const Icon = tier.icon;
               const isCurrent = tier.id === currentTier && isSubscribed;
-              
+              const isUpgrade = (tierOrder[tier.id] || 0) > (tierOrder[currentTier] || 0);
+              const isDowngrade = (tierOrder[tier.id] || 0) < (tierOrder[currentTier] || 0);
+              const isChangingThis = changingTo === tier.id;
+
               return (
-                <motion.button
+                <motion.div
                   key={tier.id}
                   whileHover={{ scale: isCurrent ? 1 : 1.02 }}
-                  whileTap={{ scale: isCurrent ? 1 : 0.98 }}
-                  onClick={() => handleSelectTier(tier.id as 'basic' | 'pro' | 'elite')}
-                  disabled={isProcessing}
                   className={cn(
-                    "p-4 rounded-xl border-2 text-left transition-all",
+                    "p-4 rounded-xl border-2 transition-all flex flex-col",
                     isCurrent
-                      ? "border-primary bg-primary/5 cursor-default"
+                      ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50"
                   )}
                 >
@@ -192,15 +255,53 @@ export const SubscriptionManager = () => {
                       <Badge variant="outline" className="ml-auto text-xs">Current</Badge>
                     )}
                   </div>
-                  <p className="text-xl font-bold">${tier.price}<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
-                </motion.button>
+                  
+                  <p className="text-xl font-bold mb-3">
+                    ${tier.price}<span className="text-sm font-normal text-muted-foreground">/mo</span>
+                  </p>
+
+                  <ul className="space-y-1.5 mb-4 flex-1">
+                    {tier.features.map((f) => (
+                      <li key={f} className="text-xs flex items-start gap-1.5">
+                        <Check className={cn("w-3.5 h-3.5 mt-0.5 shrink-0", tier.color)} />
+                        <span className="text-muted-foreground">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {isCurrent ? (
+                    <Button variant="outline" className="w-full" disabled>
+                      Current Plan
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleSwitchPlan(tier.id)}
+                      disabled={isProcessing}
+                      variant={isUpgrade || !isSubscribed ? "default" : "outline"}
+                      className={cn(
+                        "w-full",
+                        (isUpgrade || !isSubscribed) && "bg-primary hover:bg-primary/90"
+                      )}
+                    >
+                      {isChangingThis ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
+                      ) : !isSubscribed ? (
+                        `Start with ${tier.name}`
+                      ) : isUpgrade ? (
+                        `Upgrade to ${tier.name}`
+                      ) : (
+                        `Switch to ${tier.name}`
+                      )}
+                    </Button>
+                  )}
+                </motion.div>
               );
             })}
           </div>
         </CardContent>
       </Card>
 
-      {/* Actions Section */}
+      {/* Manage Billing */}
       {isSubscribed && (
         <Card className="border-border">
           <CardHeader>
@@ -217,10 +318,23 @@ export const SubscriptionManager = () => {
               Manage Subscription & Billing
             </Button>
             <p className="text-xs text-muted-foreground">
-              Change plans, update payment method, or cancel your subscription through our secure billing portal.
+              Change payment method, view invoices, or cancel your subscription through our secure billing portal.
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Confirmation Modal */}
+      {selectedTier && (
+        <ConfirmPlanChangeModal
+          open={showConfirmModal}
+          onOpenChange={setShowConfirmModal}
+          currentTier={currentTier}
+          newTier={selectedTier}
+          plans={tiers}
+          onConfirm={confirmSwitchPlan}
+          isProcessing={isProcessing}
+        />
       )}
     </div>
   );
