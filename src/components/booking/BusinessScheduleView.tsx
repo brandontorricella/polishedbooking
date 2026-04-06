@@ -9,6 +9,13 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
+interface ClientInfo {
+  display_name: string | null;
+  email: string;
+  phone: string | null;
+  profile_photo_url: string | null;
+}
+
 interface BusinessBooking {
   id: string;
   booking_date: string;
@@ -16,14 +23,9 @@ interface BusinessBooking {
   status: string;
   total_price: number;
   notes: string | null;
+  client_id: string;
   staff_id: string | null;
-  client: {
-    user_id: string;
-    display_name: string | null;
-    email: string;
-    phone: string | null;
-    profile_photo_url: string | null;
-  } | null;
+  client?: ClientInfo | null;
   service: {
     id: string;
     name: string;
@@ -72,10 +74,9 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
     const { data, error } = await supabase
       .from('bookings')
       .select(`
-        id, booking_date, booking_time, status, total_price, notes, staff_id,
-        client:profiles!bookings_client_id_fkey(user_id, display_name, email, phone, profile_photo_url),
-        service:services!bookings_service_id_fkey(id, name, duration, price, category),
-        staff:staff_members!bookings_staff_id_fkey(id, name, profile_photo_url)
+        id, booking_date, booking_time, status, total_price, notes, client_id, staff_id,
+        service:services(id, name, duration, price, category),
+        staff:staff_members(id, name, profile_photo_url)
       `)
       .eq('business_id', businessId)
       .gte('booking_date', start)
@@ -85,13 +86,28 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
       .order('booking_time', { ascending: true });
 
     if (!error && data) {
-      // Handle joined data - profiles returns as object not array due to client_id FK
       const mapped = (data as any[]).map(b => ({
         ...b,
-        client: Array.isArray(b.client) ? b.client[0] || null : b.client,
         service: Array.isArray(b.service) ? b.service[0] || null : b.service,
         staff: Array.isArray(b.staff) ? b.staff[0] || null : b.staff,
       }));
+
+      // Fetch client profiles separately
+      const clientIds = [...new Set(mapped.map(b => b.client_id).filter(Boolean))];
+      if (clientIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, email, phone, profile_photo_url')
+          .in('user_id', clientIds);
+
+        const profileMap = new Map(
+          (profiles || []).map(p => [p.user_id, p])
+        );
+        mapped.forEach(b => {
+          b.client = profileMap.get(b.client_id) || null;
+        });
+      }
+
       setBookings(mapped);
     } else {
       setBookings([]);
@@ -110,7 +126,6 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
   const getBookingCountForDay = (day: Date) =>
     bookings.filter(b => isSameDay(parseISO(b.booking_date), day)).length;
 
-  // Gather unique services needed for the selected day
   const servicesNeeded = Array.from(
     new Map(
       dayBookings
@@ -237,13 +252,13 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
                       <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                         {booking.client?.email && (
                           <span className="flex items-center gap-1 truncate">
-                            <Mail className="w-3 h-3" />
-                            {booking.client.email}
+                            <Mail className="w-3 h-3 shrink-0" />
+                            <span className="truncate">{booking.client.email}</span>
                           </span>
                         )}
                         {booking.client?.phone && (
                           <span className="flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
+                            <Phone className="w-3 h-3 shrink-0" />
                             {booking.client.phone}
                           </span>
                         )}
