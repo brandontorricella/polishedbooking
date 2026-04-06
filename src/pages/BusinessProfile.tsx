@@ -93,6 +93,36 @@ const BusinessProfile = () => {
     }
   };
 
+  const handleMessageClick = async () => {
+    if (!requireAuth('message this business')) return;
+    if (!id) return;
+    setIsStartingChat(true);
+    try {
+      const conversation = await getOrCreateConversation(id);
+      if (conversation) {
+        navigate(`/messages?conversation=${conversation.id}`);
+      }
+    } catch {
+      toast.error('Failed to start conversation');
+    } finally {
+      setIsStartingChat(false);
+    }
+  };
+
+  const handlePhoneClick = () => {
+    if (!requireAuth('contact this business')) return;
+    if (!business?.phone) {
+      toast.info('This business has no phone number listed');
+      return;
+    }
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = `tel:${business.phone.replace(/\D/g, '')}`;
+    } else {
+      setShowPhoneNumber(prev => !prev);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
