@@ -6,11 +6,12 @@ import type { StaffWithDetails } from '@/hooks/useStaff';
 
 interface StaffCardProps {
   staff: StaffWithDetails;
+  businessId?: string;
   onBook?: (staffId: string) => void;
   onSelect?: (staff: StaffWithDetails) => void;
 }
 
-export const StaffCard = ({ staff, onBook, onSelect }: StaffCardProps) => {
+export const StaffCard = ({ staff, businessId, onBook, onSelect }: StaffCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

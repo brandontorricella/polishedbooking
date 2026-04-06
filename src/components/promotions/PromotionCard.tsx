@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { BookNowButton } from '@/components/booking/BookNowButton';
 
 interface PromotionCardProps {
   promotion: {
@@ -292,15 +293,11 @@ export const PromotionCard = ({
             </div>
 
             <div className="flex gap-3">
-              <Button 
-                className="flex-1 bg-gradient-to-r from-primary to-primary/80"
-                onClick={() => {
-                  setShowModal(false);
-                  navigate(`/business/${promotion.business_id}`);
-                }}
-              >
-                Book Now →
-              </Button>
+              <BookNowButton
+                businessId={promotion.business_id}
+                label="Book Now →"
+                className="flex-1"
+              />
               <Button 
                 variant="outline" 
                 className="flex-1"
