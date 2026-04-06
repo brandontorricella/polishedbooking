@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, addDays, isSameDay, isAfter, isBefore, startOfToday } from 'date-fns';
@@ -8,7 +8,8 @@ import {
   ChevronLeft, 
   ChevronRight,
   Check,
-  Loader2
+  Loader2,
+  CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,6 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { DepositPaymentStep } from '@/components/booking/DepositPaymentStep';
+import { CancellationPolicyDisplay } from '@/components/booking/CancellationPolicyDisplay';
 import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +35,7 @@ interface BookingFlowProps {
   initialService?: Service;
 }
 
-type BookingStep = 'service' | 'date' | 'time' | 'confirm';
+type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'deposit';
 
 // Generate time slots based on business hours
 const generateTimeSlots = (openTime: string, closeTime: string, duration: number): string[] => {
@@ -75,6 +78,11 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState('');
+  const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+
+  // Check if business requires deposit
+  const businessAny = business as any;
+  const depositRequired = businessAny.deposit_required || false;
 
   const today = startOfToday();
   const dayOfWeek = selectedDate 
