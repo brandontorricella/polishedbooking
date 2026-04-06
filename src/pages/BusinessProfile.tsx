@@ -2,22 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Star, 
-  MapPin, 
-  Clock, 
-  Phone, 
-  Globe, 
-  MessageCircle,
-  Heart,
-  Share2,
-  ChevronRight,
-  Check,
-  Sparkles,
-  Calendar,
-  Package,
-  Hourglass,
-  Award,
-  Gem
+  Star, MapPin, Clock, Phone, Globe, MessageCircle,
+  Heart, Share2, ChevronRight, Check, Sparkles,
+  Calendar, Package, Hourglass, Award, Gem,
+  Edit, Settings, Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,11 +13,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/Header';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { BookingFlow } from '@/components/booking/BookingFlow';
+import { AuthPromptModal } from '@/components/auth/AuthPromptModal';
+import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
 import { mockBusinesses, mockReviews } from '@/data/mockData';
 import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { useAccountType } from '@/hooks/useAccountType';
 import { useServiceBundles, type ServiceBundle } from '@/hooks/useServiceBundles';
 import { BundleCard } from '@/components/bundles/BundleCard';
 import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
@@ -41,6 +32,7 @@ import { GallerySection } from '@/components/gallery/GallerySection';
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { accountType, businessId: ownerBusinessId } = useAccountType();
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [business, setBusiness] = useState<Business | null>(null);
@@ -49,9 +41,13 @@ const BusinessProfile = () => {
   const [selectedBundle, setSelectedBundle] = useState<ServiceBundle | null>(null);
   const { bundles } = useServiceBundles(id);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMessage, setAuthModalMessage] = useState('');
+  const [previewAsCustomer, setPreviewAsCustomer] = useState(false);
+
+  const isOwner = accountType === 'business' && ownerBusinessId === id && !previewAsCustomer;
 
   useEffect(() => {
-    // For now, use mock data. In production, fetch from Supabase
     const found = mockBusinesses.find(b => b.id === id);
     setBusiness(found || mockBusinesses[0]);
   }, [id]);
@@ -66,12 +62,79 @@ const BusinessProfile = () => {
 
   const reviews = mockReviews.filter(r => r.businessId === business.id);
 
+  const requireAuth = (action: string, redirectTo?: string) => {
+    if (accountType === 'guest') {
+      setAuthModalMessage(`Sign up to ${action}`);
+      setShowAuthModal(true);
+      return false;
+    }
+    return true;
+  };
+
+  const handleBookClick = () => {
+    if (requireAuth('book appointments', `/business/${id}`)) {
+      setShowBookingFlow(true);
+    }
+  };
+
+  const handleFavoriteClick = async () => {
+    if (!requireAuth('save your favorite businesses')) return;
+    await toggleFavorite(business.id);
+  };
+
+  const handleWaitlistClick = () => {
+    if (requireAuth('join the waitlist')) {
+      setShowWaitlistModal(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
 
+      {/* Owner Mode Banner */}
+      {isOwner && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-midnight text-cream py-2 px-4 flex items-center justify-between text-sm">
+          <span className="flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            You're viewing your business profile
+          </span>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              className="text-cream hover:bg-cream/10 h-7"
+              onClick={() => setPreviewAsCustomer(true)}
+            >
+              <Eye className="w-3.5 h-3.5 mr-1" />
+              View as Customer
+            </Button>
+            <Link to="/business/analytics">
+              <Button size="sm" variant="ghost" className="text-cream hover:bg-cream/10 h-7">
+                Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Mode Banner */}
+      {previewAsCustomer && accountType === 'business' && ownerBusinessId === id && (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-primary text-primary-foreground py-2 px-4 flex items-center justify-between text-sm">
+          <span>Previewing as customer</span>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className="text-primary-foreground hover:bg-primary-foreground/10 h-7"
+            onClick={() => setPreviewAsCustomer(false)}
+          >
+            Exit Preview
+          </Button>
+        </div>
+      )}
+
       {/* Cover Image */}
-      <div className="relative h-64 md:h-80">
+      <div className={cn("relative h-64 md:h-80", (isOwner || previewAsCustomer) && "mt-10")}>
         <img
           src={business.coverPhotoUrl || business.profilePhotoUrl}
           alt={business.name}
@@ -81,20 +144,31 @@ const BusinessProfile = () => {
         
         {/* Actions */}
         <div className="absolute top-20 right-4 flex gap-2">
-          <Button 
-            size="icon" 
-            variant="secondary" 
-            className="rounded-full bg-background/80 backdrop-blur-sm"
-            onClick={async () => {
-              if (!user) { navigate('/auth'); return; }
-              await toggleFavorite(business.id);
-            }}
-          >
-            <Heart className={cn("w-5 h-5 transition-all", business && isFavorite(business.id) && "fill-primary text-primary")} />
-          </Button>
-          <Button size="icon" variant="secondary" className="rounded-full bg-background/80 backdrop-blur-sm">
-            <Share2 className="w-5 h-5" />
-          </Button>
+          {isOwner ? (
+            <Link to="/business/analytics">
+              <Button 
+                size="sm" 
+                className="rounded-full bg-background/80 backdrop-blur-sm"
+              >
+                <Edit className="w-4 h-4 mr-1.5" />
+                Edit Profile
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Button 
+                size="icon" 
+                variant="secondary" 
+                className="rounded-full bg-background/80 backdrop-blur-sm"
+                onClick={handleFavoriteClick}
+              >
+                <Heart className={cn("w-5 h-5 transition-all", business && accountType !== 'guest' && isFavorite(business.id) && "fill-primary text-primary")} />
+              </Button>
+              <Button size="icon" variant="secondary" className="rounded-full bg-background/80 backdrop-blur-sm">
+                <Share2 className="w-5 h-5" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -147,32 +221,71 @@ const BusinessProfile = () => {
           </div>
         </div>
 
+        {/* Owner Quick Stats */}
+        {isOwner && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              { label: 'Views this week', value: '124' },
+              { label: 'Bookings', value: '18' },
+              { label: 'Rating', value: business.rating.toString() },
+            ].map(stat => (
+              <div key={stat.label} className="bg-card rounded-xl border border-border p-3 text-center">
+                <p className="text-xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="flex gap-3 mb-8">
-          <Button 
-            className="flex-1 h-12 bg-gradient-primary hover:opacity-90 rounded-xl"
-            onClick={() => setShowBookingFlow(true)}
-          >
-            <Calendar className="w-5 h-5 mr-2" />
-            Book Now
-          </Button>
-          <Button 
-            variant="outline" 
-            className="h-12 rounded-xl"
-            onClick={() => user ? setShowWaitlistModal(true) : navigate('/auth')}
-          >
-            <Hourglass className="w-5 h-5" />
-          </Button>
-          <Button variant="outline" className="h-12 rounded-xl">
-            <MessageCircle className="w-5 h-5" />
-          </Button>
-          <Button variant="outline" className="h-12 rounded-xl">
-            <Phone className="w-5 h-5" />
-          </Button>
+          {isOwner ? (
+            <>
+              <Link to="/business/analytics" className="flex-1">
+                <Button className="w-full h-12 bg-gradient-primary hover:opacity-90 rounded-xl">
+                  <Settings className="w-5 h-5 mr-2" />
+                  Manage Business
+                </Button>
+              </Link>
+              <Link to="/business/analytics?tab=staff">
+                <Button variant="outline" className="h-12 rounded-xl">
+                  Manage Staff
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Button 
+                className="flex-1 h-12 bg-gradient-primary hover:opacity-90 rounded-xl"
+                onClick={handleBookClick}
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Book Now
+              </Button>
+              <Button 
+                variant="outline" 
+                className="h-12 rounded-xl"
+                onClick={handleWaitlistClick}
+              >
+                <Hourglass className="w-5 h-5" />
+              </Button>
+              <Button variant="outline" className="h-12 rounded-xl">
+                <MessageCircle className="w-5 h-5" />
+              </Button>
+              <Button variant="outline" className="h-12 rounded-xl">
+                <Phone className="w-5 h-5" />
+              </Button>
+            </>
+          )}
         </div>
 
+        {/* Guest Banner */}
+        {accountType === 'guest' && (
+          <GuestConversionBanner message="Sign up to book appointments, save favorites, and leave reviews" />
+        )}
+
         {/* Loyalty Points */}
-        {id && <LoyaltyPointsCard businessId={id} businessName={business.name} />}
+        {id && accountType === 'customer' && <LoyaltyPointsCard businessId={id} businessName={business.name} />}
 
         {/* Staff Section */}
         {id && (
@@ -180,7 +293,9 @@ const BusinessProfile = () => {
             <StaffSection
               businessId={id}
               onBookWithStaff={(staffId) => {
-                setShowBookingFlow(true);
+                if (requireAuth('book with this stylist')) {
+                  setShowBookingFlow(true);
+                }
               }}
             />
           </div>
@@ -202,6 +317,14 @@ const BusinessProfile = () => {
 
           {/* Services Tab */}
           <TabsContent value="services" className="space-y-4">
+            {isOwner && (
+              <Link to="/business/analytics?tab=services">
+                <Button variant="outline" size="sm" className="mb-2">
+                  <Edit className="w-4 h-4 mr-1.5" />
+                  Manage Services
+                </Button>
+              </Link>
+            )}
             {business.services.map((service) => (
               <motion.div
                 key={service.id}
@@ -227,17 +350,19 @@ const BusinessProfile = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-semibold">${service.price}</p>
-                    <Button 
-                      size="sm" 
-                      className="mt-2 bg-gradient-primary hover:opacity-90"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedService(service);
-                        setShowBookingFlow(true);
-                      }}
-                    >
-                      Book
-                    </Button>
+                    {!isOwner && (
+                      <Button 
+                        size="sm" 
+                        className="mt-2 bg-gradient-primary hover:opacity-90"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedService(service);
+                          handleBookClick();
+                        }}
+                      >
+                        Book
+                      </Button>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -249,7 +374,9 @@ const BusinessProfile = () => {
             <TabsContent value="bundles" className="space-y-4">
               <p className="text-sm text-muted-foreground">Save when you book multiple services together</p>
               {bundles.map(bundle => (
-                <BundleCard key={bundle.id} bundle={bundle} onBook={setSelectedBundle} />
+                <BundleCard key={bundle.id} bundle={bundle} onBook={(b) => {
+                  if (requireAuth('book bundles')) setSelectedBundle(b);
+                }} />
               ))}
             </TabsContent>
           )}
@@ -278,6 +405,9 @@ const BusinessProfile = () => {
 
           {/* Reviews Tab */}
           <TabsContent value="reviews" className="space-y-4">
+            {accountType === 'guest' && reviews.length > 2 && (
+              <GuestConversionBanner message="Sign up to leave your own reviews" />
+            )}
             {reviews.length > 0 ? reviews.map((review) => (
               <motion.div
                 key={review.id}
@@ -371,18 +501,28 @@ const BusinessProfile = () => {
         </Tabs>
       </div>
 
-      {/* Sticky Book Button (Mobile) */}
-      <div className="fixed bottom-20 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border md:hidden safe-bottom">
-        <Button 
-          className="w-full h-14 bg-gradient-primary hover:opacity-90 rounded-xl text-lg"
-          onClick={() => setShowBookingFlow(true)}
-        >
-          <Calendar className="w-5 h-5 mr-2" />
-          Book Appointment
-        </Button>
-      </div>
+      {/* Sticky Book Button (Mobile) - not for owners */}
+      {!isOwner && (
+        <div className="fixed bottom-20 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border md:hidden safe-bottom">
+          <Button 
+            className="w-full h-14 bg-gradient-primary hover:opacity-90 rounded-xl text-lg"
+            onClick={handleBookClick}
+          >
+            <Calendar className="w-5 h-5 mr-2" />
+            Book Appointment
+          </Button>
+        </div>
+      )}
 
       <BottomNav />
+
+      {/* Auth Prompt Modal for Guests */}
+      <AuthPromptModal
+        open={showAuthModal}
+        onOpenChange={setShowAuthModal}
+        message={authModalMessage}
+        redirectTo={`/business/${id}`}
+      />
 
       {/* Booking Flow Modal */}
       {business && (
