@@ -32,6 +32,7 @@ import { useSuperwall } from '@/hooks/useSuperwall';
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { DepositCancellationSettings } from '@/components/booking/DepositCancellationSettings';
+import { ChangePasswordSection } from '@/components/settings/ChangePasswordSection';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -330,6 +331,16 @@ const Profile = () => {
               )}
             </motion.div>
           )}
+
+          {/* Change Password */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="mb-6"
+          >
+            <ChangePasswordSection />
+          </motion.div>
 
           {/* Settings Sections */}
           <div className="space-y-4">
