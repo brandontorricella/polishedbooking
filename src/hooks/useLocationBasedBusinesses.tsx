@@ -104,7 +104,11 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
               : undefined
           }));
 
+          const tierOrder = (t: string | null) => t === 'elite' ? 0 : t === 'pro' ? 1 : 2;
           const sorted = [...businessesWithDistance].sort((a, b) => {
+            // Elite first, then pro, then basic
+            const tierDiff = tierOrder((a as any).subscriptionTier) - tierOrder((b as any).subscriptionTier);
+            if (tierDiff !== 0) return tierDiff;
             if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
             return (a.distance || 0) - (b.distance || 0);
           });
