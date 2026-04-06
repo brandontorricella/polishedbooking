@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AnalyticsDashboard } from '@/components/business/AnalyticsDashboard';
+import { BookingAnalytics } from '@/components/business/BookingAnalytics';
+import { RevenueAnalytics } from '@/components/business/RevenueAnalytics';
 import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner';
 import { BundleManager } from '@/components/bundles/BundleManager';
 import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
