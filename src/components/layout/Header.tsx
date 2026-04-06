@@ -99,7 +99,7 @@ export const Header = () => {
                   </Button>
                 </Link>
                 <Link to="/auth?mode=login">
-                  <Button variant="ghost" size="sm" className="rounded-lg">
+                  <Button variant="outline" size="sm" className="rounded-lg border-2 border-foreground/20 font-semibold">
                     <LogIn className="w-4 h-4 mr-1.5" />
                     Log In
                   </Button>
