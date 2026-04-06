@@ -5,7 +5,7 @@ import {
   Star, MapPin, Clock, Phone, Globe, MessageCircle,
   Heart, Share2, ChevronRight, Check, Sparkles,
   Calendar, Package, Hourglass, Award, Gem,
-  Edit, Settings, Eye
+  Edit, Settings, Eye, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,12 +22,14 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useServiceBundles, type ServiceBundle } from '@/hooks/useServiceBundles';
+import { useMessages } from '@/hooks/useMessages';
 import { BundleCard } from '@/components/bundles/BundleCard';
 import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
 import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
 import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
 import { StaffSection } from '@/components/staff/StaffSection';
 import { GallerySection } from '@/components/gallery/GallerySection';
+import { toast } from 'sonner';
 
 const BusinessProfile = () => {
   const { id } = useParams<{ id: string }>();
