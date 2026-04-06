@@ -201,25 +201,25 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
 
         {/* Progress Indicator */}
         <div className="flex items-center justify-center gap-2 py-4">
-          {['service', 'date', 'time', 'confirm'].map((s, i) => (
+          {allSteps.map((s, i) => (
             <div key={s} className="flex items-center">
               <div className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
                 step === s ? "bg-primary text-primary-foreground" :
-                ['service', 'date', 'time', 'confirm'].indexOf(step) > i 
+                allSteps.indexOf(step) > i 
                   ? "bg-primary/20 text-primary" 
                   : "bg-muted text-muted-foreground"
               )}>
-                {['service', 'date', 'time', 'confirm'].indexOf(step) > i ? (
+                {allSteps.indexOf(step) > i ? (
                   <Check className="w-4 h-4" />
                 ) : (
                   i + 1
                 )}
               </div>
-              {i < 3 && (
+              {i < allSteps.length - 1 && (
                 <div className={cn(
                   "w-8 h-0.5 mx-1",
-                  ['service', 'date', 'time', 'confirm'].indexOf(step) > i 
+                  allSteps.indexOf(step) > i 
                     ? "bg-primary" 
                     : "bg-muted"
                 )} />
