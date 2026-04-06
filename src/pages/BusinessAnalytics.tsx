@@ -270,9 +270,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsContent>
 
                 <TabsContent value="bookings">
-                  <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                    <p className="text-muted-foreground">Detailed booking analytics coming soon</p>
-                  </div>
+                  {businessId ? (
+                    <BookingAnalytics businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to view booking analytics</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="bundles">
@@ -296,9 +300,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsContent>
 
                 <TabsContent value="revenue">
-                  <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                    <p className="text-muted-foreground">Detailed revenue analytics coming soon</p>
-                  </div>
+                  {businessId ? (
+                    <RevenueAnalytics businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to view revenue analytics</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="clients">
