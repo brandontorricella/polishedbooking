@@ -174,6 +174,70 @@ const NoBusinessPlaceholder = ({ text }: { text: string }) => (
   </div>
 );
 
+// ─── Date range helpers ─────────────────────────────────
+type DatePreset = { label: string; getRange: () => { start: Date; end: Date } };
+
+const DATE_PRESETS: DatePreset[] = [
+  { label: 'Last 7 Days', getRange: () => ({ start: subDays(new Date(), 7), end: new Date() }) },
+  { label: 'Last 30 Days', getRange: () => ({ start: subDays(new Date(), 30), end: new Date() }) },
+  { label: 'Last 90 Days', getRange: () => ({ start: subDays(new Date(), 90), end: new Date() }) },
+  { label: 'This Month', getRange: () => ({ start: startOfMonth(new Date()), end: new Date() }) },
+  { label: 'Last Month', getRange: () => ({ start: startOfMonth(subMonths(new Date(), 1)), end: endOfMonth(subMonths(new Date(), 1)) }) },
+  { label: 'This Year', getRange: () => ({ start: startOfYear(new Date()), end: new Date() }) },
+];
+
+function getDateLabel(start: Date, end: Date): string {
+  const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff <= 8 && diff >= 6) return 'Last 7 Days';
+  if (diff <= 31 && diff >= 29) return 'Last 30 Days';
+  if (diff <= 91 && diff >= 89) return 'Last 90 Days';
+  return `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`;
+}
+
+// ─── CSV Export helper ──────────────────────────────────
+async function exportAnalyticsCSV(businessId: string, start: Date, end: Date) {
+  const startStr = format(start, 'yyyy-MM-dd');
+  const endStr = format(end, 'yyyy-MM-dd');
+
+  // Fetch bookings for the period
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('id, booking_date, booking_time, status, total_price, service_id, staff_id')
+    .eq('business_id', businessId)
+    .gte('booking_date', startStr)
+    .lte('booking_date', endStr)
+    .order('booking_date', { ascending: true });
+
+  const rows = bookings || [];
+  const completed = rows.filter(b => b.status === 'completed' || b.status === 'confirmed');
+  const canceled = rows.filter(b => b.status === 'canceled');
+  const totalRevenue = completed.reduce((s, b) => s + Number(b.total_price || 0), 0);
+
+  let csv = `Analytics Report\n`;
+  csv += `Period: ${format(start, 'MMM d, yyyy')} to ${format(end, 'MMM d, yyyy')}\n\n`;
+  csv += `Summary\nMetric,Value\n`;
+  csv += `Total Bookings,${rows.length}\n`;
+  csv += `Completed,${completed.length}\n`;
+  csv += `Canceled,${canceled.length}\n`;
+  csv += `Total Revenue,$${totalRevenue.toFixed(2)}\n`;
+  csv += `Avg Booking Value,$${completed.length ? (totalRevenue / completed.length).toFixed(2) : '0.00'}\n\n`;
+
+  csv += `Booking Details\nDate,Time,Status,Price\n`;
+  rows.forEach(b => {
+    csv += `${b.booking_date},${b.booking_time},${b.status},$${Number(b.total_price || 0).toFixed(2)}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `analytics_${startStr}_to_${endStr}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 const BusinessAnalyticsPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -182,6 +246,10 @@ const BusinessAnalyticsPage = () => {
   const { subscription, isLoading, refreshSubscription, manageSubscription, isTrialing, daysRemaining } = useSubscription();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [businessServices, setBusinessServices] = useState<{ id: string; name: string; price: number; duration: number }[]>([]);
+  const [dateRange, setDateRange] = useState({ start: subDays(new Date(), 30), end: new Date() });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch business data for the logged-in owner
   useEffect(() => {
@@ -248,6 +316,34 @@ const BusinessAnalyticsPage = () => {
     manageSubscription();
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshSubscription();
+    setRefreshKey(k => k + 1);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      sonnerToast.success('Analytics refreshed');
+    }, 600);
+  };
+
+  const handleExportCSV = async () => {
+    if (!businessId) return;
+    setIsExporting(true);
+    try {
+      await exportAnalyticsCSV(businessId, dateRange.start, dateRange.end);
+      sonnerToast.success('CSV exported successfully');
+    } catch {
+      sonnerToast.error('Failed to export CSV');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDatePreset = (preset: DatePreset) => {
+    setDateRange(preset.getRange());
+    setRefreshKey(k => k + 1);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -269,19 +365,90 @@ const BusinessAnalyticsPage = () => {
               </p>
             </div>
             {isBusinessUser && (
-              <div className="flex gap-2 mt-4 md:mt-0">
-                <Button variant="outline" size="sm">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Last 30 Days
+              <div className="flex gap-2 mt-4 md:mt-0 flex-wrap">
+                {/* Date Range Picker */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {getDateLabel(dateRange.start, dateRange.end)}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {DATE_PRESETS.map((preset) => (
+                      <DropdownMenuItem
+                        key={preset.label}
+                        onClick={() => handleDatePreset(preset)}
+                      >
+                        {preset.label}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <div className="px-3 py-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="sm" className="w-full justify-start text-sm">
+                            Custom Range…
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end" side="left">
+                          <CalendarComponent
+                            mode="range"
+                            selected={{ from: dateRange.start, to: dateRange.end }}
+                            onSelect={(range) => {
+                              if (range?.from && range?.to) {
+                                setDateRange({ start: range.from, end: range.to });
+                                setRefreshKey(k => k + 1);
+                              } else if (range?.from) {
+                                setDateRange({ start: range.from, end: range.from });
+                              }
+                            }}
+                            numberOfMonths={2}
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Refresh Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                >
+                  <RefreshCw className={cn("w-4 h-4 mr-2", isRefreshing && "animate-spin")} />
+                  {isRefreshing ? 'Refreshing…' : 'Refresh'}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => refreshSubscription()}>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
+
+                {/* Export Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={isExporting || !businessId}>
+                      {isExporting
+                        ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        : <Download className="w-4 h-4 mr-2" />
+                      }
+                      {isExporting ? 'Exporting…' : 'Export'}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleExportCSV}>
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        sonnerToast.info('PDF export coming soon');
+                      }}
+                    >
+                      <FileText className="w-4 h-4 mr-2" />
+                      Export as PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
           </div>
@@ -338,7 +505,7 @@ const BusinessAnalyticsPage = () => {
             {showSampleDashboard && <SampleDashboardOverlay />}
             
             <div className={cn(showSampleDashboard && "pointer-events-none select-none")}>
-              <FeatureGatedDashboard businessId={businessId} businessServices={businessServices} />
+              <FeatureGatedDashboard key={refreshKey} businessId={businessId} businessServices={businessServices} />
             </div>
           </div>
         </div>
