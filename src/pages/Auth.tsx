@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sparkles, Check, ArrowLeft } from 'lucide-react';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -153,6 +154,17 @@ const AuthPage = () => {
                 <p className="text-muted-foreground">Enter your credentials to access your account</p>
               </div>
 
+              <GoogleSignInButton />
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">or sign in with email</span>
+                </div>
+              </div>
+
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
@@ -221,6 +233,17 @@ const AuthPage = () => {
               <div className="space-y-2">
                 <h1 className="font-display text-3xl font-bold">Create account</h1>
                 <p className="text-muted-foreground">Start your beauty journey with Polished</p>
+              </div>
+
+              <GoogleSignInButton label="Sign up with Google" />
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">or sign up with email</span>
+                </div>
               </div>
 
               <form onSubmit={handleSignup} className="space-y-4">
