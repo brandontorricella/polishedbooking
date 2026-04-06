@@ -2,27 +2,32 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Menu, 
-  X, 
-  User, 
-  Heart, 
-  Calendar, 
-  MessageSquare,
-  Settings,
-  LogOut,
-  Search,
-  Home
+  Menu, X, User, Heart, Calendar, MessageSquare,
+  LogOut, Search, Home, BarChart3, Users, Settings,
+  Scissors, UserPlus, LogIn
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { useAccountType } from '@/hooks/useAccountType';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import polishedLogo from '@/assets/logo-transparent.png';
 
-const navItems = [
+const guestNavItems = [
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/search', label: 'Search', icon: Search },
+];
+
+const customerNavItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/search', label: 'Search', icon: Search },
   { href: '/favorites', label: 'Favorites', icon: Heart },
+  { href: '/bookings', label: 'Bookings', icon: Calendar },
+  { href: '/messages', label: 'Messages', icon: MessageSquare },
+];
+
+const businessNavItems = [
+  { href: '/business/analytics', label: 'Dashboard', icon: BarChart3 },
   { href: '/bookings', label: 'Bookings', icon: Calendar },
   { href: '/messages', label: 'Messages', icon: MessageSquare },
 ];
@@ -31,9 +36,29 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { accountType } = useAccountType();
+
+  const navItems = accountType === 'business'
+    ? businessNavItems
+    : accountType === 'customer'
+    ? customerNavItems
+    : guestNavItems;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
+      {/* Business mode indicator */}
+      {accountType === 'business' && (
+        <div className="bg-midnight text-cream text-xs py-1.5 px-4 flex items-center justify-between">
+          <span className="flex items-center gap-1.5">
+            <BarChart3 className="w-3.5 h-3.5" />
+            Business Dashboard
+          </span>
+          <Link to="/search" className="text-cream/70 hover:text-cream transition-colors">
+            View as Customer
+          </Link>
+        </div>
+      )}
+
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -66,14 +91,35 @@ export const Header = () => {
 
           {/* Right Side */}
           <div className="flex items-center gap-2">
-            <Link to="/business" className="hidden sm:block">
-              <Button variant="outline" size="sm" className="rounded-lg">
-                For Business
-              </Button>
-            </Link>
-            
-            {user ? (
+            {accountType === 'guest' && (
               <>
+                <Link to="/business" className="hidden sm:block">
+                  <Button variant="ghost" size="sm" className="rounded-lg text-muted-foreground">
+                    For Business
+                  </Button>
+                </Link>
+                <Link to="/auth?mode=login">
+                  <Button variant="ghost" size="sm" className="rounded-lg">
+                    <LogIn className="w-4 h-4 mr-1.5" />
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/auth?mode=signup">
+                  <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90">
+                    <UserPlus className="w-4 h-4 mr-1.5" />
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {accountType === 'customer' && (
+              <>
+                <Link to="/business" className="hidden sm:block">
+                  <Button variant="outline" size="sm" className="rounded-lg">
+                    For Business
+                  </Button>
+                </Link>
                 <NotificationBell />
                 <Link to="/profile">
                   <Button variant="ghost" size="icon" className="rounded-lg">
@@ -89,13 +135,25 @@ export const Header = () => {
                   <LogOut className="w-5 h-5" />
                 </Button>
               </>
-            ) : (
-              <Link to="/auth">
-                <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90">
-                  <User className="w-4 h-4 mr-2" />
-                  Sign In
+            )}
+
+            {accountType === 'business' && (
+              <>
+                <NotificationBell />
+                <Link to="/profile">
+                  <Button variant="ghost" size="icon" className="rounded-lg">
+                    <Settings className="w-5 h-5" />
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-lg hidden sm:flex"
+                  onClick={() => signOut()}
+                >
+                  <LogOut className="w-5 h-5" />
                 </Button>
-              </Link>
+              </>
             )}
 
             {/* Mobile Menu Button */}
@@ -140,13 +198,41 @@ export const Header = () => {
                   </Link>
                 );
               })}
-              <div className="pt-4 border-t border-border mt-4">
-                <Link to="/business" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full justify-start" size="lg">
-                    For Business
+
+              {accountType === 'guest' && (
+                <div className="pt-4 border-t border-border mt-4 space-y-2">
+                  <Link to="/business" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start" size="lg">
+                      For Business
+                    </Button>
+                  </Link>
+                </div>
+              )}
+
+              {accountType === 'business' && (
+                <div className="pt-4 border-t border-border mt-4">
+                  <Link to="/search" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full justify-start" size="lg">
+                      <Search className="w-5 h-5 mr-2" />
+                      View as Customer
+                    </Button>
+                  </Link>
+                </div>
+              )}
+
+              {user && (
+                <div className="pt-4 border-t border-border mt-4">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-muted-foreground"
+                    size="lg"
+                    onClick={() => { signOut(); setMobileMenuOpen(false); }}
+                  >
+                    <LogOut className="w-5 h-5 mr-2" />
+                    Sign Out
                   </Button>
-                </Link>
-              </div>
+                </div>
+              )}
             </nav>
           </motion.div>
         )}
