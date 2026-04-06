@@ -120,7 +120,7 @@ export const BusinessCard = ({
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        "group relative bg-card rounded-2xl overflow-hidden border border-border hover:shadow-elevated transition-all duration-300",
+        "group relative bg-card text-card-foreground rounded-2xl overflow-hidden border border-border hover:shadow-elevated transition-all duration-300",
         variant === 'featured' && "ring-2 ring-accent shadow-glow"
       )}
     >
