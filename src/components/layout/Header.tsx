@@ -117,6 +117,14 @@ export const Header = () => {
 
             {accountType === 'customer' && (
               <>
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90 text-cream gap-1.5">
+                      <Shield className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/business" className="hidden sm:block">
                   <Button variant="outline" size="sm" className="rounded-lg border-cream/30 text-cream/70 bg-transparent hover:bg-cream/10 hover:text-cream">
                     For Business
@@ -141,6 +149,14 @@ export const Header = () => {
 
             {accountType === 'business' && (
               <>
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90 text-cream gap-1.5">
+                      <Shield className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <NotificationBell />
                 <Link to="/profile">
                   <Button variant="ghost" size="icon" className="rounded-lg text-cream hover:bg-cream/10">
