@@ -15,7 +15,9 @@ import {
   Sparkles,
   Calendar,
   Package,
-  Hourglass
+  Hourglass,
+  Award,
+  Gem
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -111,6 +113,18 @@ const BusinessProfile = () => {
                 <Badge className="bg-primary/10 text-primary border-0">
                   <Check className="w-3 h-3 mr-1" />
                   Verified
+                </Badge>
+              )}
+              {business.subscriptionTier === 'elite' && (
+                <Badge className="bg-gradient-to-r from-yellow-400 to-amber-500 text-foreground border-0 shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
+                  <Gem className="w-3 h-3 mr-1" />
+                  Verified Elite
+                </Badge>
+              )}
+              {business.subscriptionTier === 'pro' && (
+                <Badge className="bg-primary text-primary-foreground border-0">
+                  <Award className="w-3 h-3 mr-1" />
+                  Recommended
                 </Badge>
               )}
               {business.isBlackOwned && (
