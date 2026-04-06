@@ -375,44 +375,68 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                 </div>
               </motion.div>
             )}
+
+            {/* Step 5: Deposit Payment (if required) */}
+            {step === 'deposit' && createdBookingId && selectedService && (
+              <motion.div
+                key="deposit"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <DepositPaymentStep
+                  bookingId={createdBookingId}
+                  business={business}
+                  service={selectedService}
+                  onPaymentComplete={handleDepositComplete}
+                />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex gap-3 pt-4 border-t border-border">
-          {step !== 'service' && (
-            <Button variant="outline" onClick={handleBack} className="flex-1">
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Back
-            </Button>
-          )}
-          
-          {step !== 'confirm' ? (
-            <Button 
-              onClick={handleNext} 
-              disabled={!canProceed()}
-              className="flex-1 bg-gradient-primary"
-            >
-              Continue
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleConfirmBooking}
-              disabled={isSubmitting}
-              className="flex-1 bg-gradient-primary"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Booking...
-                </>
-              ) : (
-                'Confirm Booking'
-              )}
-            </Button>
-          )}
-        </div>
+        {step !== 'deposit' && (
+          <div className="flex gap-3 pt-4 border-t border-border">
+            {step !== 'service' && (
+              <Button variant="outline" onClick={handleBack} className="flex-1">
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+            )}
+            
+            {step !== 'confirm' ? (
+              <Button 
+                onClick={handleNext} 
+                disabled={!canProceed()}
+                className="flex-1 bg-gradient-primary"
+              >
+                Continue
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleConfirmBooking}
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-primary"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Booking...
+                  </>
+                ) : depositRequired ? (
+                  <>
+                    <CreditCard className="w-4 h-4 mr-1" />
+                    Continue to Deposit
+                  </>
+                ) : (
+                  'Confirm Booking'
+                )}
+              </Button>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
