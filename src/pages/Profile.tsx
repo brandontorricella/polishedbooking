@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Settings, 
@@ -13,7 +13,8 @@ import {
   Sun,
   Trash2,
   Globe,
-  Crown
+  Crown,
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -26,6 +27,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAccountType } from '@/hooks/useAccountType';
 import { useSuperwall } from '@/hooks/useSuperwall';
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
@@ -47,6 +49,7 @@ const Profile = () => {
   const { toast } = useToast();
   const { isDark, toggleTheme } = useTheme();
   const { isSubscribed, showPaywall, subscription } = useSuperwall();
+  const { businessId } = useAccountType();
   
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
@@ -222,6 +225,31 @@ const Profile = () => {
               )}
             </div>
           </motion.div>
+
+          {/* View My Storefront - Business Users */}
+          {isBusinessUser && businessId && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.03 }}
+              className="mb-6"
+            >
+              <Link to={`/business/${businessId}`}>
+                <div className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Eye className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">View My Storefront</p>
+                      <p className="text-sm text-muted-foreground">See how customers see your business profile</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </Link>
+            </motion.div>
+          )}
 
           {/* Subscription Management for Business Users */}
           {isBusinessUser && (
