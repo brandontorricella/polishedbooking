@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Sparkles, LogIn, UserPlus } from 'lucide-react';
 import { saveIntendedDestination } from '@/components/auth/AuthGate';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 
 interface AuthPromptModalProps {
   open: boolean;
@@ -33,6 +34,17 @@ export const AuthPromptModal = ({
           <DialogDescription className="text-base">{message}</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-4">
+          <GoogleSignInButton />
+
+          <div className="relative my-1">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
           <Link to="/auth?mode=signup" onClick={handleClick}>
             <Button className="w-full bg-gradient-primary hover:opacity-90 h-12">
               <UserPlus className="w-5 h-5 mr-2" />
@@ -47,7 +59,7 @@ export const AuthPromptModal = ({
           </Link>
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Create an account in 30 seconds
+          It only takes 10 seconds with Google
         </p>
       </DialogContent>
     </Dialog>
