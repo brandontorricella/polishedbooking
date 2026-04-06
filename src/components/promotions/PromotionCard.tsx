@@ -195,7 +195,7 @@ export const PromotionCard = ({
 
               {claimed ? (
                 <Button 
-                  className="w-full bg-green-600 hover:bg-green-600 text-white cursor-default"
+                  className="w-full bg-emerald-600 hover:bg-emerald-600 text-white cursor-default"
                   disabled
                 >
                   ✅ Offer Claimed!
