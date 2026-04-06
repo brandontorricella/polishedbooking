@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AnalyticsDashboard } from '@/components/business/AnalyticsDashboard';
+import { BookingAnalytics } from '@/components/business/BookingAnalytics';
+import { RevenueAnalytics } from '@/components/business/RevenueAnalytics';
 import { SubscriptionBanner } from '@/components/subscription/SubscriptionBanner';
 import { BundleManager } from '@/components/bundles/BundleManager';
 import { LoyaltyManager } from '@/components/loyalty/LoyaltyManager';
@@ -268,9 +270,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsContent>
 
                 <TabsContent value="bookings">
-                  <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                    <p className="text-muted-foreground">Detailed booking analytics coming soon</p>
-                  </div>
+                  {businessId ? (
+                    <BookingAnalytics businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to view booking analytics</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="bundles">
@@ -294,9 +300,13 @@ const BusinessAnalyticsPage = () => {
                 </TabsContent>
 
                 <TabsContent value="revenue">
-                  <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                    <p className="text-muted-foreground">Detailed revenue analytics coming soon</p>
-                  </div>
+                  {businessId ? (
+                    <RevenueAnalytics businessId={businessId} />
+                  ) : (
+                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
+                      <p className="text-muted-foreground">Set up your business profile to view revenue analytics</p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="clients">
