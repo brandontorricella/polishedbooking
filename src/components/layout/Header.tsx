@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, User, Heart, Calendar, MessageSquare,
   LogOut, Search, Home, BarChart3, Users, Settings,
-  Scissors, UserPlus, LogIn
+  Scissors, UserPlus, LogIn, Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
+import { useAdmin } from '@/hooks/useAdmin';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import polishedLogo from '@/assets/logo-transparent.png';
 
