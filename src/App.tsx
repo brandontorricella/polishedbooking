@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SubscriptionProvider } from "@/hooks/useSuperwall";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Search from "./pages/Search";
 import Favorites from "./pages/Favorites";
@@ -38,22 +39,56 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 <Routes>
+                  {/* Public routes */}
                   <Route path="/" element={<Index />} />
                   <Route path="/search" element={<Search />} />
-                  <Route path="/favorites" element={<Favorites />} />
-                  <Route path="/bookings" element={<Bookings />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/business" element={<Business />} />
-                  <Route path="/business/analytics" element={<BusinessAnalytics />} />
-                  <Route path="/business/:id" element={<BusinessProfile />} />
                   <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/onboarding" element={<ClientOnboarding />} />
-                  <Route path="/business/onboarding" element={<BusinessOnboarding />} />
+                  <Route path="/business" element={<Business />} />
+                  <Route path="/business/:id" element={<BusinessProfile />} />
                   <Route path="/business/pricing" element={<Pricing />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/help" element={<HelpCenter />} />
+                  
+                  {/* Customer-protected routes */}
+                  <Route path="/favorites" element={
+                    <ProtectedRoute requiredType="customer">
+                      <Favorites />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/bookings" element={
+                    <ProtectedRoute>
+                      <Bookings />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/messages" element={
+                    <ProtectedRoute>
+                      <Messages />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/onboarding" element={
+                    <ProtectedRoute>
+                      <ClientOnboarding />
+                    </ProtectedRoute>
+                  } />
+
+                  {/* Business-protected routes */}
+                  <Route path="/business/analytics" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessAnalytics />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/business/onboarding" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessOnboarding />
+                    </ProtectedRoute>
+                  } />
+                  
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

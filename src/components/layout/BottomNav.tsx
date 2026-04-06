@@ -1,18 +1,39 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Search, Heart, Calendar, MessageSquare } from 'lucide-react';
+import { Home, Search, Heart, Calendar, MessageSquare, BarChart3, User, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAccountType } from '@/hooks/useAccountType';
 
-const navItems = [
+const guestNavItems = [
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/search', label: 'Search', icon: Search },
+  { href: '/auth', label: 'Log In', icon: LogIn },
+];
+
+const customerNavItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/search', label: 'Search', icon: Search },
   { href: '/favorites', label: 'Favorites', icon: Heart },
   { href: '/bookings', label: 'Bookings', icon: Calendar },
+  { href: '/profile', label: 'Profile', icon: User },
+];
+
+const businessNavItems = [
+  { href: '/business/analytics', label: 'Dashboard', icon: BarChart3 },
+  { href: '/bookings', label: 'Bookings', icon: Calendar },
   { href: '/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/profile', label: 'Settings', icon: User },
 ];
 
 export const BottomNav = () => {
   const location = useLocation();
+  const { accountType } = useAccountType();
+
+  const navItems = accountType === 'business'
+    ? businessNavItems
+    : accountType === 'customer'
+    ? customerNavItems
+    : guestNavItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card/95 backdrop-blur-lg border-t border-border safe-area-bottom">
