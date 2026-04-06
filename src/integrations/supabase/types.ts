@@ -1094,6 +1094,61 @@ export type Database = {
         }
         Relationships: []
       }
+      promotion_claims: {
+        Row: {
+          booking_id: string | null
+          business_id: string
+          claimed_at: string
+          id: string
+          promotion_id: string
+          status: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          business_id: string
+          claimed_at?: string
+          id?: string
+          promotion_id: string
+          status?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          business_id?: string
+          claimed_at?: string
+          id?: string
+          promotion_id?: string
+          status?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_claims_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_claims_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_claims_promotion_id_fkey"
+            columns: ["promotion_id"]
+            isOneToOne: false
+            referencedRelation: "promotions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotions: {
         Row: {
           business_id: string
@@ -1106,8 +1161,10 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_new_client_only: boolean | null
+          max_claims: number | null
           start_date: string
           title: string
+          total_claimed: number | null
         }
         Insert: {
           business_id: string
@@ -1120,8 +1177,10 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_new_client_only?: boolean | null
+          max_claims?: number | null
           start_date: string
           title: string
+          total_claimed?: number | null
         }
         Update: {
           business_id?: string
@@ -1134,8 +1193,10 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_new_client_only?: boolean | null
+          max_claims?: number | null
           start_date?: string
           title?: string
+          total_claimed?: number | null
         }
         Relationships: [
           {

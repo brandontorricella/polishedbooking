@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin, Loader2 } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin, Loader2, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BusinessCard } from '@/components/ui/BusinessCard';
@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useToast } from '@/hooks/use-toast';
 import { useLocationBasedBusinesses } from '@/hooks/useLocationBasedBusinesses';
+import { usePromotions } from '@/hooks/usePromotions';
 import { saveIntendedDestination } from '@/components/auth/AuthGate';
 import { Skeleton } from '@/components/ui/skeleton';
 import heroImage from '@/assets/hero-beauty.jpg';
@@ -49,10 +50,7 @@ const Index = () => {
   const { accountType } = useAccountType();
   const { toast } = useToast();
   const { topRated, blackOwned, loading, locationDenied, location, cityName } = useLocationBasedBusinesses();
-  
-  const promotions = mockBusinesses
-    .flatMap(b => (b.promotions || []).map(p => ({ ...p, business: b })))
-    .slice(0, 3);
+  const { promotions, claimedIds, claimPromotion } = usePromotions();
 
   // Redirect business users to their dashboard
   if (accountType === 'business') {
@@ -367,20 +365,27 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {promotions.map((promo, index) => (
-              <motion.div
-                key={promo.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <PromotionCard 
-                  promotion={promo}
-                  businessName={promo.business.name}
-                  businessPhoto={promo.business.profilePhotoUrl}
-                />
-              </motion.div>
-            ))}
+            {promotions.length > 0 ? (
+              promotions.slice(0, 3).map((promo, index) => (
+                <motion.div
+                  key={promo.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                >
+                  <PromotionCard 
+                    promotion={promo}
+                    isClaimed={claimedIds.has(promo.id)}
+                    onClaim={claimPromotion}
+                  />
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <Tag className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                <p>No active promotions right now. Check back soon!</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
