@@ -7,18 +7,23 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { BookingCard } from '@/components/booking/BookingCard';
+import { BusinessScheduleView } from '@/components/booking/BusinessScheduleView';
 import { MyWaitlist } from '@/components/waitlist/MyWaitlist';
+import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistManager';
 import { useBookings } from '@/hooks/useBookings';
 import { useAuth } from '@/hooks/useAuth';
+import { useAccountType } from '@/hooks/useAccountType';
 import { useNavigate } from 'react-router-dom';
 
 const BookingsPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { accountType, businessId, loading: accountLoading } = useAccountType();
   const { bookings, isLoading, cancelBooking, getUpcomingBookings, getPastBookings } = useBookings();
 
   const upcomingBookings = getUpcomingBookings();
   const pastBookings = getPastBookings();
+  const isBusiness = accountType === 'business' && !!businessId;
 
   // Redirect to auth if not logged in
   if (!authLoading && !user) {
@@ -56,17 +61,42 @@ const BookingsPage = () => {
         <div className="container mx-auto px-4">
           {/* Page Header */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl font-bold">My Bookings</h1>
+            <h1 className="font-display text-3xl font-bold">
+              {isBusiness ? 'My Schedule' : 'My Bookings'}
+            </h1>
             <p className="text-muted-foreground mt-2">
-              Manage your upcoming and past appointments
+              {isBusiness
+                ? 'View your upcoming appointments and prepare materials'
+                : 'Manage your upcoming and past appointments'}
             </p>
           </div>
 
-          {isLoading ? (
+          {isLoading || accountLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
+          ) : isBusiness ? (
+            /* ── Business View ── */
+            <Tabs defaultValue="schedule" className="space-y-6">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="schedule">
+                  <Calendar className="w-3.5 h-3.5 mr-1.5" /> Schedule
+                </TabsTrigger>
+                <TabsTrigger value="waitlist">
+                  <Hourglass className="w-3.5 h-3.5 mr-1" /> Waitlist
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="schedule">
+                <BusinessScheduleView businessId={businessId!} />
+              </TabsContent>
+
+              <TabsContent value="waitlist">
+                <BusinessWaitlistManager businessId={businessId!} />
+              </TabsContent>
+            </Tabs>
           ) : (
+            /* ── Client View ── */
             <Tabs defaultValue="upcoming" className="space-y-6">
               <TabsList className="grid w-full max-w-md grid-cols-3">
                 <TabsTrigger value="upcoming">
