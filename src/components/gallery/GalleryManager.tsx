@@ -34,17 +34,39 @@ export function GalleryManager({ businessId, services = [], staff = [], galleryL
     );
   }
 
+  const navigate = useNavigate();
+  const canAddMore = posts.length < galleryLimit;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Before & After Gallery</h2>
-          <p className="text-muted-foreground">{posts.length} posts</p>
+          <p className="text-muted-foreground">
+            {posts.length} / {galleryLimit === Infinity ? '∞' : galleryLimit} posts
+            {tier === 'basic' && (
+              <button onClick={() => navigate('/business/pricing')} className="text-primary text-xs ml-2 hover:underline">
+                Upgrade for more
+              </button>
+            )}
+          </p>
         </div>
-        <Button onClick={() => setShowUpload(true)} className="bg-primary text-primary-foreground">
-          <Plus className="w-4 h-4 mr-2" /> Add Post
+        <Button
+          onClick={() => canAddMore ? setShowUpload(true) : navigate('/business/pricing')}
+          className="bg-primary text-primary-foreground"
+        >
+          <Plus className="w-4 h-4 mr-2" /> {canAddMore ? 'Add Post' : 'Limit Reached'}
         </Button>
       </div>
+
+      {!canAddMore && tier !== 'elite' && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-center text-sm">
+          <p className="mb-2">You've reached your photo limit.</p>
+          <Button variant="outline" size="sm" onClick={() => navigate('/business/pricing')}>
+            Upgrade to {tier === 'basic' ? 'Pro' : 'Elite'} for {tier === 'basic' ? '20' : 'unlimited'} photos
+          </Button>
+        </div>
+      )
 
       {posts.length === 0 ? (
         <Card>
