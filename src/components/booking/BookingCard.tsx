@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import type { BookingWithDetails } from '@/hooks/useBookings';
+import { LeaveReviewButton } from '@/components/reviews/LeaveReviewButton';
 import { cn } from '@/lib/utils';
 
 interface BookingCardProps {
@@ -194,9 +195,12 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
                       </Button>
                     )}
                     {booking.status === 'completed' && (
-                      <Button size="sm" variant="outline" onClick={handleBookAgain}>
-                        Book Again
-                      </Button>
+                      <>
+                        <LeaveReviewButton booking={booking} />
+                        <Button size="sm" variant="outline" onClick={handleBookAgain}>
+                          Book Again
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

@@ -16,6 +16,9 @@ import { BookingFlow } from '@/components/booking/BookingFlow';
 import { AuthPromptModal } from '@/components/auth/AuthPromptModal';
 import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
 import { mockBusinesses, mockReviews } from '@/data/mockData';
+import { useReviews } from '@/hooks/useReviews';
+import { ReviewsList } from '@/components/reviews/ReviewsList';
+import { ReviewForm } from '@/components/reviews/ReviewForm';
 import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -51,7 +54,7 @@ const BusinessProfile = () => {
   const { getOrCreateConversation } = useMessages();
 
   const isOwner = accountType === 'business' && ownerBusinessId === id && !previewAsCustomer;
-
+  const { reviews: dbReviews, stats: reviewStats, canReview, createReview, replyToReview, deleteReply, flagReview, sort: reviewSort, setSort: setReviewSort, loading: reviewsLoading } = useReviews(id);
   useEffect(() => {
     const found = mockBusinesses.find(b => b.id === id);
     setBusiness(found || mockBusinesses[0]);
@@ -66,6 +69,7 @@ const BusinessProfile = () => {
   }
 
   const reviews = mockReviews.filter(r => r.businessId === business.id);
+  // Use DB reviews on the reviews tab, mock reviews only for legacy display
 
   const requireAuth = (action: string, redirectTo?: string) => {
     if (accountType === 'guest') {
@@ -456,50 +460,30 @@ const BusinessProfile = () => {
 
           {/* Reviews Tab */}
           <TabsContent value="reviews" className="space-y-4">
-            {accountType === 'guest' && reviews.length > 2 && (
+            {accountType === 'guest' && dbReviews.length > 2 && (
               <GuestConversionBanner message="Sign up to leave your own reviews" />
             )}
-            {reviews.length > 0 ? reviews.map((review) => (
-              <motion.div
-                key={review.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-xl border border-border"
-              >
-                <div className="flex items-start gap-3">
-                  {review.clientPhotoUrl ? (
-                    <img 
-                      src={review.clientPhotoUrl} 
-                      alt={review.clientName}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                      <span className="text-lg font-medium">{review.clientName?.charAt(0) || 'A'}</span>
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium">{review.clientName || 'Anonymous'}</p>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: review.rating }).map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-muted-foreground mt-1">{review.text}</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {new Date(review.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            )) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No reviews yet</p>
-              </div>
+
+            {/* Leave a review form for eligible customers */}
+            {canReview && !isOwner && (
+              <ReviewForm
+                onSubmit={async (rating, text) => {
+                  const result = await createReview(rating, text || undefined);
+                  return { error: result.error };
+                }}
+              />
             )}
+
+            <ReviewsList
+              reviews={dbReviews}
+              stats={reviewStats}
+              sort={reviewSort}
+              onSortChange={setReviewSort}
+              isBusinessOwner={isOwner}
+              onReply={isOwner ? replyToReview : undefined}
+              onDeleteReply={isOwner ? deleteReply : undefined}
+              onFlag={!isOwner ? flagReview : undefined}
+            />
           </TabsContent>
 
           {/* About Tab */}
