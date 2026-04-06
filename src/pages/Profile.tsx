@@ -295,6 +295,42 @@ const Profile = () => {
             </motion.div>
           )}
 
+          {/* Deposit & Cancellation Policy for Business Users */}
+          {isBusinessUser && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.07 }}
+              className="mb-6"
+            >
+              <button 
+                onClick={() => setShowDepositSettings(!showDepositSettings)}
+                className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <CreditCard className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium">Deposits & Cancellation</p>
+                    <p className="text-sm text-muted-foreground">Set deposit requirements and cancellation policies</p>
+                  </div>
+                </div>
+                <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${showDepositSettings ? 'rotate-90' : ''}`} />
+              </button>
+              
+              {showDepositSettings && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-4"
+                >
+                  <DepositCancellationSettings />
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
           {/* Settings Sections */}
           <div className="space-y-4">
             {/* Notifications */}
