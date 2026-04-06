@@ -38,6 +38,7 @@ export const Header = () => {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { accountType } = useAccountType();
+  const { isAdmin } = useAdmin();
 
   const navItems = accountType === 'business'
     ? businessNavItems
