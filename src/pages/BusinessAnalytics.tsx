@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -19,13 +19,18 @@ import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3 } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3, FileText, FileSpreadsheet, Loader2 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import { format, subDays, startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
 
 const tierDetails = {
   basic: { name: 'Basic', icon: Sparkles, color: 'text-blue-500' },
