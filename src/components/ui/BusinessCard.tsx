@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Star, MapPin, Heart, BadgeCheck, Crown, Tag } from 'lucide-react';
+import { Star, MapPin, Heart, BadgeCheck, Crown, Tag, Award, Gem } from 'lucide-react';
 import type { Business } from '@/types';
 import { Badge } from './badge';
 import { Button } from './button';
@@ -7,6 +7,26 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+
+const SubscriptionBadge = ({ tier }: { tier?: string }) => {
+  if (tier === 'elite') {
+    return (
+      <Badge className="bg-gradient-to-r from-yellow-400 to-amber-500 text-foreground border-0 shadow-[0_2px_8px_rgba(255,215,0,0.3)]">
+        <Gem className="w-3 h-3 mr-1" />
+        Verified Elite
+      </Badge>
+    );
+  }
+  if (tier === 'pro') {
+    return (
+      <Badge className="bg-primary text-primary-foreground border-0">
+        <Award className="w-3 h-3 mr-1" />
+        Recommended
+      </Badge>
+    );
+  }
+  return null;
+};
 
 interface BusinessCardProps {
   business: Business;
@@ -53,9 +73,10 @@ export const BusinessCard = ({
           className="w-20 h-20 rounded-lg object-cover"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-foreground truncate">{business.name}</h3>
             {business.isVerified && <BadgeCheck className="w-4 h-4 text-primary flex-shrink-0" />}
+            <SubscriptionBadge tier={business.subscriptionTier} />
           </div>
           <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
             <Star className="w-4 h-4 fill-accent text-accent" />
@@ -138,10 +159,11 @@ export const BusinessCard = ({
       <div className="p-4 pt-10">
         <div className="flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-display text-lg font-semibold text-foreground">{business.name}</h3>
               {business.isVerified && <BadgeCheck className="w-5 h-5 text-primary" />}
             </div>
+            <SubscriptionBadge tier={business.subscriptionTier} />
             <div className="flex items-center gap-2 mt-1">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-accent text-accent" />
@@ -194,7 +216,13 @@ export const BusinessCard = ({
           <Button 
             variant="outline" 
             className="flex-1"
-            onClick={() => onViewProfile?.(business.id)}
+            onClick={() => {
+              if (onViewProfile) {
+                onViewProfile(business.id);
+              } else {
+                navigate(`/business/${business.id}`);
+              }
+            }}
           >
             View Profile
           </Button>
