@@ -13,11 +13,13 @@ import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistM
 import { StaffManager } from '@/components/staff/StaffManager';
 import { FollowupManager } from '@/components/followups/FollowupManager';
 import { GalleryManager } from '@/components/gallery/GalleryManager';
+import { FeatureGate, LockedFeaturePage } from '@/components/subscription/FeatureGate';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
