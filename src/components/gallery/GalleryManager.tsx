@@ -66,7 +66,7 @@ export function GalleryManager({ businessId, services = [], staff = [], galleryL
             Upgrade to {tier === 'basic' ? 'Pro' : 'Elite'} for {tier === 'basic' ? '20' : 'unlimited'} photos
           </Button>
         </div>
-      )
+      )}
 
       {posts.length === 0 ? (
         <Card>
