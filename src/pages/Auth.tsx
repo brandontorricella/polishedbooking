@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import { cn } from '@/lib/utils';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -26,6 +27,7 @@ const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading, signUp, signIn } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdmin();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,10 +51,14 @@ const AuthPage = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && !loading) {
-      navigate('/');
+    if (user && !loading && !adminLoading) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, adminLoading, isAdmin, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +76,7 @@ const AuthPage = () => {
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
     if (!error) {
-      navigate('/');
+      // Redirect is handled by the useEffect above after auth state updates
     } else {
       setLoginError(error.message);
     }

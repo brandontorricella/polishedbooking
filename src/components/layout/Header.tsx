@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, User, Heart, Calendar, MessageSquare,
   LogOut, Search, Home, BarChart3, Users, Settings,
-  Scissors, UserPlus, LogIn
+  Scissors, UserPlus, LogIn, Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
+import { useAdmin } from '@/hooks/useAdmin';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import polishedLogo from '@/assets/logo-transparent.png';
 
@@ -37,6 +38,7 @@ export const Header = () => {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { accountType } = useAccountType();
+  const { isAdmin } = useAdmin();
 
   const navItems = accountType === 'business'
     ? businessNavItems
@@ -115,6 +117,14 @@ export const Header = () => {
 
             {accountType === 'customer' && (
               <>
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90 text-cream gap-1.5">
+                      <Shield className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/business" className="hidden sm:block">
                   <Button variant="outline" size="sm" className="rounded-lg border-cream/30 text-cream/70 bg-transparent hover:bg-cream/10 hover:text-cream">
                     For Business
@@ -139,6 +149,14 @@ export const Header = () => {
 
             {accountType === 'business' && (
               <>
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90 text-cream gap-1.5">
+                      <Shield className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <NotificationBell />
                 <Link to="/profile">
                   <Button variant="ghost" size="icon" className="rounded-lg text-cream hover:bg-cream/10">
@@ -221,7 +239,15 @@ export const Header = () => {
               )}
 
               {user && (
-                <div className="pt-4 border-t border-cream/10 mt-4">
+                <div className="pt-4 border-t border-cream/10 mt-4 space-y-1">
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full justify-start bg-gradient-primary hover:opacity-90 text-cream" size="lg">
+                        <Shield className="w-5 h-5 mr-2" />
+                        Admin Dashboard
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-cream/60 hover:text-cream hover:bg-cream/10"
