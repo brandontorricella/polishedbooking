@@ -23,7 +23,7 @@ export default function AdminBusinesses() {
     setLoading(true);
     let query = supabase.from('businesses').select('*').order('created_at', { ascending: false }).limit(100);
     if (search) query = query.ilike('name', `%${search}%`);
-    if (tierFilter !== 'all') query = query.eq('subscription_tier', tierFilter);
+    if (tierFilter !== 'all') query = query.eq('subscription_tier', tierFilter as any);
     const { data } = await query;
     setBusinesses(data || []);
     setLoading(false);

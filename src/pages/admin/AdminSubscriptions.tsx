@@ -21,7 +21,7 @@ export default function AdminSubscriptions() {
       .limit(100);
 
     if (filter !== 'all') {
-      query = query.eq('subscription_status', filter);
+      query = query.eq('subscription_status', filter as any);
     }
 
     const { data } = await query;

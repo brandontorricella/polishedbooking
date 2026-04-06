@@ -25,6 +25,16 @@ import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import HelpCenter from "./pages/HelpCenter";
+import { AdminRoute } from "@/components/admin/AdminRoute";
+import { lazy, Suspense } from "react";
+
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
+const AdminBusinesses = lazy(() => import("./pages/admin/AdminBusinesses"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminSubscriptions = lazy(() => import("./pages/admin/AdminSubscriptions"));
+const AdminRevenue = lazy(() => import("./pages/admin/AdminRevenue"));
+const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 
 const queryClient = new QueryClient();
 
@@ -89,6 +99,15 @@ const App = () => {
                     </ProtectedRoute>
                   } />
                   
+                  {/* Admin routes */}
+                  <Route path="/admin" element={<AdminRoute><Suspense fallback={null}><AdminOverview /></Suspense></AdminRoute>} />
+                  <Route path="/admin/businesses" element={<AdminRoute><Suspense fallback={null}><AdminBusinesses /></Suspense></AdminRoute>} />
+                  <Route path="/admin/users" element={<AdminRoute><Suspense fallback={null}><AdminUsers /></Suspense></AdminRoute>} />
+                  <Route path="/admin/subscriptions" element={<AdminRoute><Suspense fallback={null}><AdminSubscriptions /></Suspense></AdminRoute>} />
+                  <Route path="/admin/revenue" element={<AdminRoute><Suspense fallback={null}><AdminRevenue /></Suspense></AdminRoute>} />
+                  <Route path="/admin/reviews" element={<AdminRoute><Suspense fallback={null}><AdminReviews /></Suspense></AdminRoute>} />
+                  <Route path="/admin/settings" element={<AdminRoute><Suspense fallback={null}><AdminSettings /></Suspense></AdminRoute>} />
+
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
