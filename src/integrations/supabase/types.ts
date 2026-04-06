@@ -69,10 +69,20 @@ export type Database = {
           booking_date: string
           booking_time: string
           business_id: string
+          canceled_at: string | null
+          canceled_by: string | null
+          cancellation_fee: number | null
+          cancellation_fee_charged: boolean | null
+          cancellation_fee_payment_intent_id: string | null
+          cancellation_reason: string | null
           client_id: string
           created_at: string
+          deposit_amount: number | null
+          deposit_paid: boolean | null
+          deposit_payment_intent_id: string | null
           id: string
           notes: string | null
+          remaining_balance: number | null
           service_id: string
           staff_id: string | null
           status: Database["public"]["Enums"]["booking_status"] | null
@@ -83,10 +93,20 @@ export type Database = {
           booking_date: string
           booking_time: string
           business_id: string
+          canceled_at?: string | null
+          canceled_by?: string | null
+          cancellation_fee?: number | null
+          cancellation_fee_charged?: boolean | null
+          cancellation_fee_payment_intent_id?: string | null
+          cancellation_reason?: string | null
           client_id: string
           created_at?: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean | null
+          deposit_payment_intent_id?: string | null
           id?: string
           notes?: string | null
+          remaining_balance?: number | null
           service_id: string
           staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
@@ -97,10 +117,20 @@ export type Database = {
           booking_date?: string
           booking_time?: string
           business_id?: string
+          canceled_at?: string | null
+          canceled_by?: string | null
+          cancellation_fee?: number | null
+          cancellation_fee_charged?: boolean | null
+          cancellation_fee_payment_intent_id?: string | null
+          cancellation_reason?: string | null
           client_id?: string
           created_at?: string
+          deposit_amount?: number | null
+          deposit_paid?: boolean | null
+          deposit_payment_intent_id?: string | null
           id?: string
           notes?: string | null
+          remaining_balance?: number | null
           service_id?: string
           staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
@@ -216,10 +246,17 @@ export type Database = {
         Row: {
           address: string | null
           bio: string | null
+          cancellation_fee_amount: number | null
+          cancellation_fee_type: string | null
+          cancellation_hours: number | null
+          cancellation_policy: string | null
           categories: string[] | null
           city: string | null
           cover_photo_url: string | null
           created_at: string
+          deposit_amount: number | null
+          deposit_required: boolean | null
+          deposit_type: string | null
           description: string | null
           email: string | null
           hours: Json | null
@@ -258,10 +295,17 @@ export type Database = {
         Insert: {
           address?: string | null
           bio?: string | null
+          cancellation_fee_amount?: number | null
+          cancellation_fee_type?: string | null
+          cancellation_hours?: number | null
+          cancellation_policy?: string | null
           categories?: string[] | null
           city?: string | null
           cover_photo_url?: string | null
           created_at?: string
+          deposit_amount?: number | null
+          deposit_required?: boolean | null
+          deposit_type?: string | null
           description?: string | null
           email?: string | null
           hours?: Json | null
@@ -302,10 +346,17 @@ export type Database = {
         Update: {
           address?: string | null
           bio?: string | null
+          cancellation_fee_amount?: number | null
+          cancellation_fee_type?: string | null
+          cancellation_hours?: number | null
+          cancellation_policy?: string | null
           categories?: string[] | null
           city?: string | null
           cover_photo_url?: string | null
           created_at?: string
+          deposit_amount?: number | null
+          deposit_required?: boolean | null
+          deposit_type?: string | null
           description?: string | null
           email?: string | null
           hours?: Json | null
@@ -803,6 +854,63 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          business_id: string
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          status: string | null
+          stripe_payment_intent_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          business_id: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          business_id?: string
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       points_transactions: {
         Row: {

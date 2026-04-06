@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, addDays, isSameDay, isAfter, isBefore, startOfToday } from 'date-fns';
@@ -8,7 +8,8 @@ import {
   ChevronLeft, 
   ChevronRight,
   Check,
-  Loader2
+  Loader2,
+  CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -22,6 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { DepositPaymentStep } from '@/components/booking/DepositPaymentStep';
+import { CancellationPolicyDisplay } from '@/components/booking/CancellationPolicyDisplay';
 import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +35,7 @@ interface BookingFlowProps {
   initialService?: Service;
 }
 
-type BookingStep = 'service' | 'date' | 'time' | 'confirm';
+type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'deposit';
 
 // Generate time slots based on business hours
 const generateTimeSlots = (openTime: string, closeTime: string, duration: number): string[] => {
@@ -75,6 +78,11 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState('');
+  const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+
+  // Check if business requires deposit
+  const businessAny = business as any;
+  const depositRequired = businessAny.deposit_required || false;
 
   const today = startOfToday();
   const dayOfWeek = selectedDate 
@@ -86,45 +94,45 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     ? generateTimeSlots(businessHours.open, businessHours.close, selectedService.duration)
     : [];
 
+  const allSteps: BookingStep[] = depositRequired 
+    ? ['service', 'date', 'time', 'confirm', 'deposit']
+    : ['service', 'date', 'time', 'confirm'];
+
   const handleNext = () => {
-    const steps: BookingStep[] = ['service', 'date', 'time', 'confirm'];
-    const currentIndex = steps.indexOf(step);
-    if (currentIndex < steps.length - 1) {
-      setStep(steps[currentIndex + 1]);
+    const currentIndex = allSteps.indexOf(step);
+    if (currentIndex < allSteps.length - 1) {
+      setStep(allSteps[currentIndex + 1]);
     }
   };
 
   const handleBack = () => {
-    const steps: BookingStep[] = ['service', 'date', 'time', 'confirm'];
-    const currentIndex = steps.indexOf(step);
+    const currentIndex = allSteps.indexOf(step);
     if (currentIndex > 0) {
-      setStep(steps[currentIndex - 1]);
+      setStep(allSteps[currentIndex - 1]);
     }
   };
 
   const handleConfirmBooking = async () => {
     if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to book an appointment.",
-        variant: "destructive",
-      });
+      toast({ title: "Sign in required", description: "Please sign in to book an appointment.", variant: "destructive" });
       navigate('/auth');
       return;
     }
 
     if (!selectedService || !selectedDate || !selectedTime) {
-      toast({
-        title: "Missing information",
-        description: "Please select a service, date, and time.",
-        variant: "destructive",
-      });
+      toast({ title: "Missing information", description: "Please select a service, date, and time.", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
+      const depositAmt = depositRequired
+        ? (businessAny.deposit_type === 'percentage'
+          ? (selectedService.price * (businessAny.deposit_amount || 25)) / 100
+          : (businessAny.deposit_amount || 25))
+        : 0;
+
       const { data, error } = await supabase
         .from('bookings')
         .insert({
@@ -135,30 +143,35 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
           booking_time: selectedTime,
           total_price: selectedService.price,
           notes: notes || null,
-          status: 'pending',
+          status: depositRequired ? 'pending' : 'confirmed',
+          deposit_amount: depositAmt,
+          remaining_balance: selectedService.price - depositAmt,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      toast({
-        title: "Booking confirmed!",
-        description: `Your appointment with ${business.name} is confirmed.`,
-      });
-
-      onClose();
-      navigate('/bookings');
+      if (depositRequired) {
+        setCreatedBookingId(data.id);
+        setStep('deposit');
+      } else {
+        toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.` });
+        onClose();
+        navigate('/bookings');
+      }
     } catch (error: any) {
       console.error('Booking error:', error);
-      toast({
-        title: "Booking failed",
-        description: error.message || "Unable to complete booking. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Booking failed", description: error.message || "Unable to complete booking.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDepositComplete = () => {
+    toast({ title: "Booking confirmed!", description: `Your deposit has been received. Appointment confirmed!` });
+    onClose();
+    navigate('/bookings');
   };
 
   const isDateDisabled = (date: Date) => {
@@ -188,25 +201,25 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
 
         {/* Progress Indicator */}
         <div className="flex items-center justify-center gap-2 py-4">
-          {['service', 'date', 'time', 'confirm'].map((s, i) => (
+          {allSteps.map((s, i) => (
             <div key={s} className="flex items-center">
               <div className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
                 step === s ? "bg-primary text-primary-foreground" :
-                ['service', 'date', 'time', 'confirm'].indexOf(step) > i 
+                allSteps.indexOf(step) > i 
                   ? "bg-primary/20 text-primary" 
                   : "bg-muted text-muted-foreground"
               )}>
-                {['service', 'date', 'time', 'confirm'].indexOf(step) > i ? (
+                {allSteps.indexOf(step) > i ? (
                   <Check className="w-4 h-4" />
                 ) : (
                   i + 1
                 )}
               </div>
-              {i < 3 && (
+              {i < allSteps.length - 1 && (
                 <div className={cn(
                   "w-8 h-0.5 mx-1",
-                  ['service', 'date', 'time', 'confirm'].indexOf(step) > i 
+                  allSteps.indexOf(step) > i 
                     ? "bg-primary" 
                     : "bg-muted"
                 )} />
@@ -362,44 +375,68 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                 </div>
               </motion.div>
             )}
+
+            {/* Step 5: Deposit Payment (if required) */}
+            {step === 'deposit' && createdBookingId && selectedService && (
+              <motion.div
+                key="deposit"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <DepositPaymentStep
+                  bookingId={createdBookingId}
+                  business={business}
+                  service={selectedService}
+                  onPaymentComplete={handleDepositComplete}
+                />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex gap-3 pt-4 border-t border-border">
-          {step !== 'service' && (
-            <Button variant="outline" onClick={handleBack} className="flex-1">
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Back
-            </Button>
-          )}
-          
-          {step !== 'confirm' ? (
-            <Button 
-              onClick={handleNext} 
-              disabled={!canProceed()}
-              className="flex-1 bg-gradient-primary"
-            >
-              Continue
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleConfirmBooking}
-              disabled={isSubmitting}
-              className="flex-1 bg-gradient-primary"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Booking...
-                </>
-              ) : (
-                'Confirm Booking'
-              )}
-            </Button>
-          )}
-        </div>
+        {step !== 'deposit' && (
+          <div className="flex gap-3 pt-4 border-t border-border">
+            {step !== 'service' && (
+              <Button variant="outline" onClick={handleBack} className="flex-1">
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Back
+              </Button>
+            )}
+            
+            {step !== 'confirm' ? (
+              <Button 
+                onClick={handleNext} 
+                disabled={!canProceed()}
+                className="flex-1 bg-gradient-primary"
+              >
+                Continue
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleConfirmBooking}
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-primary"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Booking...
+                  </>
+                ) : depositRequired ? (
+                  <>
+                    <CreditCard className="w-4 h-4 mr-1" />
+                    Continue to Deposit
+                  </>
+                ) : (
+                  'Confirm Booking'
+                )}
+              </Button>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
