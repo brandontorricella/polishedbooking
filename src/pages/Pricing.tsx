@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
-import { useSuperwall } from '@/hooks/useSuperwall';
+import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 
 const pricingTiers = [
@@ -20,7 +20,7 @@ const pricingTiers = [
       'Public business profile',
       'Appear in local search results',
       'Service list with pricing',
-      'Booking link or in-app booking',
+      'In-app booking',
       'Reviews & ratings',
       'Location-based discovery',
     ],
@@ -65,31 +65,30 @@ const pricingTiers = [
 const PricingPage = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { showPaywall, isSubscribed, subscription } = useSuperwall();
+  const { isSubscribed, subscription, startCheckout, manageSubscription } = useSubscription();
 
   const handleSelectTier = async (tierId: string) => {
-    // If user is not logged in, redirect to signup
     if (!user) {
       navigate(`/business/onboarding?tier=${tierId}`);
       return;
     }
 
-    // If user is a client, redirect to business onboarding
     if (profile?.role === 'client') {
       navigate(`/business/onboarding?tier=${tierId}`);
       return;
     }
 
-    // If user is already a business, show paywall for upgrade/change
     if (profile?.role === 'business') {
-      const purchased = await showPaywall(tierId as 'basic' | 'pro' | 'elite');
-      if (purchased) {
-        navigate('/business/analytics?success=true');
+      if (isSubscribed) {
+        // Already subscribed - go to portal to change plan
+        await manageSubscription();
+      } else {
+        // Start new checkout
+        await startCheckout(tierId as 'basic' | 'pro' | 'elite');
       }
       return;
     }
 
-    // Default: go to onboarding
     navigate(`/business/onboarding?tier=${tierId}`);
   };
 
@@ -97,10 +96,13 @@ const PricingPage = () => {
     if (!user || profile?.role !== 'business') {
       return 'Start Free Trial';
     }
-    if (subscription?.tier === tierId) {
+    if (subscription?.tier === tierId && isSubscribed) {
       return 'Current Plan';
     }
-    return 'Switch Plan';
+    if (isSubscribed) {
+      return 'Switch Plan';
+    }
+    return 'Start Free Trial';
   };
 
   const isCurrentPlan = (tierId: string) => {
@@ -113,7 +115,6 @@ const PricingPage = () => {
       
       <main className="pt-24 pb-24 md:pb-8">
         <div className="container mx-auto px-4">
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -123,11 +124,10 @@ const PricingPage = () => {
               Simple, Transparent <span className="text-gradient">Pricing</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Start with a 30-day free trial. Payment info required to start trial.
+              Start with a 30-day free trial. Cancel anytime from your browser.
             </p>
           </motion.div>
 
-          {/* Pricing Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {pricingTiers.map((tier, index) => {
               const Icon = tier.icon;
@@ -160,18 +160,10 @@ const PricingPage = () => {
 
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      isCurrent 
-                        ? 'bg-green-500/10'
-                        : tier.recommended 
-                          ? 'bg-primary/10' 
-                          : 'bg-secondary'
+                      isCurrent ? 'bg-green-500/10' : tier.recommended ? 'bg-primary/10' : 'bg-secondary'
                     }`}>
                       <Icon className={`w-6 h-6 ${
-                        isCurrent 
-                          ? 'text-green-500' 
-                          : tier.recommended 
-                            ? 'text-primary' 
-                            : 'text-foreground'
+                        isCurrent ? 'text-green-500' : tier.recommended ? 'text-primary' : 'text-foreground'
                       }`} />
                     </div>
                     <div>
@@ -189,11 +181,7 @@ const PricingPage = () => {
                     {tier.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3">
                         <Check className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                          isCurrent
-                            ? 'text-green-500'
-                            : tier.recommended 
-                              ? 'text-primary' 
-                              : 'text-muted-foreground'
+                          isCurrent ? 'text-green-500' : tier.recommended ? 'text-primary' : 'text-muted-foreground'
                         }`} />
                         <span className="text-sm">{feature}</span>
                       </li>
@@ -219,7 +207,6 @@ const PricingPage = () => {
             })}
           </div>
 
-          {/* FAQ Link */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
