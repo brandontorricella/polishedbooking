@@ -1128,36 +1128,67 @@ export type Database = {
       }
       reviews: {
         Row: {
+          booking_id: string | null
           business_id: string
+          business_reply: string | null
+          business_reply_at: string | null
           client_id: string
           created_at: string
+          flag_reason: string | null
+          flagged_by: string | null
           id: string
           is_anonymous: boolean | null
+          is_flagged: boolean | null
+          is_removed: boolean | null
+          is_resolved: boolean | null
           rating: number
           text: string | null
           updated_at: string
         }
         Insert: {
+          booking_id?: string | null
           business_id: string
+          business_reply?: string | null
+          business_reply_at?: string | null
           client_id: string
           created_at?: string
+          flag_reason?: string | null
+          flagged_by?: string | null
           id?: string
           is_anonymous?: boolean | null
+          is_flagged?: boolean | null
+          is_removed?: boolean | null
+          is_resolved?: boolean | null
           rating: number
           text?: string | null
           updated_at?: string
         }
         Update: {
+          booking_id?: string | null
           business_id?: string
+          business_reply?: string | null
+          business_reply_at?: string | null
           client_id?: string
           created_at?: string
+          flag_reason?: string | null
+          flagged_by?: string | null
           id?: string
           is_anonymous?: boolean | null
+          is_flagged?: boolean | null
+          is_removed?: boolean | null
+          is_resolved?: boolean | null
           rating?: number
           text?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reviews_business_id_fkey"
             columns: ["business_id"]
