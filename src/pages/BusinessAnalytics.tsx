@@ -13,11 +13,13 @@ import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistM
 import { StaffManager } from '@/components/staff/StaffManager';
 import { FollowupManager } from '@/components/followups/FollowupManager';
 import { GalleryManager } from '@/components/gallery/GalleryManager';
+import { FeatureGate, LockedFeaturePage } from '@/components/subscription/FeatureGate';
+import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -66,6 +68,106 @@ const SampleDashboardOverlay = () => {
     </motion.div>
   );
 };
+
+const FeatureGatedDashboard = ({ businessId, businessServices }: { businessId: string | null; businessServices: { id: string; name: string; price: number; duration: number }[] }) => {
+  const { canAccessAnalytics, canSendPromotions, canAccessRebookingPrompts, galleryLimit, tier } = useFeatureAccess();
+
+  return (
+    <Tabs defaultValue="overview" className="space-y-6">
+      <TabsList className="flex-wrap">
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="bookings" className="gap-1">
+          {!canAccessAnalytics && <Lock className="w-3 h-3" />} Bookings
+        </TabsTrigger>
+        <TabsTrigger value="bundles"><Package className="w-4 h-4 mr-1" /> Bundles</TabsTrigger>
+        <TabsTrigger value="loyalty"><Star className="w-4 h-4 mr-1" /> Loyalty</TabsTrigger>
+        <TabsTrigger value="revenue" className="gap-1">
+          {!canAccessAnalytics && <Lock className="w-3 h-3" />} Revenue
+        </TabsTrigger>
+        <TabsTrigger value="clients"><Users className="w-4 h-4 mr-1" /> Clients</TabsTrigger>
+        <TabsTrigger value="waitlist"><Hourglass className="w-4 h-4 mr-1" /> Waitlist</TabsTrigger>
+        <TabsTrigger value="staff"><UserCheck className="w-4 h-4 mr-1" /> Staff</TabsTrigger>
+        <TabsTrigger value="followups" className="gap-1">
+          {!canAccessRebookingPrompts && <Lock className="w-3 h-3" />}
+          <Send className="w-4 h-4 mr-1" /> Follow-ups
+        </TabsTrigger>
+        <TabsTrigger value="gallery"><Image className="w-4 h-4 mr-1" /> Gallery</TabsTrigger>
+      </TabsList>
+
+      {/* Overview – always visible (basic stats) */}
+      <TabsContent value="overview">
+        {businessId ? <AnalyticsDashboard businessId={businessId} /> : <NoBusinessPlaceholder text="view analytics" />}
+      </TabsContent>
+
+      {/* Bookings – Pro+ */}
+      <TabsContent value="bookings">
+        <FeatureGate feature="analytics_dashboard">
+          {businessId ? <BookingAnalytics businessId={businessId} /> : <NoBusinessPlaceholder text="view booking analytics" />}
+        </FeatureGate>
+      </TabsContent>
+
+      {/* Bundles – all tiers */}
+      <TabsContent value="bundles">
+        {businessId ? <BundleManager businessId={businessId} services={businessServices} /> : <NoBusinessPlaceholder text="manage bundles" />}
+      </TabsContent>
+
+      {/* Loyalty – all tiers */}
+      <TabsContent value="loyalty">
+        {businessId ? <LoyaltyManager businessId={businessId} /> : <NoBusinessPlaceholder text="manage loyalty" />}
+      </TabsContent>
+
+      {/* Revenue – Pro+ */}
+      <TabsContent value="revenue">
+        <FeatureGate feature="analytics_dashboard">
+          {businessId ? <RevenueAnalytics businessId={businessId} /> : <NoBusinessPlaceholder text="view revenue analytics" />}
+        </FeatureGate>
+      </TabsContent>
+
+      {/* Clients – all tiers */}
+      <TabsContent value="clients">
+        {businessId ? <ClientNotesManager businessId={businessId} /> : <NoBusinessPlaceholder text="manage clients" />}
+      </TabsContent>
+
+      {/* Waitlist – all tiers */}
+      <TabsContent value="waitlist">
+        {businessId ? <BusinessWaitlistManager businessId={businessId} /> : <NoBusinessPlaceholder text="manage waitlist" />}
+      </TabsContent>
+
+      {/* Staff – all tiers */}
+      <TabsContent value="staff">
+        {businessId ? <StaffManager businessId={businessId} services={businessServices} /> : <NoBusinessPlaceholder text="manage staff" />}
+      </TabsContent>
+
+      {/* Follow-ups – Pro+ */}
+      <TabsContent value="followups">
+        <FeatureGate feature="client_rebooking_prompts"
+          fallback={
+            <LockedFeaturePage
+              icon={<Send className="w-8 h-8 text-muted-foreground" />}
+              title="Automated Follow-ups"
+              description="Automatically remind clients to book again after their appointment."
+              requiredTier="pro"
+              benefits={['Automatic rebooking reminders', 'Customizable timing (7-60 days)', 'Include discount codes', 'Track rebook rates']}
+            />
+          }
+        >
+          {businessId ? <FollowupManager businessId={businessId} /> : <NoBusinessPlaceholder text="manage follow-ups" />}
+        </FeatureGate>
+      </TabsContent>
+
+      {/* Gallery – all tiers, but limited */}
+      <TabsContent value="gallery">
+        {businessId ? <GalleryManager businessId={businessId} services={businessServices} galleryLimit={galleryLimit} tier={tier} /> : <NoBusinessPlaceholder text="manage gallery" />}
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+const NoBusinessPlaceholder = ({ text }: { text: string }) => (
+  <div className="p-8 bg-card rounded-2xl border border-border text-center">
+    <p className="text-muted-foreground">Set up your business profile to {text}</p>
+  </div>
+);
 
 const BusinessAnalyticsPage = () => {
   const [searchParams] = useSearchParams();
@@ -231,134 +333,7 @@ const BusinessAnalyticsPage = () => {
             {showSampleDashboard && <SampleDashboardOverlay />}
             
             <div className={cn(showSampleDashboard && "pointer-events-none select-none")}>
-              <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList>
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="bookings">Bookings</TabsTrigger>
-                  <TabsTrigger value="bundles">
-                    <Package className="w-4 h-4 mr-1" /> Bundles
-                  </TabsTrigger>
-                  <TabsTrigger value="loyalty">
-                    <Star className="w-4 h-4 mr-1" /> Loyalty
-                  </TabsTrigger>
-                  <TabsTrigger value="revenue">Revenue</TabsTrigger>
-                  <TabsTrigger value="clients">
-                    <Users className="w-4 h-4 mr-1" /> Clients
-                  </TabsTrigger>
-                  <TabsTrigger value="waitlist">
-                    <Hourglass className="w-4 h-4 mr-1" /> Waitlist
-                  </TabsTrigger>
-                  <TabsTrigger value="staff">
-                    <UserCheck className="w-4 h-4 mr-1" /> Staff
-                  </TabsTrigger>
-                  <TabsTrigger value="followups">
-                    <Send className="w-4 h-4 mr-1" /> Follow-ups
-                  </TabsTrigger>
-                  <TabsTrigger value="gallery">
-                    <Image className="w-4 h-4 mr-1" /> Gallery
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="overview">
-                  {businessId ? (
-                    <AnalyticsDashboard businessId={businessId} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to view analytics</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="bookings">
-                  {businessId ? (
-                    <BookingAnalytics businessId={businessId} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to view booking analytics</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="bundles">
-                  {businessId ? (
-                    <BundleManager businessId={businessId} services={businessServices} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to manage bundles</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="loyalty">
-                  {businessId ? (
-                    <LoyaltyManager businessId={businessId} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to manage your loyalty program</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="revenue">
-                  {businessId ? (
-                    <RevenueAnalytics businessId={businessId} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to view revenue analytics</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="clients">
-                  {businessId ? (
-                    <ClientNotesManager businessId={businessId} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to manage clients</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="waitlist">
-                  {businessId ? (
-                    <BusinessWaitlistManager businessId={businessId} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to manage your waitlist</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="staff">
-                  {businessId ? (
-                    <StaffManager businessId={businessId} services={businessServices} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to manage staff</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="followups">
-                  {businessId ? (
-                    <FollowupManager businessId={businessId} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to manage follow-ups</p>
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="gallery">
-                  {businessId ? (
-                    <GalleryManager businessId={businessId} services={businessServices} />
-                  ) : (
-                    <div className="p-8 bg-card rounded-2xl border border-border text-center">
-                      <p className="text-muted-foreground">Set up your business profile to manage your gallery</p>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
+              <FeatureGatedDashboard businessId={businessId} businessServices={businessServices} />
             </div>
           </div>
         </div>
