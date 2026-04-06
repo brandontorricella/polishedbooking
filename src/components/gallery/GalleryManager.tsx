@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGalleryManagement, type GalleryPost } from '@/hooks/useGallery';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,9 +17,11 @@ interface GalleryManagerProps {
   businessId: string;
   services?: { id: string; name: string }[];
   staff?: { id: string; name: string }[];
+  galleryLimit?: number;
+  tier?: string;
 }
 
-export function GalleryManager({ businessId, services = [], staff = [] }: GalleryManagerProps) {
+export function GalleryManager({ businessId, services = [], staff = [], galleryLimit = Infinity, tier = 'basic' }: GalleryManagerProps) {
   const { posts, loading, createPost, updatePost, deletePost, uploadImage } = useGalleryManagement(businessId);
   const [showUpload, setShowUpload] = useState(false);
   const { toast } = useToast();
