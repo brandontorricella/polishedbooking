@@ -46,6 +46,9 @@ const BusinessProfile = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMessage, setAuthModalMessage] = useState('');
   const [previewAsCustomer, setPreviewAsCustomer] = useState(false);
+  const [showPhoneNumber, setShowPhoneNumber] = useState(false);
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const { getOrCreateConversation } = useMessages();
 
   const isOwner = accountType === 'business' && ownerBusinessId === id && !previewAsCustomer;
 
