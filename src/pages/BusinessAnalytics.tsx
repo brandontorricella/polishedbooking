@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3, FileText, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3, FileText, FileSpreadsheet, Loader2, Eye } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -366,6 +366,15 @@ const BusinessAnalyticsPage = () => {
             </div>
             {isBusinessUser && (
               <div className="flex gap-2 mt-4 md:mt-0 flex-wrap">
+                {/* View Storefront */}
+                {businessId && (
+                  <Link to={`/business/${businessId}`}>
+                    <Button variant="outline" size="sm" className="gap-1.5">
+                      <Eye className="w-4 h-4" />
+                      View My Storefront
+                    </Button>
+                  </Link>
+                )}
                 {/* Date Range Picker */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
