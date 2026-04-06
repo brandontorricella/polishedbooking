@@ -49,6 +49,7 @@ const Profile = () => {
   const { toast } = useToast();
   const { isDark, toggleTheme } = useTheme();
   const { isSubscribed, showPaywall, subscription } = useSuperwall();
+  const { businessId } = useAccountType();
   
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
