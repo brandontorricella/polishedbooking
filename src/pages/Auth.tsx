@@ -51,10 +51,14 @@ const AuthPage = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && !loading) {
-      navigate('/');
+    if (user && !loading && !adminLoading) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, adminLoading, isAdmin, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
