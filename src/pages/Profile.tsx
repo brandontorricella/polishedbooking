@@ -31,6 +31,7 @@ import { useAccountType } from '@/hooks/useAccountType';
 import { useSuperwall } from '@/hooks/useSuperwall';
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
+import { DepositCancellationSettings } from '@/components/booking/DepositCancellationSettings';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,6 +59,7 @@ const Profile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
+  const [showDepositSettings, setShowDepositSettings] = useState(false);
 
   const isBusinessUser = profile?.role === 'business';
 
