@@ -33,6 +33,7 @@ import { LoyaltyPointsCard } from '@/components/loyalty/LoyaltyPointsCard';
 import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
 import { StaffSection } from '@/components/staff/StaffSection';
 import { GallerySection } from '@/components/gallery/GallerySection';
+import { CommunityBadges } from '@/components/CommunityBadges';
 import { toast } from 'sonner';
 
 const BusinessProfile = () => {
@@ -246,6 +247,7 @@ const BusinessProfile = () => {
                   ✊🏿 Black-Owned
                 </Badge>
               )}
+              <CommunityBadges business={business} size="normal" />
             </div>
             <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
