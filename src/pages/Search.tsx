@@ -189,7 +189,7 @@ const SearchPage = () => {
   };
 
   const handleBook = (businessId: string) => {
-    const business = mockBusinesses.find(b => b.id === businessId);
+    const business = sourceBusinesses.find(b => b.id === businessId);
     if (business) {
       setBookingBusiness(business);
     }
