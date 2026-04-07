@@ -207,7 +207,6 @@ export const BusinessCard = ({
 
         {/* Community Badges */}
         <CommunityBadges business={business} size="small" className="mt-2" />
-        </p>
 
         <div className="flex items-center gap-1 mt-3 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4" />
