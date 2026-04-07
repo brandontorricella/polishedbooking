@@ -287,6 +287,33 @@ export const SearchFilters = ({ onSearch, onFiltersChange }: SearchFiltersProps)
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
+                    <span className="text-2xl">🤎</span>
+                    <div>
+                      <label className="text-sm font-medium">Hispanic & Latino-Owned</label>
+                      <p className="text-xs text-muted-foreground">Support Hispanic & Latino entrepreneurs</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={filters.isHispanicOwned}
+                    onCheckedChange={(checked) => handleFilterChange('isHispanicOwned', checked)}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🏳️‍🌈</span>
+                    <div>
+                      <label className="text-sm font-medium">LGBTQ+-Owned & Welcoming</label>
+                      <p className="text-xs text-muted-foreground">Safe, inclusive spaces</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={filters.isLgbtqOwned}
+                    onCheckedChange={(checked) => handleFilterChange('isLgbtqOwned', checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
                     <Tag className="w-6 h-6 text-primary" />
                     <div>
                       <label className="text-sm font-medium">Has Promotions</label>
