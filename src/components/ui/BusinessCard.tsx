@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Star, MapPin, Heart, BadgeCheck, Crown, Tag, Award, Gem, Scissors } from 'lucide-react';
 import type { Business } from '@/types';
+import { getCategoryLabel } from '@/constants/categories';
 import { Badge } from './badge';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
@@ -222,8 +223,8 @@ export const BusinessCard = ({
         {/* Categories */}
         <div className="flex flex-wrap gap-1.5 mt-3">
           {business.categories.slice(0, 3).map((cat) => (
-            <Badge key={cat} variant="secondary" className="text-xs capitalize">
-              {cat.replace('_', ' ')}
+            <Badge key={cat} variant="secondary" className="text-xs">
+              {getCategoryLabel(cat)}
             </Badge>
           ))}
         </div>
