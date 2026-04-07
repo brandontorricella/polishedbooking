@@ -21,6 +21,7 @@ import { useSuperwall } from '@/hooks/useSuperwall';
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { DepositCancellationSettings } from '@/components/booking/DepositCancellationSettings';
+import { TipSettings } from '@/components/booking/TipSettings';
 import { ChangePasswordSection } from '@/components/settings/ChangePasswordSection';
 import { BusinessTypeSettings } from '@/components/business/BusinessTypeSettings';
 import { useTranslation } from '@/hooks/useTranslation';
