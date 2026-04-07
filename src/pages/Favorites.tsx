@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getCategoryLabel } from '@/constants/categories';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart, Grid, List, Star, MapPin, BadgeCheck, Trash2, Sparkles } from 'lucide-react';
@@ -140,8 +141,8 @@ const FavoriteBusinessCard = ({
         {business.categories && business.categories.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {business.categories.slice(0, 3).map((cat) => (
-              <Badge key={cat} variant="secondary" className="text-xs capitalize">
-                {cat.replace('_', ' ')}
+              <Badge key={cat} variant="secondary" className="text-xs">
+                {getCategoryLabel(cat)}
               </Badge>
             ))}
           </div>
