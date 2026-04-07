@@ -12,6 +12,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useAdmin } from '@/hooks/useAdmin';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { useTranslation } from '@/hooks/useTranslation';
 import polishedLogo from '@/assets/logo-transparent.png';
 
 const guestNavItems = [
@@ -93,6 +95,9 @@ export const Header = () => {
 
           {/* Right Side */}
           <div className="flex items-center gap-2">
+            {/* Language Toggle — always visible */}
+            <LanguageToggle variant="navbar" />
+
             {accountType === 'guest' && (
               <>
                 <Link to="/business" className="hidden sm:block">

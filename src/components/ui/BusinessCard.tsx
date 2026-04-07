@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import { BookNowButton } from '@/components/booking/BookNowButton';
+import { CommunityBadges } from '@/components/CommunityBadges';
 
 const SubscriptionBadge = ({ tier }: { tier?: string }) => {
   if (tier === 'elite') {
@@ -150,7 +151,17 @@ export const BusinessCard = ({
           )}
           {business.isBlackOwned && (
             <Badge variant="secondary" className="bg-midnight/90 text-cream border-0">
-              Black-Owned
+              ✊🏿 Black-Owned
+            </Badge>
+          )}
+          {!business.isBlackOwned && business.isHispanicOwned && (
+            <Badge variant="secondary" className="bg-[hsl(15,60%,25%)]/90 text-orange-100 border-0">
+              🤎 Hispanic-Owned
+            </Badge>
+          )}
+          {!business.isBlackOwned && !business.isHispanicOwned && business.isLgbtqOwned && (
+            <Badge variant="secondary" className="bg-[hsl(270,50%,30%)]/90 text-purple-100 border-0">
+              🏳️‍🌈 LGBTQ+-Owned
             </Badge>
           )}
           {business.promotions && business.promotions.length > 0 && (
@@ -193,6 +204,9 @@ export const BusinessCard = ({
         <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
           {business.description}
         </p>
+
+        {/* Community Badges */}
+        <CommunityBadges business={business} size="small" className="mt-2" />
 
         <div className="flex items-center gap-1 mt-3 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4" />

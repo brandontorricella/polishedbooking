@@ -49,7 +49,7 @@ const Index = () => {
   const { user, profile } = useAuth();
   const { accountType } = useAccountType();
   const { toast } = useToast();
-  const { topRated, blackOwned, loading, locationDenied, location, cityName } = useLocationBasedBusinesses();
+  const { topRated, blackOwned, hispanicOwned, lgbtqOwned, loading, locationDenied, location, cityName } = useLocationBasedBusinesses();
   const { promotions, claimedIds, claimPromotion } = usePromotions();
 
   // Redirect business users to their dashboard
@@ -347,6 +347,110 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Hispanic & Latino-Owned Businesses */}
+      {(loading || hispanicOwned.length > 0) && (
+        <section className="py-16 bg-gradient-to-br from-[hsl(10,30%,8%)] to-[hsl(15,40%,12%)] text-cream">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">🤎</span>
+                  <Badge className="bg-orange-900/40 text-orange-200 border-0">Hispanic & Latino-Owned</Badge>
+                </div>
+                <h2 className="font-display text-3xl font-bold text-cream">
+                  Hispanic & Latino-Owned Businesses
+                </h2>
+                <p className="text-cream/70 mt-2">Discover talented professionals in our community</p>
+              </div>
+              <Link to="/search?hispanicOwned=true">
+                <Button 
+                  variant="ghost" 
+                  className="gap-2 border border-cream/80 bg-transparent text-cream hover:bg-cream hover:text-midnight"
+                >
+                  Explore All <ChevronRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading ? (
+                <>
+                  <BusinessCardSkeleton />
+                  <BusinessCardSkeleton />
+                  <BusinessCardSkeleton />
+                </>
+              ) : (
+                hispanicOwned.slice(0, 3).map((business, index) => (
+                  <motion.div
+                    key={business.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                  >
+                    <BusinessCard 
+                      business={business}
+                      showDistance={!locationDenied && !!business.distance}
+                    />
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* LGBTQ+-Owned & Welcoming */}
+      {(loading || lgbtqOwned.length > 0) && (
+        <section className="py-16 bg-gradient-to-br from-[hsl(270,25%,8%)] to-[hsl(280,35%,14%)] text-cream">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">🏳️‍🌈</span>
+                  <Badge className="bg-purple-900/40 text-purple-200 border-0">LGBTQ+-Owned</Badge>
+                </div>
+                <h2 className="font-display text-3xl font-bold text-cream">
+                  LGBTQ+-Owned & Welcoming Spaces
+                </h2>
+                <p className="text-cream/70 mt-2">Safe, inclusive spaces welcoming everyone</p>
+              </div>
+              <Link to="/search?lgbtqOwned=true">
+                <Button 
+                  variant="ghost" 
+                  className="gap-2 border border-cream/80 bg-transparent text-cream hover:bg-cream hover:text-midnight"
+                >
+                  Explore All <ChevronRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {loading ? (
+                <>
+                  <BusinessCardSkeleton />
+                  <BusinessCardSkeleton />
+                  <BusinessCardSkeleton />
+                </>
+              ) : (
+                lgbtqOwned.slice(0, 3).map((business, index) => (
+                  <motion.div
+                    key={business.id}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                  >
+                    <BusinessCard 
+                      business={business}
+                      showDistance={!locationDenied && !!business.distance}
+                    />
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Promotions Section */}
       <section className="py-16">

@@ -263,6 +263,9 @@ export type Database = {
           id: string
           is_black_owned: boolean | null
           is_featured: boolean | null
+          is_hispanic_owned: boolean | null
+          is_lgbtq_owned: boolean | null
+          is_lgbtq_welcoming: boolean | null
           is_publicly_visible: boolean | null
           is_published: boolean | null
           is_verified: boolean | null
@@ -316,6 +319,9 @@ export type Database = {
           id?: string
           is_black_owned?: boolean | null
           is_featured?: boolean | null
+          is_hispanic_owned?: boolean | null
+          is_lgbtq_owned?: boolean | null
+          is_lgbtq_welcoming?: boolean | null
           is_publicly_visible?: boolean | null
           is_published?: boolean | null
           is_verified?: boolean | null
@@ -371,6 +377,9 @@ export type Database = {
           id?: string
           is_black_owned?: boolean | null
           is_featured?: boolean | null
+          is_hispanic_owned?: boolean | null
+          is_lgbtq_owned?: boolean | null
+          is_lgbtq_welcoming?: boolean | null
           is_publicly_visible?: boolean | null
           is_published?: boolean | null
           is_verified?: boolean | null

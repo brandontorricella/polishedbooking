@@ -30,6 +30,8 @@ type ViewMode = 'grid' | 'list' | 'map';
 interface CurrentFilters {
   query?: string;
   isBlackOwned?: boolean;
+  isHispanicOwned?: boolean;
+  isLgbtqOwned?: boolean;
   hasPromotions?: boolean;
   minRating?: number;
 }
@@ -84,6 +86,9 @@ const SearchPage = () => {
             images: b.cover_photo_url ? [b.cover_photo_url] : [],
             services: [],
             isBlackOwned: b.is_black_owned || false,
+            isHispanicOwned: (b as any).is_hispanic_owned || false,
+            isLgbtqOwned: (b as any).is_lgbtq_owned || false,
+            isLgbtqWelcoming: (b as any).is_lgbtq_welcoming || false,
             isFeatured: b.is_featured || false,
             isVerified: b.is_verified || false,
             serviceSetting: (b.service_setting || 'in_studio') as any,
@@ -141,6 +146,16 @@ const SearchPage = () => {
     // Black-owned filter
     if (currentFilters.isBlackOwned) {
       results = results.filter(b => b.isBlackOwned);
+    }
+
+    // Hispanic-owned filter
+    if (currentFilters.isHispanicOwned) {
+      results = results.filter(b => b.isHispanicOwned);
+    }
+
+    // LGBTQ+ filter
+    if (currentFilters.isLgbtqOwned) {
+      results = results.filter(b => b.isLgbtqOwned || b.isLgbtqWelcoming);
     }
 
     // Promotions filter
