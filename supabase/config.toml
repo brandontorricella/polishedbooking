@@ -37,3 +37,6 @@ verify_jwt = false
 
 [functions.delete-account]
 verify_jwt = false
+
+[functions.check-expired-trials]
+verify_jwt = false
