@@ -186,13 +186,19 @@ const SearchPage = () => {
       );
     }
 
+    // Group filter — filter by category group
+    if (selectedGroup) {
+      const groupCatIds = SERVICE_CATEGORIES.filter(c => c.group === selectedGroup).map(c => c.id);
+      results = results.filter(b => b.categories.some(c => groupCatIds.includes(c)));
+    }
+
     // Distance filter
     if (maxDistance < 9999 && userLocation) {
       results = results.filter(b => b.distance !== null && b.distance <= maxDistance);
     }
 
     return results;
-  }, [businessesWithDistance, currentFilters, selectedCategories, maxDistance, userLocation]);
+  }, [businessesWithDistance, currentFilters, selectedCategories, selectedGroup, maxDistance, userLocation]);
 
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories(prev => 
@@ -203,6 +209,12 @@ const SearchPage = () => {
   };
 
   const clearCategories = () => {
+    setSelectedCategories([]);
+    setSelectedGroup('');
+  };
+
+  const handleGroupSelect = (group: string) => {
+    setSelectedGroup(group === selectedGroup ? '' : group);
     setSelectedCategories([]);
   };
 
