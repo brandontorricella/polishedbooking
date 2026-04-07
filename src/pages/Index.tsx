@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { AccountTypeModal } from '@/components/auth/AccountTypeModal';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin, Loader2, Tag } from 'lucide-react';
@@ -39,6 +40,7 @@ const Index = () => {
   const { topRated, blackOwned, hispanicOwned, lgbtqOwned, loading, locationDenied, location, cityName } = useLocationBasedBusinesses();
   const { promotions, claimedIds, claimPromotion } = usePromotions();
   const { t } = useTranslation();
+  const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
 
   // Service category data with icons and colors
   const serviceCategories = [
@@ -111,15 +113,14 @@ const Index = () => {
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 {accountType === 'guest' ? (
                   <>
-                    <Link to="/auth?mode=signup">
-                      <Button 
-                        size="lg" 
-                        className="bg-primary hover:bg-primary/90 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_25px_hsl(340,75%,55%,0.3)]"
-                      >
-                        {t('hero', 'getStarted')}
-                        <ArrowRight className="w-5 h-5 ml-2" />
-                      </Button>
-                    </Link>
+                    <Button 
+                      size="lg" 
+                      className="bg-primary hover:bg-primary/90 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_25px_hsl(340,75%,55%,0.3)]"
+                      onClick={() => setShowAccountTypeModal(true)}
+                    >
+                      {t('hero', 'getStarted')}
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
                     <Link to="/search">
                       <Button size="lg" variant="outline" className="text-white border-white/80 hover:bg-white/10 hover:border-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto bg-transparent">
                         {t('hero', 'browseServices')}
