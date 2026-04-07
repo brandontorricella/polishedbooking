@@ -65,12 +65,13 @@ const SearchPage = () => {
         if (!error && data && data.length > 0) {
           const mapped: Business[] = data.map((b) => ({
             id: b.id,
+            ownerId: b.owner_id,
             name: b.name,
             description: b.description || '',
             categories: b.categories || [],
             rating: b.rating || 0,
             reviewCount: b.review_count || 0,
-            priceRange: b.price_range || 2,
+            priceRange: (b.price_range || 2) as 1 | 2 | 3 | 4,
             location: {
               address: b.address || '',
               city: b.city || '',
@@ -79,14 +80,20 @@ const SearchPage = () => {
               lat: b.location_lat || 0,
               lng: b.location_lng || 0,
             },
-            hours: {},
+            hours: {} as any,
             images: b.cover_photo_url ? [b.cover_photo_url] : [],
             services: [],
             isBlackOwned: b.is_black_owned || false,
             isFeatured: b.is_featured || false,
             isVerified: b.is_verified || false,
+            serviceSetting: (b.service_setting || 'in_studio') as any,
+            subscriptionTier: (b.subscription_tier || 'basic') as any,
+            subscriptionStatus: (b.subscription_status || 'active') as any,
+            portfolioImages: [],
+            createdAt: new Date(b.created_at),
             promotions: [],
-            owner_id: b.owner_id,
+            profilePhotoUrl: b.profile_photo_url || undefined,
+            coverPhotoUrl: b.cover_photo_url || undefined,
           }));
           setDbBusinesses(mapped);
         } else {
