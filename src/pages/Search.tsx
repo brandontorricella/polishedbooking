@@ -303,10 +303,33 @@ const SearchPage = () => {
             </div>
           )}
 
+          {/* Group Filter Tabs */}
+          <div className="flex gap-2 flex-wrap mb-6 pb-4 border-b border-border">
+            <Button
+              variant={!selectedGroup ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleGroupSelect('')}
+              className={cn("rounded-full", !selectedGroup && "bg-primary text-primary-foreground")}
+            >
+              All
+            </Button>
+            {CATEGORY_GROUPS.map(group => (
+              <Button
+                key={group}
+                variant={selectedGroup === group ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleGroupSelect(group)}
+                className={cn("rounded-full", selectedGroup === group && "bg-primary text-primary-foreground")}
+              >
+                {group}
+              </Button>
+            ))}
+          </div>
+
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium">Categories</h3>
-              {selectedCategories.length > 0 && (
+              {(selectedCategories.length > 0 || selectedGroup) && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -314,12 +337,14 @@ const SearchPage = () => {
                   className="text-primary hover:text-primary/80"
                 >
                   <X className="w-4 h-4 mr-1" />
-                  Clear ({selectedCategories.length})
+                  Clear
                 </Button>
               )}
             </div>
             <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-1">
-              {Object.entries(getCategoriesByGroup()).map(([group, cats]) => (
+              {Object.entries(getCategoriesByGroup())
+                .filter(([group]) => !selectedGroup || group === selectedGroup)
+                .map(([group, cats]) => (
                 <div key={group}>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{group}</h4>
                   <div className="flex flex-wrap gap-1.5 mb-2">
