@@ -48,6 +48,7 @@ const Profile = () => {
   const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
   const [showDepositSettings, setShowDepositSettings] = useState(false);
   const [showBusinessTypeSettings, setShowBusinessTypeSettings] = useState(false);
+  const [showTipSettings, setShowTipSettings] = useState(false);
 
   const isBusinessUser = profile?.role === 'business';
 
