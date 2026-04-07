@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -21,6 +21,7 @@ import { BusinessMap } from '@/components/map/BusinessMap';
 import { LocationPermissionModal } from '@/components/location/LocationPermissionModal';
 import { categories, mockBusinesses } from '@/data/mockData';
 import { useLocation } from '@/hooks/useLocation';
+import { supabase } from '@/integrations/supabase/client';
 import type { Business } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -47,20 +48,81 @@ const SearchPage = () => {
   const [maxDistance, setMaxDistance] = useState<number>(9999);
   const [bookingBusiness, setBookingBusiness] = useState<Business | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [dbBusinesses, setDbBusinesses] = useState<Business[]>([]);
+  const [loadingDb, setLoadingDb] = useState(true);
+
+  // Fetch publicly visible businesses from database
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('businesses')
+          .select('*')
+          .eq('is_published', true)
+          .eq('is_publicly_visible', true)
+          .in('subscription_status', ['active', 'trialing']);
+
+        if (!error && data && data.length > 0) {
+          const mapped: Business[] = data.map((b) => ({
+            id: b.id,
+            ownerId: b.owner_id,
+            name: b.name,
+            description: b.description || '',
+            categories: b.categories || [],
+            rating: b.rating || 0,
+            reviewCount: b.review_count || 0,
+            priceRange: (b.price_range || 2) as 1 | 2 | 3 | 4,
+            location: {
+              address: b.address || '',
+              city: b.city || '',
+              state: b.state || '',
+              zip: b.zip || '',
+              lat: b.location_lat || 0,
+              lng: b.location_lng || 0,
+            },
+            hours: {} as any,
+            images: b.cover_photo_url ? [b.cover_photo_url] : [],
+            services: [],
+            isBlackOwned: b.is_black_owned || false,
+            isFeatured: b.is_featured || false,
+            isVerified: b.is_verified || false,
+            serviceSetting: (b.service_setting || 'in_studio') as any,
+            subscriptionTier: (b.subscription_tier || 'basic') as any,
+            subscriptionStatus: (b.subscription_status || 'active') as any,
+            portfolioImages: [],
+            createdAt: new Date(b.created_at),
+            promotions: [],
+            profilePhotoUrl: b.profile_photo_url || undefined,
+            coverPhotoUrl: b.cover_photo_url || undefined,
+          }));
+          setDbBusinesses(mapped);
+        } else {
+          setDbBusinesses([]);
+        }
+      } catch {
+        setDbBusinesses([]);
+      } finally {
+        setLoadingDb(false);
+      }
+    };
+    fetchBusinesses();
+  }, []);
+
+  // Use DB businesses if available, otherwise fall back to mock data
+  const sourceBusinesses = dbBusinesses.length > 0 ? dbBusinesses : mockBusinesses;
 
   // Calculate distances and sort businesses
   const businessesWithDistance = useMemo((): BusinessWithDistance[] => {
-    return mockBusinesses.map(business => ({
+    return sourceBusinesses.map(business => ({
       ...business,
       distance: calculateDistance(business.location.lat, business.location.lng)
     })).sort((a, b) => {
-      // Sort by distance if available, otherwise keep original order
       if (a.distance !== null && b.distance !== null) {
         return a.distance - b.distance;
       }
       return 0;
     });
-  }, [calculateDistance]);
+  }, [sourceBusinesses, calculateDistance]);
 
   // Apply all filters
   const filteredBusinesses = useMemo(() => {
@@ -127,7 +189,7 @@ const SearchPage = () => {
   };
 
   const handleBook = (businessId: string) => {
-    const business = mockBusinesses.find(b => b.id === businessId);
+    const business = sourceBusinesses.find(b => b.id === businessId);
     if (business) {
       setBookingBusiness(business);
     }
