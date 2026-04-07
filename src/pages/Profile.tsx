@@ -22,6 +22,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { DepositCancellationSettings } from '@/components/booking/DepositCancellationSettings';
 import { ChangePasswordSection } from '@/components/settings/ChangePasswordSection';
+import { BusinessTypeSettings } from '@/components/business/BusinessTypeSettings';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -45,6 +47,7 @@ const Profile = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
   const [showDepositSettings, setShowDepositSettings] = useState(false);
+  const [showBusinessTypeSettings, setShowBusinessTypeSettings] = useState(false);
 
   const isBusinessUser = profile?.role === 'business';
 
