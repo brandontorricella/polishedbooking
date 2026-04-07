@@ -129,7 +129,7 @@ export const translations = {
     
     // Hero
     heroTitle: 'Descubre Belleza y Bienestar Cerca de Ti',
-    heroSubtitle: 'Reserva citas con los mejores profesionales en tu área',
+    heroSubtitle: 'Reserva citas con los mejores profesionales de belleza y bienestar en tu área',
     getStarted: 'Comenzar',
     findServices: 'Encontrar Servicios',
     forBusinesses: 'Para Negocios',
