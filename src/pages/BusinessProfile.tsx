@@ -26,6 +26,8 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useServiceBundles, type ServiceBundle } from '@/hooks/useServiceBundles';
+import { usePackages } from '@/hooks/usePackages';
+import { useMemberships } from '@/hooks/useMemberships';
 import { useMessages } from '@/hooks/useMessages';
 import { BundleCard } from '@/components/bundles/BundleCard';
 import { BundleBookingFlow } from '@/components/bundles/BundleBookingFlow';
@@ -47,6 +49,8 @@ const BusinessProfile = () => {
   const [showBookingFlow, setShowBookingFlow] = useState(false);
   const [selectedBundle, setSelectedBundle] = useState<ServiceBundle | null>(null);
   const { bundles } = useServiceBundles(id);
+  const { packages: businessPackages } = usePackages(id);
+  const { memberships: businessMemberships } = useMemberships(id);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMessage, setAuthModalMessage] = useState('');
@@ -367,6 +371,12 @@ const BusinessProfile = () => {
                 <Package className="w-4 h-4 mr-1" /> Bundles
               </TabsTrigger>
             )}
+            {businessPackages.filter(p => p.is_active).length > 0 && (
+              <TabsTrigger value="packages">📦 Packages</TabsTrigger>
+            )}
+            {businessMemberships.filter(m => m.is_active).length > 0 && (
+              <TabsTrigger value="memberships">💎 Memberships</TabsTrigger>
+            )}
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
@@ -435,6 +445,68 @@ const BusinessProfile = () => {
                   if (requireAuth('book bundles')) setSelectedBundle(b);
                 }} />
               ))}
+            </TabsContent>
+          )}
+
+          {/* Packages Tab */}
+          {businessPackages.filter(p => p.is_active).length > 0 && (
+            <TabsContent value="packages" className="space-y-4">
+              <p className="text-sm text-muted-foreground">Save money by buying sessions in advance</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {businessPackages.filter(p => p.is_active).map(pkg => {
+                  const savings = pkg.original_price ? pkg.original_price - pkg.price : 0;
+                  const savingsPct = pkg.original_price ? Math.round((savings / pkg.original_price) * 100) : 0;
+                  return (
+                    <div key={pkg.id} className="relative bg-card border border-border rounded-xl p-5 overflow-hidden">
+                      {savingsPct > 0 && (
+                        <Badge className="absolute top-3 right-3 bg-green-500/10 text-green-600 border-green-500/20">{savingsPct}% OFF</Badge>
+                      )}
+                      <h4 className="font-semibold text-base mb-1">{pkg.name}</h4>
+                      {pkg.description && <p className="text-sm text-muted-foreground mb-3">{pkg.description}</p>}
+                      <div className="flex gap-4 text-sm text-muted-foreground mb-3">
+                        <span>📅 {pkg.session_count} sessions</span>
+                        <span>⏳ Valid {pkg.validity_days} days</span>
+                      </div>
+                      <div className="flex items-baseline gap-2 mb-1">
+                        {pkg.original_price && <span className="line-through text-muted-foreground text-sm">${pkg.original_price.toFixed(2)}</span>}
+                        <span className="text-2xl font-bold">${pkg.price.toFixed(2)}</span>
+                      </div>
+                      {savings > 0 && <p className="text-sm text-green-600 font-medium">Save ${savings.toFixed(2)}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </TabsContent>
+          )}
+
+          {/* Memberships Tab */}
+          {businessMemberships.filter(m => m.is_active).length > 0 && (
+            <TabsContent value="memberships" className="space-y-4">
+              <p className="text-sm text-muted-foreground">Join a membership plan for recurring access</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {businessMemberships.filter(m => m.is_active).map(mem => (
+                  <div key={mem.id} className="bg-card border border-border rounded-xl p-5">
+                    <h4 className="font-semibold text-base mb-1">{mem.name}</h4>
+                    {mem.description && <p className="text-sm text-muted-foreground mb-3">{mem.description}</p>}
+                    <div className="flex items-baseline gap-1 mb-2">
+                      <span className="text-2xl font-bold">${mem.price.toFixed(2)}</span>
+                      <span className="text-muted-foreground text-sm">/{mem.billing_interval === 'weekly' ? 'week' : 'month'}</span>
+                    </div>
+                    <div className="text-sm text-muted-foreground mb-3">
+                      {mem.sessions_per_period ? `${mem.sessions_per_period} sessions per period` : 'Unlimited sessions'}
+                    </div>
+                    {mem.perks && mem.perks.length > 0 && (
+                      <div className="space-y-1">
+                        {mem.perks.map((perk, i) => (
+                          <div key={i} className="text-sm flex items-center gap-1.5">
+                            <Check className="w-3.5 h-3.5 text-primary" /> {perk}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </TabsContent>
           )}
 
