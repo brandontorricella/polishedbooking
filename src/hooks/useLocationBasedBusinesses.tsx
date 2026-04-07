@@ -91,6 +91,7 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
           .from('businesses')
           .select('*')
           .eq('is_published', true)
+          .eq('is_publicly_visible', true)
           .in('subscription_status', ['active', 'trialing'])
           .limit(20);
 
@@ -150,6 +151,7 @@ export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
           .from('businesses')
           .select('*')
           .eq('is_published', true)
+          .eq('is_publicly_visible', true)
           .in('subscription_status', ['active', 'trialing'])
           .limit(20);
 

@@ -11,7 +11,6 @@ const logStep = (step: string, details?: any) => {
   console.log(`[SYNC-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Superwall event types
 type SuperwallEventType = 
   | 'trial_started'
   | 'subscription_activated'
@@ -46,45 +45,83 @@ serve(async (req) => {
     const event: SuperwallEvent = await req.json();
     logStep("Received event", { type: event.event_type, userId: event.user_id });
 
-    // Map Superwall event to subscription status
     let subscriptionStatus: 'trialing' | 'active' | 'canceled' | 'past_due' | 'unpaid';
     let isPublished: boolean;
+    let isPubliclyVisible: boolean;
+    let unlistedReason: string | null = null;
 
     switch (event.event_type) {
       case 'trial_started':
         subscriptionStatus = 'trialing';
         isPublished = true;
+        isPubliclyVisible = true;
         break;
       case 'subscription_activated':
       case 'subscription_renewed':
         subscriptionStatus = 'active';
         isPublished = true;
+        isPubliclyVisible = true;
         break;
       case 'subscription_canceled':
         subscriptionStatus = 'canceled';
         isPublished = false;
+        isPubliclyVisible = false;
+        unlistedReason = 'canceled';
         break;
       case 'subscription_expired':
+        subscriptionStatus = 'past_due';
+        isPublished = false;
+        isPubliclyVisible = false;
+        unlistedReason = 'past_due';
+        break;
       case 'trial_expired':
         subscriptionStatus = 'past_due';
         isPublished = false;
+        isPubliclyVisible = false;
+        unlistedReason = 'trial_expired';
         break;
       default:
         throw new Error(`Unknown event type: ${event.event_type}`);
     }
 
-    logStep("Mapped status", { subscriptionStatus, isPublished });
+    logStep("Mapped status", { subscriptionStatus, isPublished, isPubliclyVisible, unlistedReason });
 
-    // Update the business record
+    // First check the current state to avoid overwriting admin suspensions
+    const { data: currentBusiness } = await supabaseClient
+      .from('businesses')
+      .select('id, is_publicly_visible, unlisted_reason')
+      .eq('owner_id', event.user_id)
+      .single();
+
+    // Don't relist if admin-suspended
+    if (currentBusiness?.unlisted_reason === 'suspended' && isPubliclyVisible) {
+      logStep("Skipping relist - business is admin-suspended");
+      isPubliclyVisible = false;
+      unlistedReason = 'suspended';
+    }
+
+    const updateData: Record<string, any> = {
+      subscription_status: subscriptionStatus,
+      subscription_tier: event.tier,
+      subscription_ends_at: event.expires_at || null,
+      trial_ends_at: event.trial_ends_at || null,
+      is_published: isPublished,
+      is_publicly_visible: isPubliclyVisible,
+    };
+
+    if (isPubliclyVisible) {
+      // Relisting
+      updateData.unlisted_reason = null;
+      updateData.relisted_at = new Date().toISOString();
+    } else if (unlistedReason && currentBusiness?.unlisted_reason !== 'suspended') {
+      // Unlisting (not admin-suspended)
+      updateData.unlisted_reason = unlistedReason;
+      updateData.unlisted_at = new Date().toISOString();
+    }
+
     const { data: business, error: updateError } = await supabaseClient
       .from('businesses')
-      .update({
-        subscription_status: subscriptionStatus,
-        subscription_tier: event.tier,
-        subscription_ends_at: event.expires_at || null,
-        trial_ends_at: event.trial_ends_at || null,
-        is_published: isPublished,
-      })
+      .update(updateData)
       .eq('owner_id', event.user_id)
       .select()
       .single();
@@ -94,10 +131,10 @@ serve(async (req) => {
       throw new Error(`Failed to update business: ${updateError.message}`);
     }
 
-    logStep("Business updated", { businessId: business?.id, status: subscriptionStatus });
+    logStep("Business updated", { businessId: business?.id, status: subscriptionStatus, visible: isPubliclyVisible });
 
-    // Create notification for the user
-    const notificationMessage = getNotificationMessage(event.event_type, event.tier);
+    // Create notification
+    const notificationMessage = getNotificationMessage(event.event_type, event.tier, isPubliclyVisible);
     if (notificationMessage) {
       await supabaseClient.from('notifications').insert({
         user_id: event.user_id,
@@ -112,6 +149,7 @@ serve(async (req) => {
       success: true,
       businessId: business?.id,
       status: subscriptionStatus,
+      isPubliclyVisible,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
@@ -126,7 +164,7 @@ serve(async (req) => {
   }
 });
 
-function getNotificationMessage(eventType: SuperwallEventType, tier: string): { title: string; message: string } | null {
+function getNotificationMessage(eventType: SuperwallEventType, tier: string, isVisible: boolean): { title: string; message: string } | null {
   switch (eventType) {
     case 'trial_started':
       return {
@@ -135,24 +173,28 @@ function getNotificationMessage(eventType: SuperwallEventType, tier: string): { 
       };
     case 'subscription_activated':
       return {
-        title: 'Subscription Active',
-        message: `Your ${tier} subscription is now active. Thank you for your support!`,
+        title: '🎉 Subscription Active — You\'re Live!',
+        message: `Your ${tier} subscription is now active and your listing is visible to customers.`,
       };
     case 'subscription_renewed':
       return {
-        title: 'Subscription Renewed',
-        message: `Your ${tier} subscription has been renewed successfully.`,
+        title: '✅ Subscription Renewed',
+        message: `Your ${tier} subscription has been renewed. Your listing remains live.`,
       };
     case 'subscription_canceled':
       return {
-        title: 'Subscription Canceled',
-        message: 'Your subscription has been canceled. Your business profile will be hidden from clients.',
+        title: '📋 Subscription Canceled — Listing Paused',
+        message: 'Your subscription has been canceled. Your listing is hidden from customers but your data is fully preserved. Resubscribe anytime to go live again.',
       };
     case 'subscription_expired':
+      return {
+        title: '⚠️ Subscription Past Due — Listing Paused',
+        message: 'Your subscription payment is overdue. Your listing has been paused. Update your payment method to restore visibility.',
+      };
     case 'trial_expired':
       return {
-        title: 'Subscription Expired',
-        message: 'Your subscription has expired. Renew now to keep your business visible to clients.',
+        title: '⏰ Trial Ended — Listing Paused',
+        message: 'Your free trial has expired. Subscribe to a plan to restore your listing and continue reaching new clients.',
       };
     default:
       return null;

@@ -7,23 +7,59 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, ExternalLink } from 'lucide-react';
+import { Search, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+const statusFilters = [
+  { value: 'all', label: 'All' },
+  { value: 'listed', label: '✅ Listed' },
+  { value: 'unlisted', label: '🔴 Unlisted' },
+  { value: 'past_due', label: '⚠️ Past Due' },
+  { value: 'canceled', label: '📋 Canceled' },
+  { value: 'suspended', label: '🚫 Suspended' },
+];
+
+function VisibilityBadge({ business }: { business: any }) {
+  if (business.is_publicly_visible !== false) {
+    return <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-xs">✅ Listed</Badge>;
+  }
+  const labels: Record<string, string> = {
+    payment_failed: '🔴 Payment Failed',
+    past_due: '⚠️ Past Due',
+    canceled: '📋 Canceled',
+    trial_expired: '⏰ Trial Expired',
+    suspended: '🚫 Suspended',
+  };
+  return (
+    <Badge className="bg-destructive/20 text-destructive border-0 text-xs">
+      {labels[business.unlisted_reason] || '🔴 Unlisted'}
+    </Badge>
+  );
+}
 
 export default function AdminBusinesses() {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const { toast } = useToast();
 
-  useEffect(() => { fetchBusinesses(); }, [search, tierFilter]);
+  useEffect(() => { fetchBusinesses(); }, [search, tierFilter, statusFilter]);
 
   async function fetchBusinesses() {
     setLoading(true);
     let query = supabase.from('businesses').select('*').order('created_at', { ascending: false }).limit(100);
     if (search) query = query.ilike('name', `%${search}%`);
     if (tierFilter !== 'all') query = query.eq('subscription_tier', tierFilter as any);
+    
+    // Status filter
+    if (statusFilter === 'listed') query = query.eq('is_publicly_visible', true);
+    if (statusFilter === 'unlisted') query = query.eq('is_publicly_visible', false);
+    if (statusFilter === 'past_due') query = query.eq('subscription_status', 'past_due' as any);
+    if (statusFilter === 'canceled') query = query.eq('subscription_status', 'canceled' as any);
+    if (statusFilter === 'suspended') query = query.eq('unlisted_reason', 'suspended');
+    
     const { data } = await query;
     setBusinesses(data || []);
     setLoading(false);
@@ -32,6 +68,29 @@ export default function AdminBusinesses() {
   async function handleTogglePublish(id: string, current: boolean) {
     await supabase.from('businesses').update({ is_published: !current }).eq('id', id);
     toast({ title: current ? 'Business unpublished' : 'Business published' });
+    fetchBusinesses();
+  }
+
+  async function handleToggleVisibility(id: string, currentlyVisible: boolean, reason?: string) {
+    if (currentlyVisible) {
+      // Unlist
+      if (!confirm('Unlist this business? It will be hidden from public discovery.')) return;
+      await supabase.from('businesses').update({
+        is_publicly_visible: false,
+        unlisted_reason: 'suspended',
+        unlisted_at: new Date().toISOString(),
+      }).eq('id', id);
+      toast({ title: 'Business unlisted (suspended)' });
+    } else {
+      // Relist
+      if (!confirm('Relist this business? It will be visible to the public again.')) return;
+      await supabase.from('businesses').update({
+        is_publicly_visible: true,
+        unlisted_reason: null,
+        relisted_at: new Date().toISOString(),
+      }).eq('id', id);
+      toast({ title: 'Business relisted successfully' });
+    }
     fetchBusinesses();
   }
 
@@ -74,6 +133,16 @@ export default function AdminBusinesses() {
             <SelectItem value="elite">Elite</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40 bg-[hsl(0,0%,10%)] border-[hsl(0,0%,20%)] text-cream">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {statusFilters.map(s => (
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
@@ -84,6 +153,7 @@ export default function AdminBusinesses() {
               <TableRow className="border-[hsl(0,0%,15%)] hover:bg-transparent">
                 <TableHead className="text-cream/50">Business</TableHead>
                 <TableHead className="text-cream/50">Tier</TableHead>
+                <TableHead className="text-cream/50">Visibility</TableHead>
                 <TableHead className="text-cream/50">Status</TableHead>
                 <TableHead className="text-cream/50">Location</TableHead>
                 <TableHead className="text-cream/50">Joined</TableHead>
@@ -92,9 +162,9 @@ export default function AdminBusinesses() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-cream/40 py-8">Loading...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-cream/40 py-8">Loading...</TableCell></TableRow>
               ) : businesses.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-cream/40 py-8">No businesses found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-cream/40 py-8">No businesses found</TableCell></TableRow>
               ) : businesses.map((b) => (
                 <TableRow key={b.id} className="border-[hsl(0,0%,15%)]">
                   <TableCell>
@@ -116,8 +186,11 @@ export default function AdminBusinesses() {
                     </Select>
                   </TableCell>
                   <TableCell>
+                    <VisibilityBadge business={b} />
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={b.is_published ? 'default' : 'secondary'} className="text-xs">
-                      {b.is_published ? 'Published' : 'Draft'}
+                      {b.subscription_status || 'none'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-cream/60">
@@ -128,6 +201,18 @@ export default function AdminBusinesses() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost" size="sm"
+                        className="text-xs text-cream/50 hover:text-cream h-7"
+                        onClick={() => handleToggleVisibility(b.id, b.is_publicly_visible !== false, b.unlisted_reason)}
+                        title={b.is_publicly_visible !== false ? 'Unlist from public' : 'Relist to public'}
+                      >
+                        {b.is_publicly_visible !== false ? (
+                          <><EyeOff className="w-3 h-3 mr-1" /> Unlist</>
+                        ) : (
+                          <><Eye className="w-3 h-3 mr-1" /> Relist</>
+                        )}
+                      </Button>
                       <Button
                         variant="ghost" size="sm"
                         className="text-xs text-cream/50 hover:text-cream h-7"
