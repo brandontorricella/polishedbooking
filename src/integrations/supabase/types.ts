@@ -82,10 +82,13 @@ export type Database = {
           deposit_payment_intent_id: string | null
           id: string
           notes: string | null
+          payment_method_type: string | null
           remaining_balance: number | null
           service_id: string
           staff_id: string | null
           status: Database["public"]["Enums"]["booking_status"] | null
+          tip_amount: number | null
+          tip_collected: boolean | null
           total_price: number
           updated_at: string
         }
@@ -106,10 +109,13 @@ export type Database = {
           deposit_payment_intent_id?: string | null
           id?: string
           notes?: string | null
+          payment_method_type?: string | null
           remaining_balance?: number | null
           service_id: string
           staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
+          tip_amount?: number | null
+          tip_collected?: boolean | null
           total_price: number
           updated_at?: string
         }
@@ -130,10 +136,13 @@ export type Database = {
           deposit_payment_intent_id?: string | null
           id?: string
           notes?: string | null
+          payment_method_type?: string | null
           remaining_balance?: number | null
           service_id?: string
           staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
+          tip_amount?: number | null
+          tip_collected?: boolean | null
           total_price?: number
           updated_at?: string
         }
@@ -334,6 +343,8 @@ export type Database = {
           subscription_tier:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
+          tip_presets: number[] | null
+          tips_enabled: boolean | null
           trial_ends_at: string | null
           unlisted_at: string | null
           unlisted_reason: string | null
@@ -400,6 +411,8 @@ export type Database = {
           subscription_tier?:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
+          tip_presets?: number[] | null
+          tips_enabled?: boolean | null
           trial_ends_at?: string | null
           unlisted_at?: string | null
           unlisted_reason?: string | null
@@ -466,6 +479,8 @@ export type Database = {
           subscription_tier?:
             | Database["public"]["Enums"]["subscription_tier"]
             | null
+          tip_presets?: number[] | null
+          tips_enabled?: boolean | null
           trial_ends_at?: string | null
           unlisted_at?: string | null
           unlisted_reason?: string | null

@@ -21,6 +21,7 @@ import { useSuperwall } from '@/hooks/useSuperwall';
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { DepositCancellationSettings } from '@/components/booking/DepositCancellationSettings';
+import { TipSettings } from '@/components/booking/TipSettings';
 import { ChangePasswordSection } from '@/components/settings/ChangePasswordSection';
 import { BusinessTypeSettings } from '@/components/business/BusinessTypeSettings';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -47,6 +48,7 @@ const Profile = () => {
   const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
   const [showDepositSettings, setShowDepositSettings] = useState(false);
   const [showBusinessTypeSettings, setShowBusinessTypeSettings] = useState(false);
+  const [showTipSettings, setShowTipSettings] = useState(false);
 
   const isBusinessUser = profile?.role === 'business';
 
@@ -240,6 +242,27 @@ const Profile = () => {
               {showBusinessTypeSettings && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
                   <BusinessTypeSettings />
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Tip Settings */}
+          {isBusinessUser && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.078 }} className="mb-6">
+              <button onClick={() => setShowTipSettings(!showTipSettings)} className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><span className="text-lg">💝</span></div>
+                  <div className="text-left">
+                    <p className="font-medium">Tip Settings</p>
+                    <p className="text-sm text-muted-foreground">Configure tip options for your clients</p>
+                  </div>
+                </div>
+                <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${showTipSettings ? 'rotate-90' : ''}`} />
+              </button>
+              {showTipSettings && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
+                  <TipSettings />
                 </motion.div>
               )}
             </motion.div>

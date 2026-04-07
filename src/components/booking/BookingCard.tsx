@@ -79,7 +79,12 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
                   <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground"><MapPin className="w-3 h-3" /><span>{booking.business.city}, {booking.business.state}</span></div>
                 )}
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                  <span className="font-semibold">${booking.total_price}</span>
+                  <div>
+                    <span className="font-semibold">${booking.total_price}</span>
+                    {(booking as any).tip_amount > 0 && (
+                      <span className="text-xs text-primary ml-2">💝 +${(booking as any).tip_amount} tip</span>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="sm" onClick={handleMessage}><MessageSquare className="w-4 h-4 mr-1" />{t('booking', 'message')}</Button>
                     {!isPast && (<Button size="sm" className="bg-gradient-primary" onClick={handleViewBusiness}>{t('booking', 'viewDetails')}<ChevronRight className="w-4 h-4 ml-1" /></Button>)}
