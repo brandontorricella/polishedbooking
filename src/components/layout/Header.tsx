@@ -42,6 +42,7 @@ export const Header = () => {
   const businessNavItems = [
     { href: '/business/analytics', label: t('nav', 'dashboard'), icon: BarChart3 },
     { href: '/bookings', label: t('nav', 'bookings'), icon: Calendar },
+    { href: '/business/schedule', label: 'Schedule', icon: Settings },
     { href: '/messages', label: t('nav', 'messages'), icon: MessageSquare },
   ];
 
