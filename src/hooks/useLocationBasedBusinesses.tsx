@@ -6,6 +6,8 @@ import { mockBusinesses } from '@/data/mockData';
 interface LocationBasedBusinessesResult {
   topRated: Business[];
   blackOwned: Business[];
+  hispanicOwned: Business[];
+  lgbtqOwned: Business[];
   loading: boolean;
   locationDenied: boolean;
   location: { lat: number; lng: number } | null;
@@ -47,141 +49,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [cityName, setCityName] = useState<string | null>(null);
-  const [locationDenied, setLocationDenied] = useState(false);
-  const [topRated, setTopRated] = useState<Business[]>([]);
-  const [blackOwned, setBlackOwned] = useState<Business[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function getLocationAndFetch() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const loc = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            };
-            setLocation(loc);
-            
-            // Reverse geocode to get city name
-            const city = await reverseGeocode(loc.lat, loc.lng);
-            setCityName(city);
-            
-            fetchBusinessesForLocation(loc);
-          },
-          (error) => {
-            console.log('Location denied or unavailable:', error.message);
-            setLocationDenied(true);
-            fetchRandomBusinesses();
-          },
-          { timeout: 5000, enableHighAccuracy: false }
-        );
-      } else {
-        setLocationDenied(true);
-        fetchRandomBusinesses();
-      }
-    }
-
-    async function fetchBusinessesForLocation(loc: { lat: number; lng: number }) {
-      try {
-        const { data: businesses, error } = await supabase
-          .from('businesses')
-          .select('*')
-          .eq('is_published', true)
-          .eq('is_publicly_visible', true)
-          .in('subscription_status', ['active', 'trialing'])
-          .limit(20);
-
-        if (error || !businesses || businesses.length === 0) {
-          const businessesWithDistance = mockBusinesses.map(b => ({
-            ...b,
-            distance: calculateDistance(loc.lat, loc.lng, b.location.lat, b.location.lng)
-          }));
-
-          const sorted = [...businessesWithDistance].sort((a, b) => {
-            if (b.rating !== a.rating) return b.rating - a.rating;
-            return (a.distance || 0) - (b.distance || 0);
-          });
-
-          setTopRated(sorted.filter(b => b.rating >= 4.5).slice(0, 6));
-          setBlackOwned(
-            sorted
-              .filter(b => b.isBlackOwned)
-              .sort((a, b) => (a.distance || 0) - (b.distance || 0))
-              .slice(0, 6)
-          );
-        } else {
-          const businessesWithDistance = businesses.map(b => ({
-            ...mapDbBusinessToType(b),
-            distance: b.location_lat && b.location_lng 
-              ? calculateDistance(loc.lat, loc.lng, b.location_lat, b.location_lng)
-              : undefined
-          }));
-
-          const tierOrder = (t: string | null) => t === 'elite' ? 0 : t === 'pro' ? 1 : 2;
-          const sorted = [...businessesWithDistance].sort((a, b) => {
-            const tierDiff = tierOrder((a as any).subscriptionTier) - tierOrder((b as any).subscriptionTier);
-            if (tierDiff !== 0) return tierDiff;
-            if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
-            return (a.distance || 0) - (b.distance || 0);
-          });
-
-          setTopRated(sorted.filter(b => (b.rating || 0) >= 4.0).slice(0, 6));
-          setBlackOwned(
-            sorted
-              .filter(b => b.isBlackOwned)
-              .sort((a, b) => (a.distance || 0) - (b.distance || 0))
-              .slice(0, 6)
-          );
-        }
-      } catch (error) {
-        console.error('Error fetching businesses:', error);
-        fetchRandomBusinesses();
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function fetchRandomBusinesses() {
-      try {
-        const { data: businesses, error } = await supabase
-          .from('businesses')
-          .select('*')
-          .eq('is_published', true)
-          .eq('is_publicly_visible', true)
-          .in('subscription_status', ['active', 'trialing'])
-          .limit(20);
-
-        if (error || !businesses || businesses.length === 0) {
-          const shuffled = shuffleArray(mockBusinesses);
-          setTopRated(shuffled.filter(b => b.rating >= 4.5).slice(0, 6));
-          setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
-        } else {
-          const mapped = businesses.map(mapDbBusinessToType);
-          const shuffled = shuffleArray(mapped);
-          setTopRated(shuffled.filter(b => (b.rating || 0) >= 4.0).slice(0, 6));
-          setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
-        }
-      } catch (error) {
-        console.error('Error fetching random businesses:', error);
-        const shuffled = shuffleArray(mockBusinesses);
-        setTopRated(shuffled.filter(b => b.rating >= 4.5).slice(0, 6));
-        setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    getLocationAndFetch();
-  }, []);
-
-  return { topRated, blackOwned, loading, locationDenied, location, cityName };
-}
-
-function mapDbBusinessToType(db: any): Business {
+export function mapDbBusinessToType(db: any): Business {
   return {
     id: db.id,
     ownerId: db.owner_id,
@@ -206,6 +74,9 @@ function mapDbBusinessToType(db: any): Business {
     serviceSetting: db.service_setting || 'in_studio',
     priceRange: db.price_range || 2,
     isBlackOwned: db.is_black_owned || false,
+    isHispanicOwned: db.is_hispanic_owned || false,
+    isLgbtqOwned: db.is_lgbtq_owned || false,
+    isLgbtqWelcoming: db.is_lgbtq_welcoming || false,
     isVerified: db.is_verified || false,
     isFeatured: db.is_featured || false,
     subscriptionTier: db.subscription_tier || 'basic',
@@ -216,4 +87,137 @@ function mapDbBusinessToType(db: any): Business {
     createdAt: new Date(db.created_at),
     distance: db.distance,
   };
+}
+
+export function useLocationBasedBusinesses(): LocationBasedBusinessesResult {
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [cityName, setCityName] = useState<string | null>(null);
+  const [locationDenied, setLocationDenied] = useState(false);
+  const [topRated, setTopRated] = useState<Business[]>([]);
+  const [blackOwned, setBlackOwned] = useState<Business[]>([]);
+  const [hispanicOwned, setHispanicOwned] = useState<Business[]>([]);
+  const [lgbtqOwned, setLgbtqOwned] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function getLocationAndFetch() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const loc = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            setLocation(loc);
+            const city = await reverseGeocode(loc.lat, loc.lng);
+            setCityName(city);
+            fetchBusinessesForLocation(loc);
+          },
+          (error) => {
+            console.log('Location denied or unavailable:', error.message);
+            setLocationDenied(true);
+            fetchRandomBusinesses();
+          },
+          { timeout: 5000, enableHighAccuracy: false }
+        );
+      } else {
+        setLocationDenied(true);
+        fetchRandomBusinesses();
+      }
+    }
+
+    async function fetchBusinessesForLocation(loc: { lat: number; lng: number }) {
+      try {
+        const { data: businesses, error } = await supabase
+          .from('businesses')
+          .select('*')
+          .eq('is_published', true)
+          .eq('is_publicly_visible', true)
+          .in('subscription_status', ['active', 'trialing'])
+          .limit(50);
+
+        if (error || !businesses || businesses.length === 0) {
+          const businessesWithDistance = mockBusinesses.map(b => ({
+            ...b,
+            distance: calculateDistance(loc.lat, loc.lng, b.location.lat, b.location.lng)
+          }));
+
+          const sorted = [...businessesWithDistance].sort((a, b) => {
+            if (b.rating !== a.rating) return b.rating - a.rating;
+            return (a.distance || 0) - (b.distance || 0);
+          });
+
+          setTopRated(sorted.filter(b => b.rating >= 4.5).slice(0, 6));
+          setBlackOwned(sorted.filter(b => b.isBlackOwned).sort((a, b) => (a.distance || 0) - (b.distance || 0)).slice(0, 6));
+          setHispanicOwned([]);
+          setLgbtqOwned([]);
+        } else {
+          const businessesWithDistance = businesses.map(b => ({
+            ...mapDbBusinessToType(b),
+            distance: b.location_lat && b.location_lng 
+              ? calculateDistance(loc.lat, loc.lng, b.location_lat, b.location_lng)
+              : undefined
+          }));
+
+          const tierOrder = (t: string | null) => t === 'elite' ? 0 : t === 'pro' ? 1 : 2;
+          const sorted = [...businessesWithDistance].sort((a, b) => {
+            const tierDiff = tierOrder((a as any).subscriptionTier) - tierOrder((b as any).subscriptionTier);
+            if (tierDiff !== 0) return tierDiff;
+            if ((b.rating || 0) !== (a.rating || 0)) return (b.rating || 0) - (a.rating || 0);
+            return (a.distance || 0) - (b.distance || 0);
+          });
+
+          setTopRated(sorted.filter(b => (b.rating || 0) >= 4.0).slice(0, 6));
+          setBlackOwned(sorted.filter(b => b.isBlackOwned).sort((a, b) => (a.distance || 0) - (b.distance || 0)).slice(0, 6));
+          setHispanicOwned(sorted.filter(b => b.isHispanicOwned).sort((a, b) => (a.distance || 0) - (b.distance || 0)).slice(0, 6));
+          setLgbtqOwned(sorted.filter(b => b.isLgbtqOwned || b.isLgbtqWelcoming).sort((a, b) => (a.distance || 0) - (b.distance || 0)).slice(0, 6));
+        }
+      } catch (error) {
+        console.error('Error fetching businesses:', error);
+        fetchRandomBusinesses();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function fetchRandomBusinesses() {
+      try {
+        const { data: businesses, error } = await supabase
+          .from('businesses')
+          .select('*')
+          .eq('is_published', true)
+          .eq('is_publicly_visible', true)
+          .in('subscription_status', ['active', 'trialing'])
+          .limit(50);
+
+        if (error || !businesses || businesses.length === 0) {
+          const shuffled = shuffleArray(mockBusinesses);
+          setTopRated(shuffled.filter(b => b.rating >= 4.5).slice(0, 6));
+          setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
+          setHispanicOwned([]);
+          setLgbtqOwned([]);
+        } else {
+          const mapped = businesses.map(mapDbBusinessToType);
+          const shuffled = shuffleArray(mapped);
+          setTopRated(shuffled.filter(b => (b.rating || 0) >= 4.0).slice(0, 6));
+          setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
+          setHispanicOwned(shuffled.filter(b => b.isHispanicOwned).slice(0, 6));
+          setLgbtqOwned(shuffled.filter(b => b.isLgbtqOwned || b.isLgbtqWelcoming).slice(0, 6));
+        }
+      } catch (error) {
+        console.error('Error fetching random businesses:', error);
+        const shuffled = shuffleArray(mockBusinesses);
+        setTopRated(shuffled.filter(b => b.rating >= 4.5).slice(0, 6));
+        setBlackOwned(shuffled.filter(b => b.isBlackOwned).slice(0, 6));
+        setHispanicOwned([]);
+        setLgbtqOwned([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    getLocationAndFetch();
+  }, []);
+
+  return { topRated, blackOwned, hispanicOwned, lgbtqOwned, loading, locationDenied, location, cityName };
 }

@@ -64,6 +64,9 @@ export interface Business {
   serviceSetting: ServiceSetting;
   priceRange: 1 | 2 | 3 | 4;
   isBlackOwned: boolean;
+  isHispanicOwned?: boolean;
+  isLgbtqOwned?: boolean;
+  isLgbtqWelcoming?: boolean;
   isVerified: boolean;
   isFeatured: boolean;
   subscriptionTier: SubscriptionTier;
