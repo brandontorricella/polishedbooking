@@ -495,6 +495,48 @@ const BusinessProfile = () => {
               <p className="text-muted-foreground">{business.description}</p>
             </div>
 
+            {/* Service Type Indicators */}
+            {((business as any).offers_appointments || (business as any).offers_classes || (business as any).offers_virtual) && (
+              <div className="flex flex-wrap gap-2">
+                {(business as any).offers_appointments && (
+                  <Badge variant="secondary" className="text-sm">📅 1-on-1 Appointments</Badge>
+                )}
+                {(business as any).offers_classes && (
+                  <Badge variant="secondary" className="text-sm">👥 Group Classes</Badge>
+                )}
+                {(business as any).offers_virtual && (
+                  <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/30 text-sm">💻 Virtual Sessions Available</Badge>
+                )}
+              </div>
+            )}
+
+            {/* Credentials */}
+            {(business as any).credentials && (business as any).credentials.length > 0 && (
+              <div>
+                <h3 className="font-display text-lg font-semibold mb-3">Credentials & Certifications</h3>
+                <div className="space-y-2">
+                  {(business as any).credentials.map((cred: string, i: number) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                      <span className="text-lg">🏆</span>
+                      <span className="text-sm font-medium">{cred}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Specialties */}
+            {(business as any).specialties && (business as any).specialties.length > 0 && (
+              <div>
+                <h3 className="font-display text-lg font-semibold mb-3">Specialties</h3>
+                <div className="flex flex-wrap gap-2">
+                  {(business as any).specialties.map((spec: string, i: number) => (
+                    <Badge key={i} className="bg-primary/10 text-primary border-primary/20 text-sm">⭐ {spec}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div>
               <h3 className="font-display text-lg font-semibold mb-2">Location</h3>
               <div className="flex items-start gap-2 text-muted-foreground">
