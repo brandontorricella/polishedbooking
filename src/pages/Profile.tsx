@@ -268,6 +268,7 @@ const Profile = () => {
             </motion.div>
           )}
 
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="mb-6">
             <ChangePasswordSection />
           </motion.div>
 
