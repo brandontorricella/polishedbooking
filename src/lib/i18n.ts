@@ -26,7 +26,7 @@ export const translations = {
     
     // Hero
     heroTitle: 'Discover Beauty & Wellness Near You',
-    heroSubtitle: 'Book appointments with top-rated professionals in your area',
+    heroSubtitle: 'Book appointments with top-rated beauty & wellness professionals in your area',
     getStarted: 'Get Started',
     findServices: 'Find Services',
     forBusinesses: 'For Businesses',

@@ -35,7 +35,7 @@ export const AccountTypeModal = ({ open, onOpenChange, redirectAfter = '/' }: Ac
               <span className="text-3xl">💆</span>
               <div className="flex-1">
                 <p className="font-semibold text-lg">I'm a Client</p>
-                <p className="text-sm text-muted-foreground">Book beauty and wellness appointments, save favorites, earn loyalty points</p>
+                <p className="text-sm text-muted-foreground">Book beauty & wellness appointments, save favorites, earn loyalty points</p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>

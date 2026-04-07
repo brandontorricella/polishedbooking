@@ -105,8 +105,8 @@ export const LocationPermissionModal = ({
           </DialogTitle>
           <DialogDescription>
             {showManualInput
-              ? 'Enter your ZIP code to find beauty services near you.'
-              : 'Allow Polished to use your location to find beauty services near you.'}
+              ? 'Enter your ZIP code to find beauty & wellness services near you.'
+              : 'Allow Polished to use your location to find beauty & wellness services near you.'}
           </DialogDescription>
         </DialogHeader>
 

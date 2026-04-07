@@ -101,15 +101,15 @@ const BusinessPage = () => {
           >
             <Badge className="mb-6 bg-accent text-accent-foreground px-4 py-1.5">
               <Crown className="w-4 h-4 mr-2" />
-              For Beauty Professionals
+              For Beauty & Wellness Professionals
             </Badge>
             
             <h1 className="font-display text-5xl md:text-6xl font-bold mb-6">
-              Grow Your <span className="text-gradient">Beauty Business</span>
+              Grow Your <span className="text-gradient">Beauty & Wellness Business</span>
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8">
-              Join thousands of beauty professionals using Polished to reach new clients, 
+              Join thousands of beauty & wellness professionals using Polished to reach new clients, 
               manage bookings, and grow their revenue. Access from any device, anywhere.
             </p>
 
@@ -244,7 +244,7 @@ const BusinessPage = () => {
             <Sparkles className="w-12 h-12 mx-auto mb-6 text-accent" />
             <h2 className="font-display text-4xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-xl text-cream/70 max-w-2xl mx-auto mb-8">
-              Join Polished today and start growing your beauty business. 
+              Join Polished today and start growing your beauty & wellness business. 
               Access your dashboard from any device, anywhere.
             </p>
             <Button 
