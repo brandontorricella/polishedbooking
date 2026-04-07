@@ -268,6 +268,32 @@ const Profile = () => {
             </motion.div>
           )}
 
+          {/* Packages & Memberships Links */}
+          {isBusinessUser && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.079 }} className="mb-6 space-y-3">
+              <Link to="/business/packages" className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors block">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><span className="text-lg">📦</span></div>
+                  <div className="text-left">
+                    <p className="font-medium">Service Packages</p>
+                    <p className="text-sm text-muted-foreground">Sell prepaid session bundles</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </Link>
+              <Link to="/business/memberships" className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors block">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><span className="text-lg">💎</span></div>
+                  <div className="text-left">
+                    <p className="font-medium">Memberships</p>
+                    <p className="text-sm text-muted-foreground">Recurring membership plans</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </Link>
+            </motion.div>
+          )}
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="mb-6">
             <ChangePasswordSection />
           </motion.div>
