@@ -14,18 +14,19 @@ import { useBookings } from '@/hooks/useBookings';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const BookingsPage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { accountType, businessId, loading: accountLoading } = useAccountType();
   const { bookings, isLoading, cancelBooking, getUpcomingBookings, getPastBookings } = useBookings();
+  const { t } = useTranslation();
 
   const upcomingBookings = getUpcomingBookings();
   const pastBookings = getPastBookings();
   const isBusiness = accountType === 'business' && !!businessId;
 
-  // Redirect to auth if not logged in
   if (!authLoading && !user) {
     return (
       <div className="min-h-screen bg-background">
@@ -34,15 +35,15 @@ const BookingsPage = () => {
           <div className="container mx-auto px-4">
             <div className="text-center py-16">
               <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-display text-xl font-semibold mb-2">Sign in to view bookings</h3>
+              <h3 className="font-display text-xl font-semibold mb-2">{t('auth', 'signInToView')}</h3>
               <p className="text-muted-foreground mb-6">
-                Create an account or sign in to manage your appointments
+                {t('auth', 'createOrSignIn')}
               </p>
               <Button 
                 className="bg-gradient-primary"
                 onClick={() => navigate('/auth')}
               >
-                Sign In
+                {t('auth', 'signIn')}
               </Button>
             </div>
           </div>
@@ -59,15 +60,14 @@ const BookingsPage = () => {
       
       <main className="pt-20 pb-24 md:pb-8">
         <div className="container mx-auto px-4">
-          {/* Page Header */}
           <div className="mb-8">
             <h1 className="font-display text-3xl font-bold">
-              {isBusiness ? 'My Schedule' : 'My Bookings'}
+              {isBusiness ? t('bookings', 'mySchedule') : t('bookings', 'myBookings')}
             </h1>
             <p className="text-muted-foreground mt-2">
               {isBusiness
-                ? 'View your upcoming appointments and prepare materials'
-                : 'Manage your upcoming and past appointments'}
+                ? t('bookings', 'viewUpcoming')
+                : t('bookings', 'manageAppointments')}
             </p>
           </div>
 
@@ -76,14 +76,13 @@ const BookingsPage = () => {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
           ) : isBusiness ? (
-            /* ── Business View ── */
             <Tabs defaultValue="schedule" className="space-y-6">
               <TabsList className="grid w-full max-w-md grid-cols-2">
                 <TabsTrigger value="schedule">
-                  <Calendar className="w-3.5 h-3.5 mr-1.5" /> Schedule
+                  <Calendar className="w-3.5 h-3.5 mr-1.5" /> {t('bookings', 'schedule')}
                 </TabsTrigger>
                 <TabsTrigger value="waitlist">
-                  <Hourglass className="w-3.5 h-3.5 mr-1" /> Waitlist
+                  <Hourglass className="w-3.5 h-3.5 mr-1" /> {t('bookings', 'waitlist')}
                 </TabsTrigger>
               </TabsList>
 
@@ -96,20 +95,19 @@ const BookingsPage = () => {
               </TabsContent>
             </Tabs>
           ) : (
-            /* ── Client View ── */
             <Tabs defaultValue="upcoming" className="space-y-6">
               <TabsList className="grid w-full max-w-md grid-cols-3">
                 <TabsTrigger value="upcoming">
-                  Upcoming
+                  {t('bookings', 'upcoming')}
                   {upcomingBookings.length > 0 && (
                     <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary">
                       {upcomingBookings.length}
                     </Badge>
                   )}
                 </TabsTrigger>
-                <TabsTrigger value="past">Past</TabsTrigger>
+                <TabsTrigger value="past">{t('bookings', 'past')}</TabsTrigger>
                 <TabsTrigger value="waitlist">
-                  <Hourglass className="w-3.5 h-3.5 mr-1" /> Waitlist
+                  <Hourglass className="w-3.5 h-3.5 mr-1" /> {t('bookings', 'waitlist')}
                 </TabsTrigger>
               </TabsList>
 
@@ -125,13 +123,13 @@ const BookingsPage = () => {
                 ) : (
                   <div className="text-center py-16">
                     <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-display text-xl font-semibold mb-2">No upcoming bookings</h3>
-                    <p className="text-muted-foreground mb-6">Time to treat yourself!</p>
+                    <h3 className="font-display text-xl font-semibold mb-2">{t('bookings', 'noUpcoming')}</h3>
+                    <p className="text-muted-foreground mb-6">{t('bookings', 'treatYourself')}</p>
                     <Button 
                       className="bg-gradient-primary"
                       onClick={() => navigate('/search')}
                     >
-                      Find Services
+                      {t('bookings', 'findServices')}
                     </Button>
                   </div>
                 )}
@@ -149,8 +147,8 @@ const BookingsPage = () => {
                 ) : (
                   <div className="text-center py-16">
                     <Calendar className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-display text-xl font-semibold mb-2">No past bookings</h3>
-                    <p className="text-muted-foreground">Your booking history will appear here</p>
+                    <h3 className="font-display text-xl font-semibold mb-2">{t('bookings', 'noPast')}</h3>
+                    <p className="text-muted-foreground">{t('bookings', 'historyHere')}</p>
                   </div>
                 )}
               </TabsContent>

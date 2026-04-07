@@ -12,27 +12,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
-
-const passwordRequirements = [
-  { regex: /.{8,}/, label: 'At least 8 characters' },
-  { regex: /[A-Z]/, label: 'One uppercase letter' },
-  { regex: /[a-z]/, label: 'One lowercase letter' },
-  { regex: /[0-9]/, label: 'One number' },
-];
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading, signUp, signIn } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdmin();
+  const { t } = useTranslation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Form fields
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
@@ -40,16 +34,21 @@ const AuthPage = () => {
   const [displayName, setDisplayName] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
   
-  // Errors
   const [loginError, setLoginError] = useState('');
   const [signupError, setSignupError] = useState('');
+
+  const passwordRequirements = [
+    { regex: /.{8,}/, label: t('auth', 'atLeast8') },
+    { regex: /[A-Z]/, label: t('auth', 'oneUppercase') },
+    { regex: /[a-z]/, label: t('auth', 'oneLowercase') },
+    { regex: /[0-9]/, label: t('auth', 'oneNumber') },
+  ];
 
   const passwordChecks = passwordRequirements.map(req => ({
     ...req,
     valid: req.regex.test(signupPassword),
   }));
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user && !loading && !adminLoading) {
       if (isAdmin) {
@@ -75,9 +74,7 @@ const AuthPage = () => {
     
     setIsLoading(true);
     const { error } = await signIn(loginEmail, loginPassword);
-    if (!error) {
-      // Redirect is handled by the useEffect above after auth state updates
-    } else {
+    if (error) {
       setLoginError(error.message);
     }
     setIsLoading(false);
@@ -97,12 +94,12 @@ const AuthPage = () => {
     }
 
     if (passwordChecks.some(c => !c.valid)) {
-      setSignupError('Password does not meet requirements');
+      setSignupError(t('auth', 'passwordRequirements'));
       return;
     }
 
     if (!acceptTerms) {
-      setSignupError('You must accept the Terms of Service');
+      setSignupError(t('auth', 'mustAcceptTerms'));
       return;
     }
     
@@ -137,7 +134,7 @@ const AuthPage = () => {
         >
           <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8">
             <ArrowLeft className="w-4 h-4" />
-            Back to home
+            {t('auth', 'backToHome')}
           </Link>
 
           <div className="flex items-center gap-2 mb-8">
@@ -149,15 +146,15 @@ const AuthPage = () => {
 
           <Tabs defaultValue={searchParams.get('mode') === 'signup' ? 'signup' : 'login'} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Log In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">{t('nav', 'login')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('nav', 'signUp')}</TabsTrigger>
             </TabsList>
 
             {/* Login Tab */}
             <TabsContent value="login" className="space-y-6">
               <div className="space-y-2">
-                <h1 className="font-display text-3xl font-bold">Welcome back</h1>
-                <p className="text-muted-foreground">Enter your credentials to access your account</p>
+                <h1 className="font-display text-3xl font-bold">{t('auth', 'welcomeBack')}</h1>
+                <p className="text-muted-foreground">{t('auth', 'enterCredentials')}</p>
               </div>
 
               <GoogleSignInButton />
@@ -167,13 +164,13 @@ const AuthPage = () => {
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">or sign in with email</span>
+                  <span className="bg-background px-2 text-muted-foreground">{t('auth', 'orSignInEmail')}</span>
                 </div>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
+                  <Label htmlFor="login-email">{t('auth', 'email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input 
@@ -189,9 +186,9 @@ const AuthPage = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label htmlFor="login-password">{t('auth', 'password')}</Label>
                     <Link to="/forgot-password" className="text-xs text-primary hover:underline font-medium">
-                      Forgot password?
+                      {t('auth', 'forgotPassword')}
                     </Link>
                   </div>
                   <div className="relative">
@@ -228,11 +225,11 @@ const AuthPage = () => {
                       <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
                         <Sparkles className="w-5 h-5" />
                       </motion.span>
-                      Signing in...
+                      {t('auth', 'signingIn')}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      Log In <ArrowRight className="w-5 h-5" />
+                      {t('auth', 'loginBtn')} <ArrowRight className="w-5 h-5" />
                     </span>
                   )}
                 </Button>
@@ -242,30 +239,30 @@ const AuthPage = () => {
             {/* Sign Up Tab */}
             <TabsContent value="signup" className="space-y-6">
               <div className="space-y-2">
-                <h1 className="font-display text-3xl font-bold">Create account</h1>
-                <p className="text-muted-foreground">Start your beauty journey with Polished</p>
+                <h1 className="font-display text-3xl font-bold">{t('auth', 'createAccount')}</h1>
+                <p className="text-muted-foreground">{t('auth', 'createAccountDesc')}</p>
               </div>
 
-              <GoogleSignInButton label="Sign up with Google" />
+              <GoogleSignInButton label={t('auth', 'googleSignup')} />
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">or sign up with email</span>
+                  <span className="bg-background px-2 text-muted-foreground">{t('auth', 'orSignUpEmail')}</span>
                 </div>
               </div>
 
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Label htmlFor="signup-name">{t('auth', 'fullName')}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input 
                       id="signup-name" 
                       type="text" 
-                      placeholder="Your name"
+                      placeholder={t('profile', 'yourName')}
                       className="pl-10 h-12"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
@@ -274,7 +271,7 @@ const AuthPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t('auth', 'email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input 
@@ -289,7 +286,7 @@ const AuthPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">{t('auth', 'password')}</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input 
@@ -331,10 +328,10 @@ const AuthPage = () => {
                     onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
                   />
                   <label htmlFor="terms" className="text-sm text-muted-foreground leading-tight">
-                    I agree to the{' '}
-                    <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>
-                    {' '}and{' '}
-                    <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
+                    {t('auth', 'acceptTerms')}{' '}
+                    <Link to="/terms" className="text-primary hover:underline">{t('auth', 'termsOfService')}</Link>
+                    {' '}{t('auth', 'and')}{' '}
+                    <Link to="/privacy" className="text-primary hover:underline">{t('auth', 'privacyPolicy')}</Link>
                   </label>
                 </div>
 
@@ -352,11 +349,11 @@ const AuthPage = () => {
                       <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
                         <Sparkles className="w-5 h-5" />
                       </motion.span>
-                      Creating account...
+                      {t('auth', 'creatingAccount')}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      Create Account <ArrowRight className="w-5 h-5" />
+                      {t('auth', 'signupBtn')} <ArrowRight className="w-5 h-5" />
                     </span>
                   )}
                 </Button>
@@ -377,7 +374,7 @@ const AuthPage = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-midnight/80 via-transparent to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-12 text-cream">
           <blockquote className="text-2xl font-display italic mb-4">
-            "Polished has transformed my business. I've gained so many new clients!"
+            {t('testimonial', 'quote')}
           </blockquote>
           <div className="flex items-center gap-3">
             <img 

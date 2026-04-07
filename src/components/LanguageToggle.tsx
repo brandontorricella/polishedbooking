@@ -1,6 +1,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Globe } from 'lucide-react';
 
 interface LanguageToggleProps {
   variant?: 'navbar' | 'footer';
@@ -12,14 +13,17 @@ export const LanguageToggle = ({ variant = 'navbar' }: LanguageToggleProps) => {
   if (variant === 'navbar') {
     return (
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         onClick={toggleLanguage}
-        className="rounded-lg text-cream/70 hover:text-cream hover:bg-cream/10 gap-1.5 text-sm font-semibold"
+        className="rounded-full border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 gap-2 text-sm font-bold px-4 h-9 transition-all"
         title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
       >
-        <span className="text-base">{language === 'en' ? '🇲🇽' : '🇺🇸'}</span>
-        <span className="hidden sm:inline">{language === 'en' ? 'ES' : 'EN'}</span>
+        <Globe className="w-4 h-4 text-primary" />
+        <span className="text-lg leading-none">{language === 'en' ? '🇲🇽' : '🇺🇸'}</span>
+        <span className="text-foreground font-semibold">
+          {language === 'en' ? 'Español' : 'English'}
+        </span>
       </Button>
     );
   }
