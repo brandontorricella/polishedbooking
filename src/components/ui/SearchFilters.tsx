@@ -26,6 +26,8 @@ interface SearchFiltersProps {
 interface FilterState {
   query: string;
   isBlackOwned: boolean;
+  isHispanicOwned: boolean;
+  isLgbtqOwned: boolean;
   hasPromotions: boolean;
   minRating: number;
   priceRange: number[];
@@ -38,6 +40,8 @@ export const SearchFilters = ({ onSearch, onFiltersChange }: SearchFiltersProps)
   const [filters, setFilters] = useState<FilterState>({
     query: '',
     isBlackOwned: false,
+    isHispanicOwned: false,
+    isLgbtqOwned: false,
     hasPromotions: false,
     minRating: 0,
     priceRange: [1, 4],
@@ -60,6 +64,8 @@ export const SearchFilters = ({ onSearch, onFiltersChange }: SearchFiltersProps)
 
   const activeFiltersCount = [
     filters.isBlackOwned,
+    filters.isHispanicOwned,
+    filters.isLgbtqOwned,
     filters.hasPromotions,
     filters.minRating > 0,
     filters.priceRange[0] > 1 || filters.priceRange[1] < 4,
@@ -71,6 +77,8 @@ export const SearchFilters = ({ onSearch, onFiltersChange }: SearchFiltersProps)
     const defaultFilters: FilterState = {
       query: filters.query,
       isBlackOwned: false,
+      isHispanicOwned: false,
+      isLgbtqOwned: false,
       hasPromotions: false,
       minRating: 0,
       priceRange: [1, 4],
@@ -123,6 +131,26 @@ export const SearchFilters = ({ onSearch, onFiltersChange }: SearchFiltersProps)
           onClick={() => handleFilterChange('isBlackOwned', !filters.isBlackOwned)}
         >
           ✊🏿 Black-Owned
+        </Badge>
+        <Badge 
+          variant={filters.isHispanicOwned ? "default" : "outline"}
+          className={cn(
+            "cursor-pointer transition-all px-4 py-2",
+            filters.isHispanicOwned && "bg-[hsl(15,60%,25%)] text-orange-100 border-[hsl(15,60%,25%)]"
+          )}
+          onClick={() => handleFilterChange('isHispanicOwned', !filters.isHispanicOwned)}
+        >
+          🤎 Hispanic-Owned
+        </Badge>
+        <Badge 
+          variant={filters.isLgbtqOwned ? "default" : "outline"}
+          className={cn(
+            "cursor-pointer transition-all px-4 py-2",
+            filters.isLgbtqOwned && "bg-[hsl(270,50%,30%)] text-purple-100 border-[hsl(270,50%,30%)]"
+          )}
+          onClick={() => handleFilterChange('isLgbtqOwned', !filters.isLgbtqOwned)}
+        >
+          🏳️‍🌈 LGBTQ+
         </Badge>
         <Badge 
           variant={filters.hasPromotions ? "default" : "outline"}
