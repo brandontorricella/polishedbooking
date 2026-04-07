@@ -15,6 +15,7 @@ import { FollowupManager } from '@/components/followups/FollowupManager';
 import { GalleryManager } from '@/components/gallery/GalleryManager';
 import { FeatureGate, LockedFeaturePage } from '@/components/subscription/FeatureGate';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
+import { PaymentWarningBanner } from '@/components/business/PaymentWarningBanner';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -351,6 +352,8 @@ const BusinessAnalyticsPage = () => {
       
       <main className="pt-20 pb-8">
         <div className="container mx-auto px-4">
+          {/* Payment Warning Banner */}
+          {isBusinessUser && <PaymentWarningBanner />}
           {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div>
