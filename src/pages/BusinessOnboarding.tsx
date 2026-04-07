@@ -32,11 +32,7 @@ const subscriptionTiers = [
   },
 ];
 
-const businessCategories = [
-  '💇 Hair Salon', '💅 Nail Studio', '🧖 Spa', '💋 Makeup Artist',
-  '🧘 Massage Therapy', '👁 Lash Studio', '🪮 Brow Studio', '💈 Barbershop',
-  '💉 PMU Artist', '🛁 Waxing Studio', '🦷 Teeth Whitening', '💆 Wellness',
-];
+// Categories now imported from central constant
 
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 

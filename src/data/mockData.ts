@@ -1,20 +1,13 @@
 import type { Business, Review, Promotion, AnalyticsData, Conversation, Message } from '@/types';
 
-export const categories = [
-  { id: 'hair_styling', name: 'Hair Styling & Cuts', icon: 'Scissors', nameEs: 'Cortes y Estilizado' },
-  { id: 'hair_coloring', name: 'Hair Coloring', icon: 'Palette', nameEs: 'Coloración de Cabello' },
-  { id: 'makeup', name: 'Makeup & Glam', icon: 'Sparkles', nameEs: 'Maquillaje y Glam' },
-  { id: 'nails', name: 'Nails & Manicures', icon: 'Hand', nameEs: 'Uñas y Manicuras' },
-  { id: 'lashes', name: 'Eyelash Extensions', icon: 'Eye', nameEs: 'Extensiones de Pestañas' },
-  { id: 'eyebrows', name: 'Eyebrow Services', icon: 'Brush', nameEs: 'Servicios de Cejas' },
-  { id: 'facials', name: 'Facials & Skincare', icon: 'Droplets', nameEs: 'Faciales y Cuidado de Piel' },
-  { id: 'waxing', name: 'Waxing', icon: 'Flower2', nameEs: 'Depilación con Cera' },
-  { id: 'massage', name: 'Massage & Bodywork', icon: 'Heart', nameEs: 'Masajes y Terapia' },
-  { id: 'spray_tan', name: 'Spray Tans', icon: 'Sun', nameEs: 'Bronceado en Spray' },
-  { id: 'permanent_makeup', name: 'Permanent Makeup', icon: 'PenTool', nameEs: 'Maquillaje Permanente' },
-  { id: 'barbering', name: 'Barbering', icon: 'Scissors', nameEs: 'Barbería' },
-  { id: 'bridal', name: 'Bridal Beauty', icon: 'Crown', nameEs: 'Belleza Nupcial' },
-];
+import { SERVICE_CATEGORIES } from '@/constants/categories';
+
+export const categories = SERVICE_CATEGORIES.map(c => ({
+  id: c.id,
+  name: c.label.split(' ').slice(1).join(' '),
+  icon: c.icon,
+  nameEs: c.labelEs.split(' ').slice(1).join(' '),
+}));
 
 export const mockBusinesses: Business[] = [
   {

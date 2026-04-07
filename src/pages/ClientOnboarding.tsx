@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { SERVICE_CATEGORIES, getCategoriesByGroup, GROUP_LABELS_ES } from '@/constants/categories';
 
 const ClientOnboarding = () => {
   const navigate = useNavigate();
@@ -25,20 +26,7 @@ const ClientOnboarding = () => {
 
   const totalSteps = 5;
 
-  const serviceCategories = [
-    { id: 'hair_styling', label: '💇 Hair' },
-    { id: 'nails', label: '💅 Nails' },
-    { id: 'facials', label: '🧖 Skin Care' },
-    { id: 'makeup', label: '💋 Makeup' },
-    { id: 'massage', label: '🧘 Massage' },
-    { id: 'lashes', label: '👁 Lashes' },
-    { id: 'eyebrows', label: '🪮 Brows' },
-    { id: 'barbering', label: '💈 Barbering' },
-    { id: 'teeth_whitening', label: '🦷 Teeth Whitening' },
-    { id: 'pmu', label: '💉 PMU' },
-    { id: 'waxing', label: '🛁 Waxing' },
-    { id: 'wellness', label: '💆 Wellness' },
-  ];
+  const serviceCategories = SERVICE_CATEGORIES;
 
   const handleLocationPermission = async () => {
     if ('geolocation' in navigator) {
