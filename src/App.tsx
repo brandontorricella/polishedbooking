@@ -16,6 +16,7 @@ import Bookings from "./pages/Bookings";
 import Messages from "./pages/Messages";
 import Business from "./pages/Business";
 import BusinessAnalytics from "./pages/BusinessAnalytics";
+import BusinessSchedule from "./pages/BusinessSchedule";
 import BusinessProfile from "./pages/BusinessProfile";
 import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
