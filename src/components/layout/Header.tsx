@@ -56,10 +56,10 @@ export const Header = () => {
         <div className="bg-midnight text-cream text-xs py-1.5 px-4 flex items-center justify-between">
           <span className="flex items-center gap-1.5">
             <BarChart3 className="w-3.5 h-3.5" />
-            Business Dashboard
+            {t('nav', 'businessDashboard')}
           </span>
           <Link to="/search" className="text-cream/70 hover:text-cream transition-colors">
-            View as Customer
+            {t('nav', 'viewAsCustomer')}
           </Link>
         </div>
       )}
@@ -103,19 +103,19 @@ export const Header = () => {
               <>
                 <Link to="/business" className="hidden sm:block">
                   <Button variant="ghost" size="sm" className="rounded-lg text-cream/70 hover:text-cream hover:bg-cream/10">
-                    For Business
+                    {t('nav', 'forBusiness')}
                   </Button>
                 </Link>
                 <Link to="/auth?mode=login">
                   <Button variant="outline" size="sm" className="rounded-lg border-[1.5px] border-cream/80 bg-transparent text-cream font-semibold hover:bg-cream/10 hover:text-cream">
                     <LogIn className="w-4 h-4 mr-1.5" />
-                    Log In
+                    {t('nav', 'login')}
                   </Button>
                 </Link>
                 <Link to="/auth?mode=signup">
                   <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90 text-cream">
                     <UserPlus className="w-4 h-4 mr-1.5" />
-                    Sign Up
+                    {t('nav', 'signUp')}
                   </Button>
                 </Link>
               </>
@@ -133,7 +133,7 @@ export const Header = () => {
                 )}
                 <Link to="/business" className="hidden sm:block">
                   <Button variant="outline" size="sm" className="rounded-lg border-cream/30 text-cream/70 bg-transparent hover:bg-cream/10 hover:text-cream">
-                    For Business
+                    {t('nav', 'forBusiness')}
                   </Button>
                 </Link>
                 <NotificationBell />
@@ -227,7 +227,7 @@ export const Header = () => {
                 <div className="pt-4 border-t border-cream/10 mt-4 space-y-2">
                   <Link to="/business" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full justify-start text-cream border-cream/30 hover:bg-cream/10" size="lg">
-                      For Business
+                      {t('nav', 'forBusiness')}
                     </Button>
                   </Link>
                 </div>
@@ -238,7 +238,7 @@ export const Header = () => {
                   <Link to="/search" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full justify-start text-cream border-cream/30 hover:bg-cream/10" size="lg">
                       <Search className="w-5 h-5 mr-2" />
-                      View as Customer
+                      {t('nav', 'viewAsCustomer')}
                     </Button>
                   </Link>
                 </div>
@@ -249,8 +249,8 @@ export const Header = () => {
                   {isAdmin && (
                     <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
                       <Button className="w-full justify-start bg-gradient-primary hover:opacity-90 text-cream" size="lg">
-                        <Shield className="w-5 h-5 mr-2" />
-                        Admin Dashboard
+                      <Shield className="w-5 h-5 mr-2" />
+                      {t('nav', 'adminDashboard')}
                       </Button>
                     </Link>
                   )}
@@ -261,7 +261,7 @@ export const Header = () => {
                     onClick={() => { signOut(); setMobileMenuOpen(false); }}
                   >
                     <LogOut className="w-5 h-5 mr-2" />
-                    Sign Out
+                    {t('nav', 'signOut')}
                   </Button>
                 </div>
               )}

@@ -2,19 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Settings, 
-  Bell, 
-  Shield, 
-  CreditCard,
-  LogOut,
-  ChevronRight,
-  Camera,
-  Moon,
-  Sun,
-  Trash2,
-  Globe,
-  Crown,
-  Eye
+  Settings, Bell, Shield, CreditCard,
+  LogOut, ChevronRight, Camera, Moon, Sun, Trash2, Globe, Crown, Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -33,16 +22,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { DepositCancellationSettings } from '@/components/booking/DepositCancellationSettings';
 import { ChangePasswordSection } from '@/components/settings/ChangePasswordSection';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 const Profile = () => {
@@ -52,6 +35,7 @@ const Profile = () => {
   const { isDark, toggleTheme } = useTheme();
   const { isSubscribed, showPaywall, subscription } = useSuperwall();
   const { businessId } = useAccountType();
+  const { t } = useTranslation();
   
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
@@ -65,88 +49,63 @@ const Profile = () => {
   const isBusinessUser = profile?.role === 'business';
 
   useEffect(() => {
-    if (!user && !loading) {
-      navigate('/auth');
-    }
+    if (!user && !loading) navigate('/auth');
     if (profile) {
       setDisplayName(profile.display_name || '');
       setPhone(profile.phone || '');
     }
   }, [user, profile, loading, navigate]);
 
-  // Auto-show paywall for business users without active subscription
   useEffect(() => {
     if (!loading && isBusinessUser && !isSubscribed && subscription !== null) {
-      // Subscription check is complete and business doesn't have active subscription
       showPaywall(subscription?.tier || 'basic');
     }
   }, [loading, isBusinessUser, isSubscribed, subscription, showPaywall]);
 
   const handleSave = async () => {
     setIsSaving(true);
-    const { error } = await updateProfile({
-      display_name: displayName,
-      phone,
-    });
-    
+    const { error } = await updateProfile({ display_name: displayName, phone });
     if (!error) {
-      toast({
-        title: 'Profile updated',
-        description: 'Your changes have been saved.',
-      });
+      toast({ title: t('profile', 'profileUpdated'), description: t('profile', 'changesSaved') });
       setIsEditing(false);
     }
     setIsSaving(false);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
+  const handleSignOut = async () => { await signOut(); navigate('/'); };
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
-    
     try {
       const { data, error } = await supabase.functions.invoke('delete-account', {
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
+        headers: { Authorization: `Bearer ${session?.access_token}` },
       });
-
       if (error) throw error;
-
       if (data.success) {
         toast({
-          title: 'Account Deleted',
-          description: isBusinessUser 
-            ? 'Your account has been deleted. Your email is saved for trial tracking purposes.'
-            : 'Your account and all data have been deleted.',
+          title: t('businessProfile', 'accountDeleted'),
+          description: isBusinessUser ? t('businessProfile', 'accountDeletedBiz') : t('businessProfile', 'accountDeletedClient'),
         });
-        // Sign out and redirect
         await signOut();
         navigate('/');
       } else {
-        throw new Error(data.error || 'Failed to delete account');
+        throw new Error(data.error || t('businessProfile', 'failedDelete'));
       }
     } catch (err) {
       console.error('Delete account error:', err);
       toast({
-        title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to delete account',
+        title: t('businessProfile', 'error'),
+        description: err instanceof Error ? err.message : t('businessProfile', 'failedDelete'),
         variant: 'destructive',
       });
     }
-    
     setIsDeleting(false);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">
-          <Settings className="w-8 h-8 text-primary" />
-        </div>
+        <div className="animate-pulse"><Settings className="w-8 h-8 text-primary" /></div>
       </div>
     );
   }
@@ -154,17 +113,12 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
       <main className="pt-20 pb-24 md:pb-8">
         <div className="container mx-auto px-4 max-w-2xl">
-          <h1 className="font-display text-3xl font-bold mb-8">Profile</h1>
+          <h1 className="font-display text-3xl font-bold mb-8">{t('profile', 'title')}</h1>
 
           {/* Profile Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card rounded-2xl border border-border p-6 mb-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-6 mb-6">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="w-20 h-20">
@@ -180,72 +134,42 @@ const Profile = () => {
               <div className="flex-1">
                 {isEditing ? (
                   <div className="space-y-2">
-                    <Input
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Your name"
-                      className="h-10"
-                    />
-                    <Input
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Phone number"
-                      className="h-10"
-                    />
+                    <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={t('profile', 'yourName')} className="h-10" />
+                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('profile', 'phoneNumber')} className="h-10" />
                   </div>
                 ) : (
                   <>
-                    <h2 className="font-display text-xl font-semibold">
-                      {profile?.display_name || 'Set your name'}
-                    </h2>
+                    <h2 className="font-display text-xl font-semibold">{profile?.display_name || t('profile', 'setName')}</h2>
                     <p className="text-muted-foreground">{profile?.email}</p>
-                    {profile?.phone && (
-                      <p className="text-sm text-muted-foreground">{profile.phone}</p>
-                    )}
+                    {profile?.phone && <p className="text-sm text-muted-foreground">{profile.phone}</p>}
                   </>
                 )}
               </div>
             </div>
-
             <div className="flex gap-2 mt-4">
               {isEditing ? (
                 <>
-                  <Button 
-                    onClick={handleSave} 
-                    disabled={isSaving}
-                    className="bg-gradient-primary hover:opacity-90"
-                  >
-                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  <Button onClick={handleSave} disabled={isSaving} className="bg-gradient-primary hover:opacity-90">
+                    {isSaving ? t('profile', 'saving') : t('profile', 'saveChanges')}
                   </Button>
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </Button>
+                  <Button variant="outline" onClick={() => setIsEditing(false)}>{t('profile', 'cancel')}</Button>
                 </>
               ) : (
-                <Button variant="outline" onClick={() => setIsEditing(true)}>
-                  Edit Profile
-                </Button>
+                <Button variant="outline" onClick={() => setIsEditing(true)}>{t('profile', 'editProfile')}</Button>
               )}
             </div>
           </motion.div>
 
-          {/* View My Storefront - Business Users */}
+          {/* View My Storefront */}
           {isBusinessUser && businessId && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.03 }}
-              className="mb-6"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className="mb-6">
               <Link to={`/business/${businessId}`}>
                 <div className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Eye className="w-5 h-5 text-primary" />
-                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Eye className="w-5 h-5 text-primary" /></div>
                     <div>
-                      <p className="font-medium text-foreground">View My Storefront</p>
-                      <p className="text-sm text-muted-foreground">See how customers see your business profile</p>
+                      <p className="font-medium text-foreground">{t('profile', 'viewStorefront')}</p>
+                      <p className="text-sm text-muted-foreground">{t('profile', 'storefrontDesc')}</p>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -254,78 +178,44 @@ const Profile = () => {
             </motion.div>
           )}
 
-          {/* Subscription Management for Business Users */}
+          {/* Subscription */}
           {isBusinessUser && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="mb-6"
-            >
-              <button 
-                onClick={() => setShowSubscriptionManager(!showSubscriptionManager)}
-                className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-              >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mb-6">
+              <button onClick={() => setShowSubscriptionManager(!showSubscriptionManager)} className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-primary" />
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Crown className="w-5 h-5 text-primary" /></div>
                   <div className="text-left">
-                    <p className="font-medium">Subscription</p>
+                    <p className="font-medium">{t('profile', 'subscription')}</p>
                     <p className="text-sm text-muted-foreground">
-                      {isSubscribed 
-                        ? `${subscription?.tier?.charAt(0).toUpperCase()}${subscription?.tier?.slice(1)} Plan`
-                        : 'No active subscription'
-                      }
+                      {isSubscribed ? `${subscription?.tier?.charAt(0).toUpperCase()}${subscription?.tier?.slice(1)} Plan` : t('profile', 'noSubscription')}
                     </p>
                   </div>
                 </div>
                 <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${showSubscriptionManager ? 'rotate-90' : ''}`} />
               </button>
-              
               {showSubscriptionManager && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-4"
-                >
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4">
                   <SubscriptionManager />
                 </motion.div>
               )}
             </motion.div>
           )}
 
-          {/* Deposit & Cancellation Policy for Business Users */}
+          {/* Deposits & Cancellation */}
           {isBusinessUser && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.07 }}
-              className="mb-6"
-            >
-              <button 
-                onClick={() => setShowDepositSettings(!showDepositSettings)}
-                className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-              >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }} className="mb-6">
+              <button onClick={() => setShowDepositSettings(!showDepositSettings)} className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <CreditCard className="w-5 h-5 text-primary" />
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><CreditCard className="w-5 h-5 text-primary" /></div>
                   <div className="text-left">
-                    <p className="font-medium">Deposits & Cancellation</p>
-                    <p className="text-sm text-muted-foreground">Set deposit requirements and cancellation policies</p>
+                    <p className="font-medium">{t('profile', 'depositsCancel')}</p>
+                    <p className="text-sm text-muted-foreground">{t('profile', 'depositsCancelDesc')}</p>
                   </div>
                 </div>
                 <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${showDepositSettings ? 'rotate-90' : ''}`} />
               </button>
-              
               {showDepositSettings && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-4"
-                >
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
                   <DepositCancellationSettings />
                 </motion.div>
               )}
@@ -333,153 +223,92 @@ const Profile = () => {
           )}
 
           {/* Change Password */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 }}
-            className="mb-6"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="mb-6">
             <ChangePasswordSection />
           </motion.div>
 
-          {/* Settings Sections */}
+          {/* Settings */}
           <div className="space-y-4">
             {/* Notifications */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-card rounded-2xl border border-border p-4"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card rounded-2xl border border-border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Bell className="w-5 h-5 text-primary" />
-                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Bell className="w-5 h-5 text-primary" /></div>
                   <div>
-                    <p className="font-medium">Push Notifications</p>
-                    <p className="text-sm text-muted-foreground">Booking reminders, messages, deals</p>
+                    <p className="font-medium">{t('profile', 'pushNotifications')}</p>
+                    <p className="text-sm text-muted-foreground">{t('profile', 'pushNotificationsDesc')}</p>
                   </div>
                 </div>
-                <Switch
-                  checked={notificationsEnabled}
-                  onCheckedChange={setNotificationsEnabled}
-                />
+                <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
               </div>
             </motion.div>
 
             {/* Appearance */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-card rounded-2xl border border-border p-4"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-2xl border border-border p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     {isDark ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
                   </div>
                   <div>
-                    <p className="font-medium">Dark Mode</p>
-                    <p className="text-sm text-muted-foreground">Switch between light and dark theme</p>
+                    <p className="font-medium">{t('profile', 'darkMode')}</p>
+                    <p className="text-sm text-muted-foreground">{t('profile', 'darkModeDesc')}</p>
                   </div>
                 </div>
-                <Switch
-                  checked={isDark}
-                  onCheckedChange={toggleTheme}
-                />
+                <Switch checked={isDark} onCheckedChange={toggleTheme} />
               </div>
             </motion.div>
 
-            {/* Legal Links */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-card rounded-2xl border border-border overflow-hidden"
-            >
-              <button 
-                onClick={() => navigate('/privacy')}
-                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-              >
+            {/* Legal */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-2xl border border-border overflow-hidden">
+              <button onClick={() => navigate('/privacy')} className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="font-medium">Privacy Policy</span>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Shield className="w-5 h-5 text-primary" /></div>
+                  <span className="font-medium">{t('profile', 'privacyPolicy')}</span>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
               <Separator />
-              <button 
-                onClick={() => navigate('/terms')}
-                className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
-              >
+              <button onClick={() => navigate('/terms')} className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Globe className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="font-medium">Terms of Service</span>
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Globe className="w-5 h-5 text-primary" /></div>
+                  <span className="font-medium">{t('profile', 'termsOfService')}</span>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
             </motion.div>
 
             {/* Danger Zone */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-card rounded-2xl border border-border overflow-hidden"
-            >
-              <button 
-                onClick={handleSignOut}
-                className="w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
-              >
-                <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-                  <LogOut className="w-5 h-5 text-destructive" />
-                </div>
-                <span className="font-medium text-destructive">Sign Out</span>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-card rounded-2xl border border-border overflow-hidden">
+              <button onClick={handleSignOut} className="w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left">
+                <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center"><LogOut className="w-5 h-5 text-destructive" /></div>
+                <span className="font-medium text-destructive">{t('profile', 'signOut')}</span>
               </button>
               <Separator />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <button 
-                    className="w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
-                    disabled={isDeleting}
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center">
-                      <Trash2 className="w-5 h-5 text-destructive" />
-                    </div>
+                  <button className="w-full p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left" disabled={isDeleting}>
+                    <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center"><Trash2 className="w-5 h-5 text-destructive" /></div>
                     <div>
-                      <span className="font-medium text-destructive">
-                        {isDeleting ? 'Deleting...' : 'Delete Account'}
-                      </span>
-                      <p className="text-sm text-muted-foreground">Permanently remove your data</p>
+                      <span className="font-medium text-destructive">{isDeleting ? t('profile', 'deleting') : t('profile', 'deleteAccount')}</span>
+                      <p className="text-sm text-muted-foreground">{t('profile', 'deleteAccountDesc')}</p>
                     </div>
                   </button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>{t('profile', 'deleteConfirmTitle')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete your account 
-                      and remove your data from our servers.
+                      {t('profile', 'deleteConfirmDesc')}
                       {isBusinessUser && (
-                        <span className="block mt-2 text-amber-600">
-                          Note: Your email will be saved to prevent future free trial abuse.
-                        </span>
+                        <span className="block mt-2 text-amber-600">{t('profile', 'deleteTrialNote')}</span>
                       )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleDeleteAccount}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Delete Account
+                    <AlertDialogCancel>{t('common', 'cancel')}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      {t('profile', 'deleteAccount')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -488,7 +317,6 @@ const Profile = () => {
           </div>
         </div>
       </main>
-
       <Footer />
       <BottomNav />
     </div>
