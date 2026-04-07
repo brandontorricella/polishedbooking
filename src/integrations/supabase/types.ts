@@ -263,6 +263,7 @@ export type Database = {
           id: string
           is_black_owned: boolean | null
           is_featured: boolean | null
+          is_publicly_visible: boolean | null
           is_published: boolean | null
           is_verified: boolean | null
           location_lat: number | null
@@ -273,6 +274,7 @@ export type Database = {
           price_range: number | null
           profile_photo_url: string | null
           rating: number | null
+          relisted_at: string | null
           review_count: number | null
           service_radius: number | null
           service_setting: Database["public"]["Enums"]["service_setting"] | null
@@ -287,6 +289,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_tier"]
             | null
           trial_ends_at: string | null
+          unlisted_at: string | null
+          unlisted_reason: string | null
           updated_at: string
           view_count: number | null
           website: string | null
@@ -312,6 +316,7 @@ export type Database = {
           id?: string
           is_black_owned?: boolean | null
           is_featured?: boolean | null
+          is_publicly_visible?: boolean | null
           is_published?: boolean | null
           is_verified?: boolean | null
           location_lat?: number | null
@@ -322,6 +327,7 @@ export type Database = {
           price_range?: number | null
           profile_photo_url?: string | null
           rating?: number | null
+          relisted_at?: string | null
           review_count?: number | null
           service_radius?: number | null
           service_setting?:
@@ -338,6 +344,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_tier"]
             | null
           trial_ends_at?: string | null
+          unlisted_at?: string | null
+          unlisted_reason?: string | null
           updated_at?: string
           view_count?: number | null
           website?: string | null
@@ -363,6 +371,7 @@ export type Database = {
           id?: string
           is_black_owned?: boolean | null
           is_featured?: boolean | null
+          is_publicly_visible?: boolean | null
           is_published?: boolean | null
           is_verified?: boolean | null
           location_lat?: number | null
@@ -373,6 +382,7 @@ export type Database = {
           price_range?: number | null
           profile_photo_url?: string | null
           rating?: number | null
+          relisted_at?: string | null
           review_count?: number | null
           service_radius?: number | null
           service_setting?:
@@ -389,6 +399,8 @@ export type Database = {
             | Database["public"]["Enums"]["subscription_tier"]
             | null
           trial_ends_at?: string | null
+          unlisted_at?: string | null
+          unlisted_reason?: string | null
           updated_at?: string
           view_count?: number | null
           website?: string | null
