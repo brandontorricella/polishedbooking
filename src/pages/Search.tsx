@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Search as SearchIcon, 
@@ -20,7 +20,7 @@ import { BookingFlow } from '@/components/booking/BookingFlow';
 import { BusinessMap } from '@/components/map/BusinessMap';
 import { LocationPermissionModal } from '@/components/location/LocationPermissionModal';
 import { categories, mockBusinesses } from '@/data/mockData';
-import { getCategoriesByGroup } from '@/constants/categories';
+import { getCategoriesByGroup, CATEGORY_GROUPS, SERVICE_CATEGORIES } from '@/constants/categories';
 import { useLocation } from '@/hooks/useLocation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Business } from '@/types';
@@ -43,16 +43,26 @@ interface BusinessWithDistance extends Business {
 
 const SearchPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { userLocation, locationError, isLoadingLocation, requestLocation, setUserLocation, calculateDistance, formatDistance } = useLocation();
   
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [currentFilters, setCurrentFilters] = useState<CurrentFilters>({});
   const [maxDistance, setMaxDistance] = useState<number>(9999);
   const [bookingBusiness, setBookingBusiness] = useState<Business | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [dbBusinesses, setDbBusinesses] = useState<Business[]>([]);
   const [loadingDb, setLoadingDb] = useState(true);
+
+  // Read URL params for initial group/category selection
+  useEffect(() => {
+    const group = searchParams.get('group');
+    const category = searchParams.get('category');
+    if (group) setSelectedGroup(group);
+    if (category) setSelectedCategories([category]);
+  }, [searchParams]);
 
   // Fetch publicly visible businesses from database
   useEffect(() => {
@@ -176,13 +186,19 @@ const SearchPage = () => {
       );
     }
 
+    // Group filter — filter by category group
+    if (selectedGroup) {
+      const groupCatIds = SERVICE_CATEGORIES.filter(c => c.group === selectedGroup).map(c => c.id);
+      results = results.filter(b => b.categories.some(c => groupCatIds.includes(c)));
+    }
+
     // Distance filter
     if (maxDistance < 9999 && userLocation) {
       results = results.filter(b => b.distance !== null && b.distance <= maxDistance);
     }
 
     return results;
-  }, [businessesWithDistance, currentFilters, selectedCategories, maxDistance, userLocation]);
+  }, [businessesWithDistance, currentFilters, selectedCategories, selectedGroup, maxDistance, userLocation]);
 
   const handleCategoryToggle = (categoryId: string) => {
     setSelectedCategories(prev => 
@@ -193,6 +209,12 @@ const SearchPage = () => {
   };
 
   const clearCategories = () => {
+    setSelectedCategories([]);
+    setSelectedGroup('');
+  };
+
+  const handleGroupSelect = (group: string) => {
+    setSelectedGroup(group === selectedGroup ? '' : group);
     setSelectedCategories([]);
   };
 
@@ -281,10 +303,33 @@ const SearchPage = () => {
             </div>
           )}
 
+          {/* Group Filter Tabs */}
+          <div className="flex gap-2 flex-wrap mb-6 pb-4 border-b border-border">
+            <Button
+              variant={!selectedGroup ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleGroupSelect('')}
+              className={cn("rounded-full", !selectedGroup && "bg-primary text-primary-foreground")}
+            >
+              All
+            </Button>
+            {CATEGORY_GROUPS.map(group => (
+              <Button
+                key={group}
+                variant={selectedGroup === group ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleGroupSelect(group)}
+                className={cn("rounded-full", selectedGroup === group && "bg-primary text-primary-foreground")}
+              >
+                {group}
+              </Button>
+            ))}
+          </div>
+
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium">Categories</h3>
-              {selectedCategories.length > 0 && (
+              {(selectedCategories.length > 0 || selectedGroup) && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -292,12 +337,14 @@ const SearchPage = () => {
                   className="text-primary hover:text-primary/80"
                 >
                   <X className="w-4 h-4 mr-1" />
-                  Clear ({selectedCategories.length})
+                  Clear
                 </Button>
               )}
             </div>
             <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-1">
-              {Object.entries(getCategoriesByGroup()).map(([group, cats]) => (
+              {Object.entries(getCategoriesByGroup())
+                .filter(([group]) => !selectedGroup || group === selectedGroup)
+                .map(([group, cats]) => (
                 <div key={group}>
                   <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{group}</h4>
                   <div className="flex flex-wrap gap-1.5 mb-2">

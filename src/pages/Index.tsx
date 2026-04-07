@@ -455,6 +455,59 @@ const Index = () => {
           </div>
         </section>
 
+      {/* Wellness Spotlight */}
+      <section className="py-16 bg-gradient-to-br from-[hsl(210,50%,8%)] to-[hsl(215,45%,14%)] text-cream">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                  {t('sections', 'wellnessBadge') || '🧘 Wellness'}
+                </Badge>
+              </div>
+              <h2 className="font-display text-3xl font-bold text-cream">
+                {t('sections', 'wellnessTitle') || 'Wellness & Fitness'}
+              </h2>
+              <p className="text-cream/70 mt-2">{t('sections', 'wellnessDesc') || 'Yoga, pilates, meditation, coaching, and more'}</p>
+            </div>
+            <Link to="/search?group=Fitness">
+              <Button 
+                variant="ghost" 
+                className="gap-2 border border-cream/80 bg-transparent text-cream hover:bg-cream hover:text-midnight"
+              >
+                {t('sections', 'exploreAll')} <ChevronRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { id: 'yoga', emoji: '🧘', name: 'Yoga' },
+              { id: 'pilates', emoji: '🤸', name: 'Pilates' },
+              { id: 'meditation', emoji: '🧘', name: 'Meditation' },
+              { id: 'personal_training', emoji: '💪', name: 'Personal Training' },
+              { id: 'acupuncture', emoji: '📍', name: 'Acupuncture' },
+              { id: 'health_coaching', emoji: '🍎', name: 'Health Coaching' },
+              { id: 'massage', emoji: '🧘', name: 'Massage' },
+              { id: 'nutrition', emoji: '🥗', name: 'Nutrition' },
+            ].map((cat, index) => (
+              <motion.button
+                key={cat.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => navigate(`/search?category=${cat.id}`)}
+                className="flex flex-col items-center gap-2 p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
+              >
+                <span className="text-3xl">{cat.emoji}</span>
+                <span className="text-sm font-medium text-cream">{cat.name}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Promotions Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
