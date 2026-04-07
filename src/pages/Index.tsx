@@ -346,8 +346,7 @@ const Index = () => {
       </section>
 
       {/* Hispanic & Latino-Owned */}
-      {(loading || hispanicOwned.length > 0) && (
-        <section className="py-16 bg-gradient-to-br from-[hsl(10,30%,8%)] to-[hsl(15,40%,12%)] text-cream">
+      <section className="py-16 bg-gradient-to-br from-[hsl(10,30%,8%)] to-[hsl(15,40%,12%)] text-cream">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -377,7 +376,7 @@ const Index = () => {
                   <BusinessCardSkeleton />
                   <BusinessCardSkeleton />
                 </>
-              ) : (
+              ) : hispanicOwned.length > 0 ? (
                 hispanicOwned.slice(0, 3).map((business, index) => (
                   <motion.div
                     key={business.id}
@@ -391,15 +390,17 @@ const Index = () => {
                     />
                   </motion.div>
                 ))
+              ) : (
+                [1, 2, 3].map((i) => (
+                  <BusinessCardSkeleton key={i} />
+                ))
               )}
             </div>
           </div>
         </section>
-      )}
 
       {/* LGBTQ+-Owned */}
-      {(loading || lgbtqOwned.length > 0) && (
-        <section className="py-16 bg-gradient-to-br from-[hsl(270,25%,8%)] to-[hsl(280,35%,14%)] text-cream">
+      <section className="py-16 bg-gradient-to-br from-[hsl(270,25%,8%)] to-[hsl(280,35%,14%)] text-cream">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-8">
               <div>
