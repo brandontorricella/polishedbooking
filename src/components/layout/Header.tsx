@@ -22,6 +22,26 @@ export const Header = () => {
   const { user, signOut } = useAuth();
   const { accountType } = useAccountType();
   const { isAdmin } = useAdmin();
+  const { t } = useTranslation();
+
+  const guestNavItems = [
+    { href: '/', label: t('nav', 'home'), icon: Home },
+    { href: '/search', label: t('nav', 'search'), icon: Search },
+  ];
+
+  const customerNavItems = [
+    { href: '/', label: t('nav', 'home'), icon: Home },
+    { href: '/search', label: t('nav', 'search'), icon: Search },
+    { href: '/favorites', label: t('nav', 'favorites'), icon: Heart },
+    { href: '/bookings', label: t('nav', 'bookings'), icon: Calendar },
+    { href: '/messages', label: t('nav', 'messages'), icon: MessageSquare },
+  ];
+
+  const businessNavItems = [
+    { href: '/business/analytics', label: t('nav', 'dashboard'), icon: BarChart3 },
+    { href: '/bookings', label: t('nav', 'bookings'), icon: Calendar },
+    { href: '/messages', label: t('nav', 'messages'), icon: MessageSquare },
+  ];
 
   const navItems = accountType === 'business'
     ? businessNavItems
