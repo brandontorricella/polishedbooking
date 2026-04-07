@@ -16,25 +16,6 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { useTranslation } from '@/hooks/useTranslation';
 import polishedLogo from '@/assets/logo-transparent.png';
 
-const guestNavItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/search', label: 'Search', icon: Search },
-];
-
-const customerNavItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/search', label: 'Search', icon: Search },
-  { href: '/favorites', label: 'Favorites', icon: Heart },
-  { href: '/bookings', label: 'Bookings', icon: Calendar },
-  { href: '/messages', label: 'Messages', icon: MessageSquare },
-];
-
-const businessNavItems = [
-  { href: '/business/analytics', label: 'Dashboard', icon: BarChart3 },
-  { href: '/bookings', label: 'Bookings', icon: Calendar },
-  { href: '/messages', label: 'Messages', icon: MessageSquare },
-];
-
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
