@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isBefore, startOfToday } from 'date-fns';
 import { 
-  Clock, ChevronLeft, ChevronRight, Check, Loader2, CreditCard
+  Clock, ChevronLeft, ChevronRight, Check, Loader2, CreditCard, Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAvailability } from '@/hooks/useAvailability';
 import { supabase } from '@/integrations/supabase/client';
 import { DepositPaymentStep } from '@/components/booking/DepositPaymentStep';
+import { TipSelectionStep } from '@/components/booking/TipSelectionStep';
 import { CancellationPolicyDisplay } from '@/components/booking/CancellationPolicyDisplay';
 import type { Business, Service } from '@/types';
 import { cn } from '@/lib/utils';
@@ -27,7 +28,7 @@ interface BookingFlowProps {
   initialService?: Service;
 }
 
-type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'deposit';
+type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'tip' | 'deposit';
 
 const formatTime = (time: string): string => {
   const [hour, min] = time.split(':').map(Number);
@@ -49,15 +50,20 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notes, setNotes] = useState('');
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+  const [tipAmount, setTipAmount] = useState(0);
 
   const businessAny = business as any;
   const depositRequired = businessAny.deposit_required || false;
+  const tipsEnabled = businessAny.tips_enabled !== false; // default true
 
   const today = startOfToday();
 
-  const allSteps: BookingStep[] = depositRequired 
-    ? ['service', 'date', 'time', 'confirm', 'deposit']
-    : ['service', 'date', 'time', 'confirm'];
+  const allSteps: BookingStep[] = (() => {
+    const steps: BookingStep[] = ['service', 'date', 'time', 'confirm'];
+    if (tipsEnabled) steps.push('tip');
+    if (depositRequired) steps.push('deposit');
+    return steps;
+  })();
 
   // Fetch availability when date changes
   useEffect(() => {
@@ -122,15 +128,15 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
           status: depositRequired ? 'pending' : 'confirmed',
           deposit_amount: depositAmt,
           remaining_balance: selectedService.price - depositAmt,
-        })
+          tip_amount: tipAmount,
+          tip_collected: tipAmount > 0,
+        } as any)
         .select()
         .single();
 
       if (error) {
-        // Check for potential double-booking
         if (error.message?.includes('duplicate') || error.code === '23505') {
           toast({ title: "Time no longer available", description: "This time slot was just booked. Please select a different time.", variant: "destructive" });
-          // Refresh availability
           if (selectedDate && selectedService) {
             fetchAvailability(business.id, selectedDate, selectedService.id, selectedService.duration, null, business.hours);
           }
@@ -145,7 +151,8 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
         setCreatedBookingId(data.id);
         setStep('deposit');
       } else {
-        toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.` });
+        const tipMsg = tipAmount > 0 ? ` A $${tipAmount.toFixed(2)} tip was added.` : '';
+        toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
         onClose();
         navigate('/bookings');
       }
@@ -163,6 +170,83 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     navigate('/bookings');
   };
 
+  const handleTipSelected = (amount: number) => {
+    setTipAmount(amount);
+    // If deposit required, go to confirm then deposit, otherwise confirm booking
+    if (depositRequired) {
+      setStep('deposit');
+    } else {
+      // Auto-confirm with tip
+      handleConfirmBookingWithTip(amount);
+    }
+  };
+
+  const handleTipSkipped = () => {
+    setTipAmount(0);
+    if (depositRequired) {
+      setStep('deposit');
+    } else {
+      handleConfirmBookingWithTip(0);
+    }
+  };
+
+  const handleConfirmBookingWithTip = async (tip: number) => {
+    // Set tip then trigger the booking
+    setTipAmount(tip);
+    // We need to call confirm after setting tip
+    // But since confirm is the step before tip, we handle it here
+    if (!user) {
+      toast({ title: "Sign in required", description: "Please sign in to book an appointment.", variant: "destructive" });
+      navigate('/auth');
+      return;
+    }
+
+    if (!selectedService || !selectedDate || !selectedTime) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert({
+          client_id: user.id,
+          business_id: business.id,
+          service_id: selectedService.id,
+          booking_date: format(selectedDate, 'yyyy-MM-dd'),
+          booking_time: selectedTime,
+          total_price: selectedService.price + tip,
+          notes: notes || null,
+          status: 'confirmed',
+          deposit_amount: 0,
+          remaining_balance: 0,
+          tip_amount: tip,
+          tip_collected: tip > 0,
+        } as any)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.message?.includes('duplicate') || error.code === '23505') {
+          toast({ title: "Time no longer available", description: "This time slot was just booked.", variant: "destructive" });
+          setStep('time');
+          setSelectedTime(null);
+          return;
+        }
+        throw error;
+      }
+
+      const tipMsg = tip > 0 ? ` A $${tip.toFixed(2)} tip was added.` : '';
+      toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
+      onClose();
+      navigate('/bookings');
+    } catch (error: any) {
+      console.error('Booking error:', error);
+      toast({ title: "Booking failed", description: error.message || "Unable to complete booking.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const isDateDisabled = (date: Date) => {
     if (isBefore(date, today)) return true;
     const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][date.getDay()];
@@ -178,6 +262,10 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
       default: return false;
     }
   };
+
+  // Determine which step is the "action" step (confirm booking vs continue)
+  const isConfirmStep = tipsEnabled ? step === 'confirm' : step === 'confirm';
+  const showNavButtons = step !== 'deposit' && step !== 'tip';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -210,7 +298,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
 
         <div className="overflow-y-auto max-h-[50vh]">
           <AnimatePresence mode="wait">
-            {/* Step 1: Select Service */}
+            {/* Step: Select Service */}
             {step === 'service' && (
               <motion.div key="service" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <h3 className="font-medium text-sm text-muted-foreground">Select a Service</h3>
@@ -243,7 +331,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
               </motion.div>
             )}
 
-            {/* Step 2: Select Date */}
+            {/* Step: Select Date */}
             {step === 'date' && (
               <motion.div key="date" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 {selectedService && (
@@ -267,7 +355,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
               </motion.div>
             )}
 
-            {/* Step 3: Select Time — uses real availability */}
+            {/* Step: Select Time */}
             {step === 'time' && (
               <motion.div key="time" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <h3 className="font-medium text-sm text-muted-foreground">
@@ -302,7 +390,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
               </motion.div>
             )}
 
-            {/* Step 4: Confirm */}
+            {/* Step: Confirm */}
             {step === 'confirm' && (
               <motion.div key="confirm" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <h3 className="font-medium text-sm text-muted-foreground">Booking Summary</h3>
@@ -328,6 +416,17 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                     <span className="font-semibold text-lg">${selectedService?.price}</span>
                   </div>
                 </div>
+
+                {/* BNPL notice for qualifying amounts */}
+                {selectedService && selectedService.price >= 50 && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                    <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      Pay over time with Afterpay, Klarna, or Affirm — available at checkout
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <label className="text-sm font-medium">Notes (optional)</label>
                   <textarea
@@ -341,7 +440,17 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
               </motion.div>
             )}
 
-            {/* Step 5: Deposit */}
+            {/* Step: Tip */}
+            {step === 'tip' && selectedService && (
+              <TipSelectionStep
+                business={business}
+                service={selectedService}
+                onTipSelected={handleTipSelected}
+                onSkip={handleTipSkipped}
+              />
+            )}
+
+            {/* Step: Deposit */}
             {step === 'deposit' && createdBookingId && selectedService && (
               <motion.div key="deposit" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <DepositPaymentStep
@@ -356,18 +465,20 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
         </div>
 
         {/* Navigation Buttons */}
-        {step !== 'deposit' && (
+        {showNavButtons && (
           <div className="flex gap-3 pt-4 border-t border-border">
             {step !== 'service' && (
               <Button variant="outline" onClick={handleBack} className="flex-1">
                 <ChevronLeft className="w-4 h-4 mr-1" /> Back
               </Button>
             )}
-            {step !== 'confirm' ? (
-              <Button onClick={handleNext} disabled={!canProceed()} className="flex-1 bg-gradient-primary">
+            {step === 'confirm' && tipsEnabled ? (
+              // Go to tip step next
+              <Button onClick={handleNext} className="flex-1 bg-gradient-primary">
                 Continue <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
-            ) : (
+            ) : step === 'confirm' && !tipsEnabled ? (
+              // No tip step, go straight to confirm booking
               <Button onClick={handleConfirmBooking} disabled={isSubmitting} className="flex-1 bg-gradient-primary">
                 {isSubmitting ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Booking...</>
@@ -376,6 +487,10 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                 ) : (
                   'Confirm Booking'
                 )}
+              </Button>
+            ) : (
+              <Button onClick={handleNext} disabled={!canProceed()} className="flex-1 bg-gradient-primary">
+                Continue <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             )}
           </div>
