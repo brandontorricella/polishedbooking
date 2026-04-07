@@ -76,12 +76,14 @@ export type Database = {
           cancellation_fee_payment_intent_id: string | null
           cancellation_reason: string | null
           client_id: string
+          client_package_id: string | null
           created_at: string
           deposit_amount: number | null
           deposit_paid: boolean | null
           deposit_payment_intent_id: string | null
           id: string
           notes: string | null
+          paid_with_package: boolean | null
           payment_method_type: string | null
           remaining_balance: number | null
           service_id: string
@@ -103,12 +105,14 @@ export type Database = {
           cancellation_fee_payment_intent_id?: string | null
           cancellation_reason?: string | null
           client_id: string
+          client_package_id?: string | null
           created_at?: string
           deposit_amount?: number | null
           deposit_paid?: boolean | null
           deposit_payment_intent_id?: string | null
           id?: string
           notes?: string | null
+          paid_with_package?: boolean | null
           payment_method_type?: string | null
           remaining_balance?: number | null
           service_id: string
@@ -130,12 +134,14 @@ export type Database = {
           cancellation_fee_payment_intent_id?: string | null
           cancellation_reason?: string | null
           client_id?: string
+          client_package_id?: string | null
           created_at?: string
           deposit_amount?: number | null
           deposit_paid?: boolean | null
           deposit_payment_intent_id?: string | null
           id?: string
           notes?: string | null
+          paid_with_package?: boolean | null
           payment_method_type?: string | null
           remaining_balance?: number | null
           service_id?: string
@@ -152,6 +158,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_client_package_id_fkey"
+            columns: ["client_package_id"]
+            isOneToOne: false
+            referencedRelation: "client_packages"
             referencedColumns: ["id"]
           },
           {
@@ -279,6 +292,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "business_availability_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_memberships: {
+        Row: {
+          billing_interval: string
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          perks: string[] | null
+          price: number
+          service_ids: string[] | null
+          sessions_per_period: number | null
+          stripe_price_id: string | null
+        }
+        Insert: {
+          billing_interval?: string
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          perks?: string[] | null
+          price: number
+          service_ids?: string[] | null
+          sessions_per_period?: number | null
+          stripe_price_id?: string | null
+        }
+        Update: {
+          billing_interval?: string
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          perks?: string[] | null
+          price?: number
+          service_ids?: string[] | null
+          sessions_per_period?: number | null
+          stripe_price_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_memberships_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
@@ -491,6 +557,66 @@ export type Database = {
         }
         Relationships: []
       }
+      client_memberships: {
+        Row: {
+          business_id: string
+          canceled_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          membership_id: string
+          sessions_used_this_period: number | null
+          started_at: string
+          status: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          canceled_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          membership_id: string
+          sessions_used_this_period?: number | null
+          started_at?: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          canceled_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          membership_id?: string
+          sessions_used_this_period?: number | null
+          started_at?: string
+          status?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_memberships_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_memberships_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "business_memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_notes: {
         Row: {
           business_id: string
@@ -531,6 +657,66 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_packages: {
+        Row: {
+          business_id: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          package_id: string
+          purchase_price: number
+          purchased_at: string
+          sessions_remaining: number
+          sessions_total: number
+          sessions_used: number | null
+          stripe_payment_intent_id: string | null
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          package_id: string
+          purchase_price: number
+          purchased_at?: string
+          sessions_remaining: number
+          sessions_total: number
+          sessions_used?: number | null
+          stripe_payment_intent_id?: string | null
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          package_id?: string
+          purchase_price?: number
+          purchased_at?: string
+          sessions_remaining?: number
+          sessions_total?: number
+          sessions_used?: number | null
+          stripe_payment_intent_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_packages_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_packages_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "service_packages"
             referencedColumns: ["id"]
           },
         ]
@@ -1418,6 +1604,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "service_bundles_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_packages: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          original_price: number | null
+          price: number
+          service_ids: string[] | null
+          session_count: number
+          validity_days: number | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          original_price?: number | null
+          price: number
+          service_ids?: string[] | null
+          session_count: number
+          validity_days?: number | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          original_price?: number | null
+          price?: number
+          service_ids?: string[] | null
+          session_count?: number
+          validity_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_packages_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"

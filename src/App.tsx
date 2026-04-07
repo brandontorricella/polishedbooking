@@ -29,6 +29,8 @@ import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import HelpCenter from "./pages/HelpCenter";
+import BusinessPackages from "./pages/BusinessPackages";
+import BusinessMemberships from "./pages/BusinessMemberships";
 import { AdminRoute } from "@/components/admin/AdminRoute";
 import { lazy, Suspense } from "react";
 
@@ -108,6 +110,16 @@ const App = () => {
                   <Route path="/business/onboarding" element={
                     <ProtectedRoute requiredType="business">
                       <BusinessOnboarding />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/business/packages" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessPackages />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/business/memberships" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessMemberships />
                     </ProtectedRoute>
                   } />
                   
