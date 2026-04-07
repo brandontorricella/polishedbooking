@@ -430,7 +430,7 @@ const Index = () => {
                   <BusinessCardSkeleton />
                   <BusinessCardSkeleton />
                 </>
-              ) : (
+              ) : lgbtqOwned.length > 0 ? (
                 lgbtqOwned.slice(0, 3).map((business, index) => (
                   <motion.div
                     key={business.id}
@@ -444,11 +444,14 @@ const Index = () => {
                     />
                   </motion.div>
                 ))
+              ) : (
+                [1, 2, 3].map((i) => (
+                  <BusinessCardSkeleton key={i} />
+                ))
               )}
             </div>
           </div>
         </section>
-      )}
 
       {/* Promotions Section */}
       <section className="py-16">
