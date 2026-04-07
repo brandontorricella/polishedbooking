@@ -1,27 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, addDays, isSameDay, isAfter, isBefore, startOfToday } from 'date-fns';
+import { format, isBefore, startOfToday } from 'date-fns';
 import { 
-  Calendar as CalendarIcon, 
-  Clock, 
-  ChevronLeft, 
-  ChevronRight,
-  Check,
-  Loader2,
-  CreditCard
+  Clock, ChevronLeft, ChevronRight, Check, Loader2, CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useAvailability } from '@/hooks/useAvailability';
 import { supabase } from '@/integrations/supabase/client';
 import { DepositPaymentStep } from '@/components/booking/DepositPaymentStep';
 import { CancellationPolicyDisplay } from '@/components/booking/CancellationPolicyDisplay';
@@ -37,40 +29,18 @@ interface BookingFlowProps {
 
 type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'deposit';
 
-// Generate time slots based on business hours
-const generateTimeSlots = (openTime: string, closeTime: string, duration: number): string[] => {
-  const slots: string[] = [];
-  const [openHour, openMin] = openTime.split(':').map(Number);
-  const [closeHour, closeMin] = closeTime.split(':').map(Number);
-  
-  let currentHour = openHour;
-  let currentMin = openMin;
-  
-  while (currentHour < closeHour || (currentHour === closeHour && currentMin + duration <= closeMin)) {
-    const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
-    slots.push(timeStr);
-    
-    currentMin += 30; // 30 min intervals
-    if (currentMin >= 60) {
-      currentMin = 0;
-      currentHour++;
-    }
-  }
-  
-  return slots;
-};
-
 const formatTime = (time: string): string => {
   const [hour, min] = time.split(':').map(Number);
   const period = hour >= 12 ? 'PM' : 'AM';
   const displayHour = hour % 12 || 12;
-  return `${displayHour}:${min.toString().padStart(2, '0')} ${period}`;
+  return `${displayHour}:${(min || 0).toString().padStart(2, '0')} ${period}`;
 };
 
 export const BookingFlow = ({ business, isOpen, onClose, initialService }: BookingFlowProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { slots, loading: slotsLoading, noSlots, closedReason, fetchAvailability } = useAvailability();
   
   const [step, setStep] = useState<BookingStep>('service');
   const [selectedService, setSelectedService] = useState<Service | null>(initialService || null);
@@ -80,23 +50,29 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [notes, setNotes] = useState('');
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
 
-  // Check if business requires deposit
   const businessAny = business as any;
   const depositRequired = businessAny.deposit_required || false;
 
   const today = startOfToday();
-  const dayOfWeek = selectedDate 
-    ? ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selectedDate.getDay()]
-    : null;
-  
-  const businessHours = dayOfWeek ? business.hours[dayOfWeek as keyof typeof business.hours] : null;
-  const timeSlots = businessHours && selectedService
-    ? generateTimeSlots(businessHours.open, businessHours.close, selectedService.duration)
-    : [];
 
   const allSteps: BookingStep[] = depositRequired 
     ? ['service', 'date', 'time', 'confirm', 'deposit']
     : ['service', 'date', 'time', 'confirm'];
+
+  // Fetch availability when date changes
+  useEffect(() => {
+    if (selectedDate && selectedService) {
+      setSelectedTime(null);
+      fetchAvailability(
+        business.id,
+        selectedDate,
+        selectedService.id,
+        selectedService.duration,
+        null,
+        business.hours,
+      );
+    }
+  }, [selectedDate, selectedService, business.id, business.hours, fetchAvailability]);
 
   const handleNext = () => {
     const currentIndex = allSteps.indexOf(step);
@@ -150,7 +126,20 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Check for potential double-booking
+        if (error.message?.includes('duplicate') || error.code === '23505') {
+          toast({ title: "Time no longer available", description: "This time slot was just booked. Please select a different time.", variant: "destructive" });
+          // Refresh availability
+          if (selectedDate && selectedService) {
+            fetchAvailability(business.id, selectedDate, selectedService.id, selectedService.duration, null, business.hours);
+          }
+          setStep('time');
+          setSelectedTime(null);
+          return;
+        }
+        throw error;
+      }
 
       if (depositRequired) {
         setCreatedBookingId(data.id);
@@ -210,19 +199,10 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                   ? "bg-primary/20 text-primary" 
                   : "bg-muted text-muted-foreground"
               )}>
-                {allSteps.indexOf(step) > i ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  i + 1
-                )}
+                {allSteps.indexOf(step) > i ? <Check className="w-4 h-4" /> : i + 1}
               </div>
               {i < allSteps.length - 1 && (
-                <div className={cn(
-                  "w-8 h-0.5 mx-1",
-                  allSteps.indexOf(step) > i 
-                    ? "bg-primary" 
-                    : "bg-muted"
-                )} />
+                <div className={cn("w-8 h-0.5 mx-1", allSteps.indexOf(step) > i ? "bg-primary" : "bg-muted")} />
               )}
             </div>
           ))}
@@ -232,13 +212,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
           <AnimatePresence mode="wait">
             {/* Step 1: Select Service */}
             {step === 'service' && (
-              <motion.div
-                key="service"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-3"
-              >
+              <motion.div key="service" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <h3 className="font-medium text-sm text-muted-foreground">Select a Service</h3>
                 {business.services.map((service) => (
                   <div
@@ -261,9 +235,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-semibold">${service.price}</p>
-                        {selectedService?.id === service.id && (
-                          <Check className="w-5 h-5 text-primary mt-1 ml-auto" />
-                        )}
+                        {selectedService?.id === service.id && <Check className="w-5 h-5 text-primary mt-1 ml-auto" />}
                       </div>
                     </div>
                   </div>
@@ -273,71 +245,67 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
 
             {/* Step 2: Select Date */}
             {step === 'date' && (
-              <motion.div
-                key="date"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex justify-center"
-              >
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={isDateDisabled}
-                  className="rounded-md border pointer-events-auto"
-                />
+              <motion.div key="date" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
+                {selectedService && (
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-2">
+                    <span>{selectedService.name}</span>
+                    <span>·</span>
+                    <span>{selectedService.duration} min</span>
+                    <span>·</span>
+                    <span>${selectedService.price}</span>
+                  </div>
+                )}
+                <div className="flex justify-center">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={isDateDisabled}
+                    className="rounded-md border pointer-events-auto"
+                  />
+                </div>
               </motion.div>
             )}
 
-            {/* Step 3: Select Time */}
+            {/* Step 3: Select Time — uses real availability */}
             {step === 'time' && (
-              <motion.div
-                key="time"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-3"
-              >
+              <motion.div key="time" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-3">
                 <h3 className="font-medium text-sm text-muted-foreground">
                   Available Times for {selectedDate && format(selectedDate, 'EEEE, MMMM d')}
                 </h3>
-                {timeSlots.length > 0 ? (
+
+                {slotsLoading ? (
+                  <div className="flex flex-col items-center justify-center py-8 gap-2">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">Checking availability...</p>
+                  </div>
+                ) : noSlots ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">😔 {closedReason || 'No available times on this date.'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Please try a different day.</p>
+                  </div>
+                ) : (
                   <div className="grid grid-cols-3 gap-2">
-                    {timeSlots.map((time) => (
+                    {slots.map((slot) => (
                       <Button
-                        key={time}
-                        variant={selectedTime === time ? "default" : "outline"}
+                        key={slot.start_time}
+                        variant={selectedTime === slot.start_time ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setSelectedTime(time)}
-                        className={cn(
-                          "h-10",
-                          selectedTime === time && "bg-gradient-primary"
-                        )}
+                        onClick={() => setSelectedTime(slot.start_time)}
+                        className={cn("h-10", selectedTime === slot.start_time && "bg-gradient-primary")}
                       >
-                        {formatTime(time)}
+                        {formatTime(slot.start_time)}
                       </Button>
                     ))}
                   </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No available times for this date.
-                  </p>
                 )}
               </motion.div>
             )}
 
             {/* Step 4: Confirm */}
             {step === 'confirm' && (
-              <motion.div
-                key="confirm"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
-              >
+              <motion.div key="confirm" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
                 <h3 className="font-medium text-sm text-muted-foreground">Booking Summary</h3>
-                
                 <div className="bg-muted/50 rounded-xl p-4 space-y-3">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Service</span>
@@ -345,9 +313,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Date</span>
-                    <span className="font-medium">
-                      {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}
-                    </span>
+                    <span className="font-medium">{selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Time</span>
@@ -362,7 +328,6 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                     <span className="font-semibold text-lg">${selectedService?.price}</span>
                   </div>
                 </div>
-
                 <div>
                   <label className="text-sm font-medium">Notes (optional)</label>
                   <textarea
@@ -376,14 +341,9 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
               </motion.div>
             )}
 
-            {/* Step 5: Deposit Payment (if required) */}
+            {/* Step 5: Deposit */}
             {step === 'deposit' && createdBookingId && selectedService && (
-              <motion.div
-                key="deposit"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
+              <motion.div key="deposit" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <DepositPaymentStep
                   bookingId={createdBookingId}
                   business={business}
@@ -400,36 +360,19 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
           <div className="flex gap-3 pt-4 border-t border-border">
             {step !== 'service' && (
               <Button variant="outline" onClick={handleBack} className="flex-1">
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Back
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back
               </Button>
             )}
-            
             {step !== 'confirm' ? (
-              <Button 
-                onClick={handleNext} 
-                disabled={!canProceed()}
-                className="flex-1 bg-gradient-primary"
-              >
-                Continue
-                <ChevronRight className="w-4 h-4 ml-1" />
+              <Button onClick={handleNext} disabled={!canProceed()} className="flex-1 bg-gradient-primary">
+                Continue <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             ) : (
-              <Button 
-                onClick={handleConfirmBooking}
-                disabled={isSubmitting}
-                className="flex-1 bg-gradient-primary"
-              >
+              <Button onClick={handleConfirmBooking} disabled={isSubmitting} className="flex-1 bg-gradient-primary">
                 {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Booking...
-                  </>
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Booking...</>
                 ) : depositRequired ? (
-                  <>
-                    <CreditCard className="w-4 h-4 mr-1" />
-                    Continue to Deposit
-                  </>
+                  <><CreditCard className="w-4 h-4 mr-1" /> Continue to Deposit</>
                 ) : (
                   'Confirm Booking'
                 )}
