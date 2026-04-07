@@ -242,6 +242,41 @@ export type Database = {
           },
         ]
       }
+      business_availability: {
+        Row: {
+          business_id: string
+          close_time: string | null
+          day_of_week: number
+          id: string
+          is_open: boolean | null
+          open_time: string | null
+        }
+        Insert: {
+          business_id: string
+          close_time?: string | null
+          day_of_week: number
+          id?: string
+          is_open?: boolean | null
+          open_time?: string | null
+        }
+        Update: {
+          business_id?: string
+          close_time?: string | null
+          day_of_week?: number
+          id?: string
+          is_open?: boolean | null
+          open_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_availability_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           address: string | null
@@ -1640,6 +1675,60 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      time_blocks: {
+        Row: {
+          block_date: string
+          business_id: string
+          created_at: string
+          end_time: string
+          id: string
+          is_all_day: boolean | null
+          notes: string | null
+          reason: string | null
+          staff_id: string | null
+          start_time: string
+        }
+        Insert: {
+          block_date: string
+          business_id: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_all_day?: boolean | null
+          notes?: string | null
+          reason?: string | null
+          staff_id?: string | null
+          start_time?: string
+        }
+        Update: {
+          block_date?: string
+          business_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_all_day?: boolean | null
+          notes?: string | null
+          reason?: string | null
+          staff_id?: string | null
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_blocks_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_blocks_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trial_usage: {
         Row: {
