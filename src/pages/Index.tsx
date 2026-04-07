@@ -84,7 +84,7 @@ const Index = () => {
       <section className="relative min-h-[580px] flex items-center pt-16 overflow-hidden">
         <img 
           src={heroImage}
-          alt="Beauty salon"
+          alt="Beauty and wellness services"
           className="absolute inset-0 w-full h-full object-cover object-center brightness-[0.6]"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/45 to-[hsl(330,85%,60%,0.15)]" />

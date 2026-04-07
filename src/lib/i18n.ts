@@ -26,7 +26,7 @@ export const translations = {
     
     // Hero
     heroTitle: 'Discover Beauty & Wellness Near You',
-    heroSubtitle: 'Book appointments with top-rated professionals in your area',
+    heroSubtitle: 'Book appointments with top-rated beauty & wellness professionals in your area',
     getStarted: 'Get Started',
     findServices: 'Find Services',
     forBusinesses: 'For Businesses',
@@ -129,7 +129,7 @@ export const translations = {
     
     // Hero
     heroTitle: 'Descubre Belleza y Bienestar Cerca de Ti',
-    heroSubtitle: 'Reserva citas con los mejores profesionales en tu área',
+    heroSubtitle: 'Reserva citas con los mejores profesionales de belleza y bienestar en tu área',
     getStarted: 'Comenzar',
     findServices: 'Encontrar Servicios',
     forBusinesses: 'Para Negocios',

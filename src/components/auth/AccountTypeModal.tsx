@@ -35,7 +35,7 @@ export const AccountTypeModal = ({ open, onOpenChange, redirectAfter = '/' }: Ac
               <span className="text-3xl">💆</span>
               <div className="flex-1">
                 <p className="font-semibold text-lg">I'm a Client</p>
-                <p className="text-sm text-muted-foreground">Book beauty and wellness appointments, save favorites, earn loyalty points</p>
+                <p className="text-sm text-muted-foreground">Book beauty & wellness appointments, save favorites, earn loyalty points</p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </button>
@@ -48,7 +48,7 @@ export const AccountTypeModal = ({ open, onOpenChange, redirectAfter = '/' }: Ac
               <span className="text-3xl">✂️</span>
               <div className="flex-1">
                 <p className="font-semibold text-lg">I'm a Business</p>
-                <p className="text-sm text-muted-foreground">List your salon, spa, or studio</p>
+                <p className="text-sm text-muted-foreground">List your salon, spa, studio, or wellness practice</p>
                 <p className="text-xs text-primary font-medium mt-1 flex items-center gap-1">
                   <Sparkles className="w-3 h-3" /> 1 month free — no credit card required to start
                 </p>

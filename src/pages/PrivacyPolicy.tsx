@@ -39,7 +39,7 @@ const PrivacyPolicy = () => {
                 <h2 className="font-display text-xl font-semibold mb-4">Introduction</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Welcome to Polished. Your privacy is important to us. This policy explains how we collect, 
-                  use, and protect your information when you use our beauty and wellness marketplace platform.
+                  use, and protect your information when you use our beauty & wellness marketplace platform.
                 </p>
               </section>
 
