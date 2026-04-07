@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -21,6 +21,7 @@ import { BusinessMap } from '@/components/map/BusinessMap';
 import { LocationPermissionModal } from '@/components/location/LocationPermissionModal';
 import { categories, mockBusinesses } from '@/data/mockData';
 import { useLocation } from '@/hooks/useLocation';
+import { supabase } from '@/integrations/supabase/client';
 import type { Business } from '@/types';
 import { cn } from '@/lib/utils';
 
