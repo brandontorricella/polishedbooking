@@ -13,6 +13,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { StayUpdatedWidget } from '@/components/subscription/StayUpdatedWidget';
 import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
 import { categories, mockBusinesses } from '@/data/mockData';
+import { SERVICE_CATEGORIES, FEATURED_CATEGORY_IDS } from '@/constants/categories';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useToast } from '@/hooks/use-toast';
