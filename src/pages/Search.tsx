@@ -20,6 +20,7 @@ import { BookingFlow } from '@/components/booking/BookingFlow';
 import { BusinessMap } from '@/components/map/BusinessMap';
 import { LocationPermissionModal } from '@/components/location/LocationPermissionModal';
 import { categories, mockBusinesses } from '@/data/mockData';
+import { getCategoriesByGroup } from '@/constants/categories';
 import { useLocation } from '@/hooks/useLocation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Business } from '@/types';
@@ -295,24 +296,31 @@ const SearchPage = () => {
                 </Button>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => {
-                const isSelected = selectedCategories.includes(cat.id);
-                return (
-                  <Button
-                    key={cat.id}
-                    variant={isSelected ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleCategoryToggle(cat.id)}
-                    className={cn(
-                      "rounded-full transition-all",
-                      isSelected && "bg-gradient-primary shadow-pink"
-                    )}
-                  >
-                    {cat.name}
-                  </Button>
-                );
-              })}
+            <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-1">
+              {Object.entries(getCategoriesByGroup()).map(([group, cats]) => (
+                <div key={group}>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{group}</h4>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {cats.map((cat) => {
+                      const isSelected = selectedCategories.includes(cat.id);
+                      return (
+                        <Button
+                          key={cat.id}
+                          variant={isSelected ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleCategoryToggle(cat.id)}
+                          className={cn(
+                            "rounded-full transition-all text-xs h-8",
+                            isSelected && "bg-gradient-primary shadow-pink"
+                          )}
+                        >
+                          {cat.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

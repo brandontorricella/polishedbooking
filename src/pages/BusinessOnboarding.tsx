@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useSuperwall } from '@/hooks/useSuperwall';
+import { SERVICE_CATEGORIES, getCategoriesByGroup, GROUP_LABELS_ES } from '@/constants/categories';
 
 const subscriptionTiers = [
   {
@@ -32,11 +33,7 @@ const subscriptionTiers = [
   },
 ];
 
-const businessCategories = [
-  '💇 Hair Salon', '💅 Nail Studio', '🧖 Spa', '💋 Makeup Artist',
-  '🧘 Massage Therapy', '👁 Lash Studio', '🪮 Brow Studio', '💈 Barbershop',
-  '💉 PMU Artist', '🛁 Waxing Studio', '🦷 Teeth Whitening', '💆 Wellness',
-];
+// Categories now imported from central constant
 
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -358,24 +355,32 @@ const BusinessOnboarding = () => {
 
           {/* Step 3 — Categories */}
           {step === 3 && (
-            <motion.div key="b3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-lg w-full text-center">
+            <motion.div key="b3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-2xl w-full text-center">
               <div className="text-5xl mb-4">✂️</div>
-              <h1 className="font-display text-3xl font-bold mb-2">What type of business is this?</h1>
+              <h1 className="font-display text-3xl font-bold mb-2">What services do you offer?</h1>
               <p className="text-muted-foreground mb-6">Select all that apply</p>
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {businessCategories.map(cat => {
-                  const selected = categories.includes(cat);
-                  return (
-                    <button key={cat} onClick={() => toggleCategory(cat)}
-                      className={cn("px-4 py-2.5 rounded-full border-2 text-sm font-medium transition-all",
-                        selected ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      {selected && <Check className="w-3.5 h-3.5 inline mr-1" />}{cat}
-                    </button>
-                  );
-                })}
+              <div className="space-y-6 mb-8 text-left max-h-[50vh] overflow-y-auto pr-2">
+                {Object.entries(getCategoriesByGroup()).map(([group, cats]) => (
+                  <div key={group}>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 border-b border-border pb-2">{group}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {cats.map(cat => {
+                        const selected = categories.includes(cat.id);
+                        return (
+                          <button key={cat.id} onClick={() => toggleCategory(cat.id)}
+                            className={cn("px-4 py-2.5 rounded-full border-2 text-sm font-medium transition-all",
+                              selected ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/50"
+                            )}
+                          >
+                            {selected && <Check className="w-3.5 h-3.5 inline mr-1" />}{cat.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
+              <p className="text-sm text-muted-foreground mb-4">{categories.length} service{categories.length !== 1 ? 's' : ''} selected</p>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(2)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
                 <Button onClick={() => setStep(4)} disabled={categories.length === 0} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>

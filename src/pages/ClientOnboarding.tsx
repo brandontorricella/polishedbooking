@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { SERVICE_CATEGORIES, getCategoriesByGroup, GROUP_LABELS_ES } from '@/constants/categories';
 
 const ClientOnboarding = () => {
   const navigate = useNavigate();
@@ -25,20 +26,7 @@ const ClientOnboarding = () => {
 
   const totalSteps = 5;
 
-  const serviceCategories = [
-    { id: 'hair_styling', label: '💇 Hair' },
-    { id: 'nails', label: '💅 Nails' },
-    { id: 'facials', label: '🧖 Skin Care' },
-    { id: 'makeup', label: '💋 Makeup' },
-    { id: 'massage', label: '🧘 Massage' },
-    { id: 'lashes', label: '👁 Lashes' },
-    { id: 'eyebrows', label: '🪮 Brows' },
-    { id: 'barbering', label: '💈 Barbering' },
-    { id: 'teeth_whitening', label: '🦷 Teeth Whitening' },
-    { id: 'pmu', label: '💉 PMU' },
-    { id: 'waxing', label: '🛁 Waxing' },
-    { id: 'wellness', label: '💆 Wellness' },
-  ];
+  const serviceCategories = SERVICE_CATEGORIES;
 
   const handleLocationPermission = async () => {
     if ('geolocation' in navigator) {
@@ -130,28 +118,36 @@ const ClientOnboarding = () => {
 
           {/* Step 2 — Service Interests */}
           {step === 2 && (
-            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-lg w-full text-center">
+            <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-2xl w-full text-center">
               <div className="text-5xl mb-6">✨</div>
               <h1 className="font-display text-3xl font-bold mb-3">What services are you interested in?</h1>
-              <p className="text-muted-foreground mb-8">Select all that apply — we'll personalize your experience</p>
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
-                {serviceCategories.map(cat => {
-                  const selected = profile.service_interests.includes(cat.id);
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => toggleService(cat.id)}
-                      className={cn(
-                        "px-4 py-2.5 rounded-full border-2 text-sm font-medium transition-all",
-                        selected ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      {selected && <Check className="w-3.5 h-3.5 inline mr-1" />}
-                      {cat.label}
-                    </button>
-                  );
-                })}
+              <p className="text-muted-foreground mb-6">Select all that apply — we'll personalize your experience</p>
+              <div className="space-y-5 mb-6 text-left max-h-[50vh] overflow-y-auto pr-2">
+                {Object.entries(getCategoriesByGroup()).map(([group, cats]) => (
+                  <div key={group}>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 border-b border-border pb-2">{group}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {cats.map(cat => {
+                        const selected = profile.service_interests.includes(cat.id);
+                        return (
+                          <button
+                            key={cat.id}
+                            onClick={() => toggleService(cat.id)}
+                            className={cn(
+                              "px-4 py-2.5 rounded-full border-2 text-sm font-medium transition-all",
+                              selected ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/50"
+                            )}
+                          >
+                            {selected && <Check className="w-3.5 h-3.5 inline mr-1" />}
+                            {cat.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
+              <p className="text-sm text-muted-foreground mb-4">{profile.service_interests.length} selected</p>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
                 <Button onClick={() => setStep(3)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>

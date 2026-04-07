@@ -13,6 +13,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { StayUpdatedWidget } from '@/components/subscription/StayUpdatedWidget';
 import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
 import { categories, mockBusinesses } from '@/data/mockData';
+import { SERVICE_CATEGORIES, FEATURED_CATEGORY_IDS } from '@/constants/categories';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useToast } from '@/hooks/use-toast';
@@ -43,18 +44,18 @@ const Index = () => {
   const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
 
   // Service category data with icons and colors
-  const serviceCategories = [
-    { id: 'hair_styling', name: t('categories', 'hair'), icon: '💇‍♀️', color: 'bg-blush' },
-    { id: 'nails', name: t('categories', 'nails'), icon: '💅', color: 'bg-lavender' },
-    { id: 'makeup', name: t('categories', 'makeup'), icon: '💄', color: 'bg-rose-100' },
-    { id: 'lashes', name: t('categories', 'lashes'), icon: '👁️', color: 'bg-violet-100' },
-    { id: 'eyebrows', name: t('categories', 'brows'), icon: '✨', color: 'bg-amber-100' },
-    { id: 'facials', name: t('categories', 'skincare'), icon: '🧴', color: 'bg-emerald-100' },
-    { id: 'waxing', name: t('categories', 'waxing'), icon: '🌸', color: 'bg-pink-100' },
-    { id: 'massage', name: t('categories', 'massage'), icon: '💆', color: 'bg-sky-100' },
-    { id: 'barbering', name: t('categories', 'barbering'), icon: '✂️', color: 'bg-slate-100' },
-    { id: 'spray_tan', name: t('categories', 'body'), icon: '🌟', color: 'bg-orange-100' },
-  ];
+  const serviceCategories = FEATURED_CATEGORY_IDS
+    .map(id => {
+      const cat = SERVICE_CATEGORIES.find(c => c.id === id);
+      if (!cat) return null;
+      return {
+        id: cat.id,
+        name: cat.label.split(' ').slice(1).join(' '),
+        icon: cat.label.split(' ')[0],
+        color: 'bg-secondary',
+      };
+    })
+    .filter(Boolean) as { id: string; name: string; icon: string; color: string }[];
 
   // Redirect business users to their dashboard
   if (accountType === 'business') {
