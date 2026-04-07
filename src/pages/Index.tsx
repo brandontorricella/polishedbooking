@@ -547,6 +547,7 @@ const Index = () => {
       <Footer />
       <BottomNav />
       <StayUpdatedWidget />
+      <AccountTypeModal open={showAccountTypeModal} onOpenChange={setShowAccountTypeModal} />
     </div>
   );
 };
