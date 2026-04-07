@@ -19,21 +19,8 @@ import { useLocationBasedBusinesses } from '@/hooks/useLocationBasedBusinesses';
 import { usePromotions } from '@/hooks/usePromotions';
 import { saveIntendedDestination } from '@/components/auth/AuthGate';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from '@/hooks/useTranslation';
 import heroImage from '@/assets/hero-beauty.jpg';
-
-// Service category data with icons and colors
-const serviceCategories = [
-  { id: 'hair_styling', name: 'Hair', icon: '💇‍♀️', color: 'bg-blush' },
-  { id: 'nails', name: 'Nails', icon: '💅', color: 'bg-lavender' },
-  { id: 'makeup', name: 'Makeup', icon: '💄', color: 'bg-rose-100' },
-  { id: 'lashes', name: 'Lashes', icon: '👁️', color: 'bg-violet-100' },
-  { id: 'eyebrows', name: 'Brows', icon: '✨', color: 'bg-amber-100' },
-  { id: 'facials', name: 'Skincare', icon: '🧴', color: 'bg-emerald-100' },
-  { id: 'waxing', name: 'Waxing', icon: '🌸', color: 'bg-pink-100' },
-  { id: 'massage', name: 'Massage', icon: '💆', color: 'bg-sky-100' },
-  { id: 'barbering', name: 'Barbering', icon: '✂️', color: 'bg-slate-100' },
-  { id: 'spray_tan', name: 'Body', icon: '🌟', color: 'bg-orange-100' },
-];
 
 const BusinessCardSkeleton = () => (
   <div className="rounded-2xl border border-border bg-card p-4">
@@ -51,6 +38,21 @@ const Index = () => {
   const { toast } = useToast();
   const { topRated, blackOwned, hispanicOwned, lgbtqOwned, loading, locationDenied, location, cityName } = useLocationBasedBusinesses();
   const { promotions, claimedIds, claimPromotion } = usePromotions();
+  const { t } = useTranslation();
+
+  // Service category data with icons and colors
+  const serviceCategories = [
+    { id: 'hair_styling', name: t('categories', 'hair'), icon: '💇‍♀️', color: 'bg-blush' },
+    { id: 'nails', name: t('categories', 'nails'), icon: '💅', color: 'bg-lavender' },
+    { id: 'makeup', name: t('categories', 'makeup'), icon: '💄', color: 'bg-rose-100' },
+    { id: 'lashes', name: t('categories', 'lashes'), icon: '👁️', color: 'bg-violet-100' },
+    { id: 'eyebrows', name: t('categories', 'brows'), icon: '✨', color: 'bg-amber-100' },
+    { id: 'facials', name: t('categories', 'skincare'), icon: '🧴', color: 'bg-emerald-100' },
+    { id: 'waxing', name: t('categories', 'waxing'), icon: '🌸', color: 'bg-pink-100' },
+    { id: 'massage', name: t('categories', 'massage'), icon: '💆', color: 'bg-sky-100' },
+    { id: 'barbering', name: t('categories', 'barbering'), icon: '✂️', color: 'bg-slate-100' },
+    { id: 'spray_tan', name: t('categories', 'body'), icon: '🌟', color: 'bg-orange-100' },
+  ];
 
   // Redirect business users to their dashboard
   if (accountType === 'business') {
@@ -58,7 +60,6 @@ const Index = () => {
     return null;
   }
 
-  // Auth gate for Find Services button
   const handleFindServicesClick = () => {
     if (accountType === 'guest') {
       saveIntendedDestination('/search');
@@ -78,13 +79,11 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="relative min-h-[580px] flex items-center pt-16 overflow-hidden">
-        {/* Background image */}
         <img 
           src={heroImage}
           alt="Beauty salon"
           className="absolute inset-0 w-full h-full object-cover object-center brightness-[0.6]"
         />
-        {/* Dark overlay with subtle pink tint */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-black/45 to-[hsl(330,85%,60%,0.15)]" />
 
         <div className="container mx-auto px-4 relative z-10">
@@ -94,20 +93,19 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              {/* Location pill */}
               {cityName && (
                 <Badge className="mb-6 bg-white/10 text-white border-white/20 backdrop-blur-sm px-4 py-1.5">
                   <MapPin className="w-4 h-4 mr-2" />
-                  Now in {cityName}
+                  {t('hero', 'nowIn')} {cityName}
                 </Badge>
               )}
               
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
-                Find <span className="text-primary">Beauty</span> Services Near You
+                {t('hero', 'title')}
               </h1>
               
               <p className="mt-6 text-xl text-white/85 max-w-xl">
-                Book with top-rated beauty professionals in your area
+                {t('hero', 'subtitle')}
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
@@ -118,13 +116,13 @@ const Index = () => {
                         size="lg" 
                         className="bg-primary hover:bg-primary/90 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_25px_hsl(340,75%,55%,0.3)]"
                       >
-                        Get Started Free
+                        {t('hero', 'getStarted')}
                         <ArrowRight className="w-5 h-5 ml-2" />
                       </Button>
                     </Link>
                     <Link to="/search">
                       <Button size="lg" variant="outline" className="text-white border-white/80 hover:bg-white/10 hover:border-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto bg-transparent">
-                        Browse Services
+                        {t('hero', 'browseServices')}
                       </Button>
                     </Link>
                   </>
@@ -135,12 +133,12 @@ const Index = () => {
                       className="bg-primary hover:bg-primary/90 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_25px_hsl(340,75%,55%,0.3)]"
                       onClick={handleFindServicesClick}
                     >
-                      Browse Services
+                      {t('hero', 'browseServices')}
                       <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                     <Link to="/bookings">
                       <Button size="lg" variant="outline" className="text-white border-white/80 hover:bg-white/10 hover:border-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto bg-transparent">
-                        My Bookings
+                        {t('hero', 'myBookings')}
                       </Button>
                     </Link>
                   </>
@@ -155,15 +153,15 @@ const Index = () => {
                       <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gradient-to-br from-primary to-primary/60" />
                     ))}
                   </div>
-                  <span>500+ Professionals</span>
+                  <span>{t('hero', 'professionals')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Star className="w-5 h-5 fill-primary text-primary" />
-                  <span>4.9 Average Rating</span>
+                  <span>{t('hero', 'avgRating')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-primary" />
-                  <span>Verified Providers</span>
+                  <span>{t('hero', 'verified')}</span>
                 </div>
               </div>
             </motion.div>
@@ -174,7 +172,7 @@ const Index = () => {
       {/* Guest conversion banner */}
       {accountType === 'guest' && (
         <div className="container mx-auto px-4 relative z-10">
-          <GuestConversionBanner message="Sign up to book appointments, save favorites, and get personalized recommendations" />
+          <GuestConversionBanner message={t('guestBanner', 'signUp')} />
         </div>
       )}
 
@@ -183,14 +181,14 @@ const Index = () => {
         <section className="py-16 bg-background border-y border-border">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="font-display text-3xl font-bold">How It Works</h2>
-              <p className="text-muted-foreground mt-2">Book your next beauty appointment in 3 easy steps</p>
+              <h2 className="font-display text-3xl font-bold">{t('sections', 'howItWorks')}</h2>
+              <p className="text-muted-foreground mt-2">{t('sections', 'howItWorksDesc')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               {[
-                { step: '1', title: 'Discover', description: 'Browse beauty professionals near you by service, location, and rating', icon: '🔍' },
-                { step: '2', title: 'Book', description: 'Choose a service, pick your date and time, and confirm your appointment', icon: '📅' },
-                { step: '3', title: 'Enjoy', description: 'Show up and enjoy your service. Leave a review to help others!', icon: '✨' },
+                { step: '1', title: t('sections', 'discover'), description: t('sections', 'discoverDesc'), icon: '🔍' },
+                { step: '2', title: t('sections', 'book'), description: t('sections', 'bookDesc'), icon: '📅' },
+                { step: '3', title: t('sections', 'enjoy'), description: t('sections', 'enjoyDesc'), icon: '✨' },
               ].map((item, index) => (
                 <motion.div
                   key={item.step}
@@ -213,12 +211,12 @@ const Index = () => {
         </section>
       )}
 
-      {/* Browse by Service - Category Cards */}
+      {/* Browse by Service */}
       <section className={`py-16 ${accountType === 'guest' ? '' : 'bg-background border-y border-border'}`}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="font-display text-3xl font-bold">Browse by Service</h2>
-            <p className="text-muted-foreground mt-2">Tap a category to find specialists</p>
+            <h2 className="font-display text-3xl font-bold">{t('sections', 'browseByService')}</h2>
+            <p className="text-muted-foreground mt-2">{t('sections', 'browseByServiceDesc')}</p>
           </div>
           
           <div className="grid grid-cols-5 sm:grid-cols-5 md:grid-cols-10 gap-3 max-w-4xl mx-auto">
@@ -239,29 +237,29 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Top Rated Businesses - Location Aware */}
+      {/* Top Rated Businesses */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <Badge className="mb-2 bg-accent text-accent-foreground">Featured</Badge>
+              <Badge className="mb-2 bg-accent text-accent-foreground">{t('sections', 'featured')}</Badge>
               <h2 className="font-display text-3xl font-bold">
-                Top Rated {!locationDenied && location ? 'Near You' : 'Professionals'}
+                {!locationDenied && location ? t('sections', 'topRatedNearYou') : t('sections', 'topRatedProfessionals')}
               </h2>
               <p className="text-muted-foreground mt-2 flex items-center gap-2">
                 {!locationDenied && location ? (
                   <>
                     <MapPin className="w-4 h-4" />
-                    Based on your location
+                    {t('sections', 'basedOnLocation')}
                   </>
                 ) : (
-                  'Highly rated and recommended by our community'
+                  t('sections', 'highlyRated')
                 )}
               </p>
             </div>
             <Link to="/search?featured=true">
               <Button variant="ghost" className="gap-2">
-                See All <ChevronRight className="w-4 h-4" />
+                {t('sections', 'seeAll')} <ChevronRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -293,26 +291,26 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Black-Owned Businesses Spotlight */}
+      {/* Black-Owned Businesses */}
       <section className="py-16 bg-midnight text-cream">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">✊🏿</span>
-                <Badge className="bg-cream/20 text-cream border-0">Black-Owned</Badge>
+                <Badge className="bg-cream/20 text-cream border-0">{t('sections', 'blackOwned')}</Badge>
               </div>
               <h2 className="font-display text-3xl font-bold text-cream">
-                Black-Owned {!locationDenied && location ? 'Near You' : 'Businesses'}
+                {!locationDenied && location ? t('sections', 'blackOwnedNearYou') : t('sections', 'blackOwnedBusinesses')}
               </h2>
-              <p className="text-cream/70 mt-2">Discover talented professionals in our community</p>
+              <p className="text-cream/70 mt-2">{t('sections', 'blackOwnedDesc')}</p>
             </div>
             <Link to="/search?blackOwned=true">
               <Button 
                 variant="ghost" 
                 className="gap-2 border border-cream/80 bg-transparent text-cream hover:bg-cream hover:text-midnight"
               >
-                Explore All <ChevronRight className="w-4 h-4" />
+                {t('sections', 'exploreAll')} <ChevronRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -339,7 +337,6 @@ const Index = () => {
                 </motion.div>
               ))
             ) : (
-              /* Show placeholder cards when no black-owned businesses found */
               [1, 2, 3].map((i) => (
                 <BusinessCardSkeleton key={i} />
               ))
@@ -348,7 +345,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Hispanic & Latino-Owned Businesses */}
+      {/* Hispanic & Latino-Owned */}
       {(loading || hispanicOwned.length > 0) && (
         <section className="py-16 bg-gradient-to-br from-[hsl(10,30%,8%)] to-[hsl(15,40%,12%)] text-cream">
           <div className="container mx-auto px-4">
@@ -356,19 +353,19 @@ const Index = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">🤎</span>
-                  <Badge className="bg-orange-900/40 text-orange-200 border-0">Hispanic & Latino-Owned</Badge>
+                  <Badge className="bg-orange-900/40 text-orange-200 border-0">{t('sections', 'hispanicOwned')}</Badge>
                 </div>
                 <h2 className="font-display text-3xl font-bold text-cream">
-                  Hispanic & Latino-Owned Businesses
+                  {t('sections', 'hispanicOwnedBusinesses')}
                 </h2>
-                <p className="text-cream/70 mt-2">Discover talented professionals in our community</p>
+                <p className="text-cream/70 mt-2">{t('sections', 'hispanicOwnedDesc')}</p>
               </div>
               <Link to="/search?hispanicOwned=true">
                 <Button 
                   variant="ghost" 
                   className="gap-2 border border-cream/80 bg-transparent text-cream hover:bg-cream hover:text-midnight"
                 >
-                  Explore All <ChevronRight className="w-4 h-4" />
+                  {t('sections', 'exploreAll')} <ChevronRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -400,7 +397,7 @@ const Index = () => {
         </section>
       )}
 
-      {/* LGBTQ+-Owned & Welcoming */}
+      {/* LGBTQ+-Owned */}
       {(loading || lgbtqOwned.length > 0) && (
         <section className="py-16 bg-gradient-to-br from-[hsl(270,25%,8%)] to-[hsl(280,35%,14%)] text-cream">
           <div className="container mx-auto px-4">
@@ -408,19 +405,19 @@ const Index = () => {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">🏳️‍🌈</span>
-                  <Badge className="bg-purple-900/40 text-purple-200 border-0">LGBTQ+-Owned</Badge>
+                  <Badge className="bg-purple-900/40 text-purple-200 border-0">{t('sections', 'lgbtq')}</Badge>
                 </div>
                 <h2 className="font-display text-3xl font-bold text-cream">
-                  LGBTQ+-Owned & Welcoming Spaces
+                  {t('sections', 'lgbtqBusinesses')}
                 </h2>
-                <p className="text-cream/70 mt-2">Safe, inclusive spaces welcoming everyone</p>
+                <p className="text-cream/70 mt-2">{t('sections', 'lgbtqDesc')}</p>
               </div>
               <Link to="/search?lgbtqOwned=true">
                 <Button 
                   variant="ghost" 
                   className="gap-2 border border-cream/80 bg-transparent text-cream hover:bg-cream hover:text-midnight"
                 >
-                  Explore All <ChevronRight className="w-4 h-4" />
+                  {t('sections', 'exploreAll')} <ChevronRight className="w-4 h-4" />
                 </Button>
               </Link>
             </div>
@@ -457,13 +454,13 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <Badge className="mb-2 bg-primary text-primary-foreground">Deals</Badge>
-              <h2 className="font-display text-3xl font-bold">Promotions & Discounts</h2>
-              <p className="text-muted-foreground mt-2">Limited time offers from top professionals</p>
+              <Badge className="mb-2 bg-primary text-primary-foreground">{t('sections', 'deals')}</Badge>
+              <h2 className="font-display text-3xl font-bold">{t('sections', 'promotions')}</h2>
+              <p className="text-muted-foreground mt-2">{t('sections', 'promotionsDesc')}</p>
             </div>
             <Link to="/promotions">
               <Button variant="ghost" className="gap-2">
-                View All <ChevronRight className="w-4 h-4" />
+                {t('sections', 'viewAll')} <ChevronRight className="w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -487,7 +484,7 @@ const Index = () => {
             ) : (
               <div className="col-span-full text-center py-12 text-muted-foreground">
                 <Tag className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                <p>No active promotions right now. Check back soon!</p>
+                <p>{t('sections', 'noPromotions')}</p>
               </div>
             )}
           </div>
@@ -504,22 +501,22 @@ const Index = () => {
             transition={{ duration: 0.6 }}
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
-              Ready to Get <span className="text-primary">Polished</span>?
+              {t('cta', 'readyTitle')} <span className="text-primary">{t('cta', 'readyAccent')}</span>?
             </h2>
             <p className="text-xl text-white/70 max-w-2xl mx-auto mb-8">
-              Join thousands of clients who have discovered their perfect beauty professionals through Polished.
+              {t('cta', 'readyDesc')}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               {accountType === 'guest' ? (
                 <>
                   <Link to="/auth?mode=signup">
                     <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
-                      Create Free Account
+                      {t('cta', 'createFreeAccount')}
                     </Button>
                   </Link>
                   <Link to="/business">
                     <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                      List Your Business
+                      {t('cta', 'listYourBusiness')}
                     </Button>
                   </Link>
                 </>
@@ -527,12 +524,12 @@ const Index = () => {
                 <>
                   <Link to="/search">
                     <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
-                      Find Services
+                      {t('cta', 'findServices')}
                     </Button>
                   </Link>
                   <Link to="/bookings">
                     <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                      View Bookings
+                      {t('cta', 'viewBookings')}
                     </Button>
                   </Link>
                 </>

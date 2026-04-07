@@ -10,6 +10,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { useFavoriteBusinesses, type FavoriteBusiness } from '@/hooks/useFavoriteBusinesses';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 
 const FavoriteBusinessCard = ({ 
@@ -22,6 +23,7 @@ const FavoriteBusinessCard = ({
   onRemove: () => void;
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const priceDisplay = '$'.repeat(business.price_range || 2);
 
   if (variant === 'list') {
@@ -93,10 +95,10 @@ const FavoriteBusinessCard = ({
 
         <div className="absolute top-3 left-3 flex flex-wrap gap-2">
           {business.is_featured && (
-            <Badge className="bg-gradient-gold border-0">Featured</Badge>
+            <Badge className="bg-gradient-gold border-0">{t('sections', 'featured')}</Badge>
           )}
           {business.is_black_owned && (
-            <Badge variant="secondary" className="bg-midnight/90 text-cream border-0">Black-Owned</Badge>
+            <Badge variant="secondary" className="bg-midnight/90 text-cream border-0">{t('badges', 'blackOwned')}</Badge>
           )}
         </div>
 
@@ -147,7 +149,7 @@ const FavoriteBusinessCard = ({
 
         <div className="flex gap-2 mt-4">
           <Button variant="outline" className="flex-1" onClick={(e) => { e.stopPropagation(); navigate(`/business/${business.id}`); }}>
-            View Profile
+            {t('booking', 'viewProfile')}
           </Button>
         </div>
       </div>
@@ -161,6 +163,7 @@ const FavoritesPage = () => {
   const { toggleFavorite } = useFavorites();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleRemove = async (businessId: string) => {
     await toggleFavorite(businessId);
@@ -174,9 +177,9 @@ const FavoritesPage = () => {
         <main className="pt-20 pb-24 md:pb-8">
           <div className="container mx-auto px-4 text-center py-16">
             <Heart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-display text-xl font-semibold mb-2">Sign in to see favorites</h3>
-            <p className="text-muted-foreground mb-6">Save businesses you love to easily find them later</p>
-            <Button className="bg-gradient-primary" onClick={() => navigate('/auth')}>Sign In</Button>
+            <h3 className="font-display text-xl font-semibold mb-2">{t('favorites', 'signInToSee')}</h3>
+            <p className="text-muted-foreground mb-6">{t('favorites', 'saveBusinesses')}</p>
+            <Button className="bg-gradient-primary" onClick={() => navigate('/auth')}>{t('auth', 'signIn')}</Button>
           </div>
         </main>
         <Footer />
@@ -193,9 +196,9 @@ const FavoritesPage = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="font-display text-3xl font-bold">Favorites</h1>
+              <h1 className="font-display text-3xl font-bold">{t('favorites', 'title')}</h1>
               <p className="text-muted-foreground mt-2">
-                {businesses.length} saved business{businesses.length !== 1 ? 'es' : ''}
+                {businesses.length} {businesses.length !== 1 ? t('favorites', 'savedCountPlural') : t('favorites', 'savedCount')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -251,9 +254,9 @@ const FavoritesPage = () => {
           ) : (
             <div className="text-center py-16">
               <Heart className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-display text-xl font-semibold mb-2">No favorites yet</h3>
-              <p className="text-muted-foreground mb-6">Save businesses you love to easily find them later</p>
-              <Button className="bg-gradient-primary" onClick={() => navigate('/search')}>Browse Services</Button>
+              <h3 className="font-display text-xl font-semibold mb-2">{t('favorites', 'noFavorites')}</h3>
+              <p className="text-muted-foreground mb-6">{t('favorites', 'saveBusinesses')}</p>
+              <Button className="bg-gradient-primary" onClick={() => navigate('/search')}>{t('favorites', 'browseServices')}</Button>
             </div>
           )}
         </div>

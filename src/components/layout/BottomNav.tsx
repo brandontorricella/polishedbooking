@@ -3,31 +3,33 @@ import { motion } from 'framer-motion';
 import { Home, Search, Heart, Calendar, MessageSquare, BarChart3, User, LogIn } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAccountType } from '@/hooks/useAccountType';
-
-const guestNavItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/search', label: 'Search', icon: Search },
-  { href: '/auth', label: 'Log In', icon: LogIn },
-];
-
-const customerNavItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/search', label: 'Search', icon: Search },
-  { href: '/favorites', label: 'Favorites', icon: Heart },
-  { href: '/bookings', label: 'Bookings', icon: Calendar },
-  { href: '/profile', label: 'Profile', icon: User },
-];
-
-const businessNavItems = [
-  { href: '/business/analytics', label: 'Dashboard', icon: BarChart3 },
-  { href: '/bookings', label: 'Bookings', icon: Calendar },
-  { href: '/messages', label: 'Messages', icon: MessageSquare },
-  { href: '/profile', label: 'Settings', icon: User },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const BottomNav = () => {
   const location = useLocation();
   const { accountType } = useAccountType();
+  const { t } = useTranslation();
+
+  const guestNavItems = [
+    { href: '/', label: t('nav', 'home'), icon: Home },
+    { href: '/search', label: t('nav', 'search'), icon: Search },
+    { href: '/auth', label: t('nav', 'login'), icon: LogIn },
+  ];
+
+  const customerNavItems = [
+    { href: '/', label: t('nav', 'home'), icon: Home },
+    { href: '/search', label: t('nav', 'search'), icon: Search },
+    { href: '/favorites', label: t('nav', 'favorites'), icon: Heart },
+    { href: '/bookings', label: t('nav', 'bookings'), icon: Calendar },
+    { href: '/profile', label: t('nav', 'profile'), icon: User },
+  ];
+
+  const businessNavItems = [
+    { href: '/business/analytics', label: t('nav', 'dashboard'), icon: BarChart3 },
+    { href: '/bookings', label: t('nav', 'bookings'), icon: Calendar },
+    { href: '/messages', label: t('nav', 'messages'), icon: MessageSquare },
+    { href: '/profile', label: t('nav', 'settings'), icon: User },
+  ];
 
   const navItems = accountType === 'business'
     ? businessNavItems
