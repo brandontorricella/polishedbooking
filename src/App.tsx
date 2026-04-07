@@ -100,6 +100,11 @@ const App = () => {
                       <BusinessAnalytics />
                     </ProtectedRoute>
                   } />
+                  <Route path="/business/schedule" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessSchedule />
+                    </ProtectedRoute>
+                  } />
                   <Route path="/business/onboarding" element={
                     <ProtectedRoute requiredType="business">
                       <BusinessOnboarding />
