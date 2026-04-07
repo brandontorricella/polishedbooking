@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Search as SearchIcon, 
@@ -20,7 +20,7 @@ import { BookingFlow } from '@/components/booking/BookingFlow';
 import { BusinessMap } from '@/components/map/BusinessMap';
 import { LocationPermissionModal } from '@/components/location/LocationPermissionModal';
 import { categories, mockBusinesses } from '@/data/mockData';
-import { getCategoriesByGroup } from '@/constants/categories';
+import { getCategoriesByGroup, CATEGORY_GROUPS, SERVICE_CATEGORIES } from '@/constants/categories';
 import { useLocation } from '@/hooks/useLocation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Business } from '@/types';
@@ -43,16 +43,26 @@ interface BusinessWithDistance extends Business {
 
 const SearchPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { userLocation, locationError, isLoadingLocation, requestLocation, setUserLocation, calculateDistance, formatDistance } = useLocation();
   
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [currentFilters, setCurrentFilters] = useState<CurrentFilters>({});
   const [maxDistance, setMaxDistance] = useState<number>(9999);
   const [bookingBusiness, setBookingBusiness] = useState<Business | null>(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [dbBusinesses, setDbBusinesses] = useState<Business[]>([]);
   const [loadingDb, setLoadingDb] = useState(true);
+
+  // Read URL params for initial group/category selection
+  useEffect(() => {
+    const group = searchParams.get('group');
+    const category = searchParams.get('category');
+    if (group) setSelectedGroup(group);
+    if (category) setSelectedCategories([category]);
+  }, [searchParams]);
 
   // Fetch publicly visible businesses from database
   useEffect(() => {
