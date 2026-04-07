@@ -289,6 +289,8 @@ export type Database = {
           city: string | null
           cover_photo_url: string | null
           created_at: string
+          credentials: string[] | null
+          default_virtual_link: string | null
           deposit_amount: number | null
           deposit_required: boolean | null
           deposit_type: string | null
@@ -307,6 +309,9 @@ export type Database = {
           location_lat: number | null
           location_lng: number | null
           name: string
+          offers_appointments: boolean | null
+          offers_classes: boolean | null
+          offers_virtual: boolean | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
           owner_id: string
@@ -318,6 +323,7 @@ export type Database = {
           review_count: number | null
           service_radius: number | null
           service_setting: Database["public"]["Enums"]["service_setting"] | null
+          specialties: string[] | null
           state: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -347,6 +353,8 @@ export type Database = {
           city?: string | null
           cover_photo_url?: string | null
           created_at?: string
+          credentials?: string[] | null
+          default_virtual_link?: string | null
           deposit_amount?: number | null
           deposit_required?: boolean | null
           deposit_type?: string | null
@@ -365,6 +373,9 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name: string
+          offers_appointments?: boolean | null
+          offers_classes?: boolean | null
+          offers_virtual?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           owner_id: string
@@ -378,6 +389,7 @@ export type Database = {
           service_setting?:
             | Database["public"]["Enums"]["service_setting"]
             | null
+          specialties?: string[] | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -407,6 +419,8 @@ export type Database = {
           city?: string | null
           cover_photo_url?: string | null
           created_at?: string
+          credentials?: string[] | null
+          default_virtual_link?: string | null
           deposit_amount?: number | null
           deposit_required?: boolean | null
           deposit_type?: string | null
@@ -425,6 +439,9 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name?: string
+          offers_appointments?: boolean | null
+          offers_classes?: boolean | null
+          offers_virtual?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           owner_id?: string
@@ -438,6 +455,7 @@ export type Database = {
           service_setting?:
             | Database["public"]["Enums"]["service_setting"]
             | null
+          specialties?: string[] | null
           state?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1396,38 +1414,50 @@ export type Database = {
         Row: {
           business_id: string
           category: string | null
+          class_capacity: number | null
           created_at: string
           description: string | null
           duration: number
           id: string
           is_active: boolean | null
+          is_class: boolean | null
+          is_virtual: boolean | null
           name: string
           price: number
           updated_at: string
+          virtual_link: string | null
         }
         Insert: {
           business_id: string
           category?: string | null
+          class_capacity?: number | null
           created_at?: string
           description?: string | null
           duration?: number
           id?: string
           is_active?: boolean | null
+          is_class?: boolean | null
+          is_virtual?: boolean | null
           name: string
           price: number
           updated_at?: string
+          virtual_link?: string | null
         }
         Update: {
           business_id?: string
           category?: string | null
+          class_capacity?: number | null
           created_at?: string
           description?: string | null
           duration?: number
           id?: string
           is_active?: boolean | null
+          is_class?: boolean | null
+          is_virtual?: boolean | null
           name?: string
           price?: number
           updated_at?: string
+          virtual_link?: string | null
         }
         Relationships: [
           {
