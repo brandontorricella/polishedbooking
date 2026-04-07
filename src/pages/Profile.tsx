@@ -24,7 +24,6 @@ import { DepositCancellationSettings } from '@/components/booking/DepositCancell
 import { ChangePasswordSection } from '@/components/settings/ChangePasswordSection';
 import { BusinessTypeSettings } from '@/components/business/BusinessTypeSettings';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useTranslation } from '@/hooks/useTranslation';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
