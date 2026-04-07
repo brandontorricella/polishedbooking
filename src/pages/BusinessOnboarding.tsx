@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Sparkles, Building2, MapPin, Check, Crown, Star, DollarSign } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, Building2, MapPin, Check, Crown, Star, DollarSign, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,8 +34,6 @@ const subscriptionTiers = [
   },
 ];
 
-// Categories now imported from central constant
-
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 type HoursMap = Record<number, { is_open: boolean; open: string; close: string }>;
@@ -49,13 +48,22 @@ const defaultHours: HoursMap = {
   6: { is_open: false, open: '09:00', close: '15:00' },
 };
 
+const CREDENTIAL_SUGGESTIONS = [
+  'Licensed Cosmetologist', 'Licensed Esthetician', 'Licensed Massage Therapist',
+  'RYT-200 (Registered Yoga Teacher)', 'RYT-500', 'NASM Certified Personal Trainer',
+  'ACE Certified Trainer', 'Pilates Instructor (PMA)', 'Licensed Acupuncturist',
+  'Board Certified Nutritionist', 'Certified Health Coach (IIN)',
+  'Licensed Professional Counselor', 'Certified Life Coach',
+  'Reiki Master', 'Ayurvedic Practitioner', 'Licensed Chiropractor',
+  'Certified Prenatal Yoga Instructor', 'Postpartum Doula'
+];
+
 const BusinessOnboarding = () => {
   const navigate = useNavigate();
   const { user, profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const { showPaywall, refreshSubscription } = useSuperwall();
 
-  // Phase: 'tier' -> 'info' (steps 1-6)
   const [phase, setPhase] = useState<'tier' | 'info'>('tier');
   const [selectedTier, setSelectedTier] = useState('pro');
   const [step, setStep] = useState(1);
@@ -79,7 +87,17 @@ const BusinessOnboarding = () => {
     is_lgbtq_welcoming: false,
   });
 
-  const totalSteps = 6;
+  // New fields
+  const [offersAppointments, setOffersAppointments] = useState(true);
+  const [offersClasses, setOffersClasses] = useState(false);
+  const [offersVirtual, setOffersVirtual] = useState(false);
+  const [defaultVirtualLink, setDefaultVirtualLink] = useState('');
+  const [credentials, setCredentials] = useState<string[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [credentialInput, setCredentialInput] = useState('');
+  const [specialtyInput, setSpecialtyInput] = useState('');
+
+  const totalSteps = 8;
 
   useEffect(() => {
     if (!user) navigate('/auth?mode=signup');
@@ -100,6 +118,18 @@ const BusinessOnboarding = () => {
 
   const updateHour = (day: number, field: string, value: any) => {
     setHours(prev => ({ ...prev, [day]: { ...prev[day], [field]: value } }));
+  };
+
+  const addCredential = () => {
+    if (!credentialInput.trim()) return;
+    setCredentials(prev => [...prev, credentialInput.trim()]);
+    setCredentialInput('');
+  };
+
+  const addSpecialty = () => {
+    if (!specialtyInput.trim()) return;
+    setSpecialties(prev => [...prev, specialtyInput.trim()]);
+    setSpecialtyInput('');
   };
 
   const handleCreateBusiness = async () => {
@@ -131,6 +161,12 @@ const BusinessOnboarding = () => {
       is_published: false,
       is_publicly_visible: true,
       onboarding_completed: true,
+      offers_appointments: offersAppointments,
+      offers_classes: offersClasses,
+      offers_virtual: offersVirtual,
+      default_virtual_link: offersVirtual ? defaultVirtualLink : null,
+      credentials,
+      specialties,
       ...identity,
     }).select().single();
 
@@ -176,7 +212,6 @@ const BusinessOnboarding = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="container mx-auto px-4 py-8 max-w-5xl">
-            {/* Header */}
             <div className="text-center mb-10">
               <Badge className="mb-4 bg-primary/10 text-primary border-0 px-4 py-1.5 text-sm">
                 🎉 1 Month Free Trial
@@ -187,7 +222,6 @@ const BusinessOnboarding = () => {
               </p>
             </div>
 
-            {/* Tier Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
               {subscriptionTiers.map(tier => {
                 const isSelected = selectedTier === tier.id;
@@ -239,7 +273,6 @@ const BusinessOnboarding = () => {
               })}
             </div>
 
-            {/* Trust indicators */}
             <div className="text-center mb-6">
               <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground mb-6">
                 <span>✅ 1 month free on any plan</span>
@@ -319,9 +352,68 @@ const BusinessOnboarding = () => {
             </motion.div>
           )}
 
-          {/* Step 2 — Location */}
+          {/* Step 2 — Business Type */}
           {step === 2 && (
             <motion.div key="b2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🏢</div>
+                <h1 className="font-display text-3xl font-bold mb-2">How do you work with clients?</h1>
+                <p className="text-muted-foreground">Select all that apply — you can offer more than one</p>
+              </div>
+              <div className="space-y-3 mb-6">
+                {[
+                  { checked: offersAppointments, onChange: setOffersAppointments, emoji: '📅', label: '1-on-1 Appointments', desc: 'Clients book individual sessions (e.g. haircuts, massage, facials, coaching)' },
+                  { checked: offersClasses, onChange: setOffersClasses, emoji: '👥', label: 'Group Classes', desc: 'Multiple clients join a session (e.g. yoga, pilates, HIIT, group meditation)' },
+                  { checked: offersVirtual, onChange: setOffersVirtual, emoji: '💻', label: 'Virtual / Online Sessions', desc: 'Sessions via Zoom, Google Meet, or other video platform' },
+                ].map(opt => (
+                  <button
+                    key={opt.label}
+                    onClick={() => opt.onChange(!opt.checked)}
+                    className={cn(
+                      "w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left",
+                      opt.checked ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                    )}
+                  >
+                    <span className="text-2xl flex-shrink-0">{opt.emoji}</span>
+                    <div className="flex-1">
+                      <p className="font-medium">{opt.label}</p>
+                      <p className="text-sm text-muted-foreground">{opt.desc}</p>
+                    </div>
+                    {opt.checked && <Check className="w-5 h-5 text-primary flex-shrink-0" />}
+                  </button>
+                ))}
+              </div>
+
+              {offersVirtual && (
+                <div className="mb-6 p-4 bg-muted/50 rounded-xl border border-border">
+                  <Label>Default Video Link (optional)</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">Your default Zoom or Google Meet link. You can set different links per service later.</p>
+                  <Input
+                    type="url"
+                    value={defaultVirtualLink}
+                    onChange={e => setDefaultVirtualLink(e.target.value)}
+                    placeholder="https://zoom.us/j/your-meeting-id"
+                    className="h-12"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(1)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                <Button
+                  onClick={() => setStep(3)}
+                  disabled={!offersAppointments && !offersClasses && !offersVirtual}
+                  className="flex-1 h-12 bg-gradient-primary hover:opacity-90"
+                >
+                  Continue <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3 — Location */}
+          {step === 3 && (
+            <motion.div key="b3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full">
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4">📍</div>
                 <h1 className="font-display text-3xl font-bold mb-2">Where is your business located?</h1>
@@ -346,16 +438,16 @@ const BusinessOnboarding = () => {
                   </div>
                 </div>
                 <div className="flex gap-3 mt-6">
-                  <Button variant="outline" onClick={() => setStep(1)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-                  <Button onClick={() => setStep(3)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                  <Button variant="outline" onClick={() => setStep(2)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                  <Button onClick={() => setStep(4)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* Step 3 — Categories */}
-          {step === 3 && (
-            <motion.div key="b3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-2xl w-full text-center">
+          {/* Step 4 — Categories */}
+          {step === 4 && (
+            <motion.div key="b4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-2xl w-full text-center">
               <div className="text-5xl mb-4">✂️</div>
               <h1 className="font-display text-3xl font-bold mb-2">What services do you offer?</h1>
               <p className="text-muted-foreground mb-6">Select all that apply</p>
@@ -382,15 +474,15 @@ const BusinessOnboarding = () => {
               </div>
               <p className="text-sm text-muted-foreground mb-4">{categories.length} service{categories.length !== 1 ? 's' : ''} selected</p>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(2)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-                <Button onClick={() => setStep(4)} disabled={categories.length === 0} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                <Button variant="outline" onClick={() => setStep(3)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                <Button onClick={() => setStep(5)} disabled={categories.length === 0} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 4 — Hours */}
-          {step === 4 && (
-            <motion.div key="b4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full">
+          {/* Step 5 — Hours */}
+          {step === 5 && (
+            <motion.div key="b5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full">
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4">🕐</div>
                 <h1 className="font-display text-3xl font-bold mb-2">Set your business hours</h1>
@@ -414,15 +506,89 @@ const BusinessOnboarding = () => {
                 ))}
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(3)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-                <Button onClick={() => setStep(5)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                <Button variant="outline" onClick={() => setStep(4)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                <Button onClick={() => setStep(6)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 5 — Community Identity */}
-          {step === 5 && (
-            <motion.div key="b5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full">
+          {/* Step 6 — Credentials & Specialties */}
+          {step === 6 && (
+            <motion.div key="b6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">🏆</div>
+                <h1 className="font-display text-3xl font-bold mb-2">Credentials & Specialties</h1>
+                <p className="text-muted-foreground">Help clients understand your qualifications. All fields are optional.</p>
+              </div>
+
+              {/* Credentials */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <Label>Licenses & Certifications</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">Add your professional licenses and certifications</p>
+                  <div className="flex flex-wrap gap-2 mb-3 min-h-[32px]">
+                    {credentials.map((cred, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-primary/10 border border-primary/30 text-foreground">
+                        🏆 {cred}
+                        <button onClick={() => setCredentials(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-destructive">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={credentialInput}
+                      onChange={e => setCredentialInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCredential())}
+                      placeholder="e.g. Licensed Cosmetologist"
+                      list="credential-suggestions"
+                      className="h-10 flex-1"
+                    />
+                    <Button type="button" size="sm" onClick={addCredential} className="h-10 bg-primary hover:bg-primary/90">+ Add</Button>
+                  </div>
+                  <datalist id="credential-suggestions">
+                    {CREDENTIAL_SUGGESTIONS.map(s => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
+
+                {/* Specialties */}
+                <div>
+                  <Label>Specialties</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">What do you specialize in?</p>
+                  <div className="flex flex-wrap gap-2 mb-3 min-h-[32px]">
+                    {specialties.map((spec, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm bg-blue-500/10 border border-blue-500/30 text-foreground">
+                        ⭐ {spec}
+                        <button onClick={() => setSpecialties(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-destructive">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={specialtyInput}
+                      onChange={e => setSpecialtyInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSpecialty())}
+                      placeholder="e.g. Balayage, Deep Tissue, Prenatal Yoga"
+                      className="h-10 flex-1"
+                    />
+                    <Button type="button" size="sm" onClick={addSpecialty} className="h-10 bg-primary hover:bg-primary/90">+ Add</Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep(5)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                <Button onClick={() => setStep(7)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 7 — Community Identity */}
+          {step === 7 && (
+            <motion.div key="b7" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full">
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4">🌟</div>
                 <h1 className="font-display text-3xl font-bold mb-2">Community Identity</h1>
@@ -453,15 +619,15 @@ const BusinessOnboarding = () => {
                 ))}
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => setStep(4)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-                <Button onClick={() => setStep(6)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                <Button variant="outline" onClick={() => setStep(6)} className="flex-1 h-12"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+                <Button onClick={() => setStep(8)} className="flex-1 h-12 bg-gradient-primary hover:opacity-90">Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 6 — Complete */}
-          {step === 6 && (
-            <motion.div key="b6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full text-center">
+          {/* Step 8 — Complete */}
+          {step === 8 && (
+            <motion.div key="b8" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-md w-full text-center">
               <div className="text-6xl mb-6">🎉</div>
               <h1 className="font-display text-3xl font-bold mb-4">You're all set!</h1>
               <p className="text-muted-foreground mb-8">
@@ -498,7 +664,7 @@ const BusinessOnboarding = () => {
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" onClick={() => setStep(5)} className="w-full mt-3 text-muted-foreground">
+              <Button variant="ghost" onClick={() => setStep(7)} className="w-full mt-3 text-muted-foreground">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Go Back
               </Button>
             </motion.div>

@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SubscriptionManager } from '@/components/subscription/SubscriptionManager';
 import { DepositCancellationSettings } from '@/components/booking/DepositCancellationSettings';
 import { ChangePasswordSection } from '@/components/settings/ChangePasswordSection';
+import { BusinessTypeSettings } from '@/components/business/BusinessTypeSettings';
 import { useTranslation } from '@/hooks/useTranslation';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -45,6 +46,7 @@ const Profile = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showSubscriptionManager, setShowSubscriptionManager] = useState(false);
   const [showDepositSettings, setShowDepositSettings] = useState(false);
+  const [showBusinessTypeSettings, setShowBusinessTypeSettings] = useState(false);
 
   const isBusinessUser = profile?.role === 'business';
 
@@ -222,7 +224,27 @@ const Profile = () => {
             </motion.div>
           )}
 
-          {/* Change Password */}
+          {/* Business Type & Credentials */}
+          {isBusinessUser && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.075 }} className="mb-6">
+              <button onClick={() => setShowBusinessTypeSettings(!showBusinessTypeSettings)} className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><span className="text-lg">🏢</span></div>
+                  <div className="text-left">
+                    <p className="font-medium">Business Type & Credentials</p>
+                    <p className="text-sm text-muted-foreground">Service types, certifications, and specialties</p>
+                  </div>
+                </div>
+                <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${showBusinessTypeSettings ? 'rotate-90' : ''}`} />
+              </button>
+              {showBusinessTypeSettings && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
+                  <BusinessTypeSettings />
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }} className="mb-6">
             <ChangePasswordSection />
           </motion.div>
