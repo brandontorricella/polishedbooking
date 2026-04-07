@@ -19,9 +19,8 @@ export const LanguageToggle = ({ variant = 'navbar' }: LanguageToggleProps) => {
         className="rounded-full border-primary/40 bg-primary/10 hover:bg-primary/20 hover:border-primary/60 gap-2 text-sm font-bold px-4 h-9 transition-all"
         title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
       >
-        <Globe className="w-4 h-4 text-primary" />
-        <span className="text-lg leading-none">{language === 'en' ? '🇲🇽' : '🇺🇸'}</span>
-        <span className="text-foreground font-semibold">
+        <Globe className="w-4 h-4 text-cream" />
+        <span className="text-cream font-semibold">
           {language === 'en' ? 'Español' : 'English'}
         </span>
       </Button>
@@ -44,7 +43,7 @@ export const LanguageToggle = ({ variant = 'navbar' }: LanguageToggleProps) => {
               : "bg-cream/10 border-cream/20 text-cream/60 hover:border-cream/40 hover:text-cream"
           )}
         >
-          🇺🇸 English
+          English
         </button>
         <button
           onClick={() => setLanguage('es')}
@@ -55,7 +54,7 @@ export const LanguageToggle = ({ variant = 'navbar' }: LanguageToggleProps) => {
               : "bg-cream/10 border-cream/20 text-cream/60 hover:border-cream/40 hover:text-cream"
           )}
         >
-          🇲🇽 Español
+          Español
         </button>
       </div>
     </div>
