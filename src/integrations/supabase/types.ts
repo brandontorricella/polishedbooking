@@ -272,6 +272,8 @@ export type Database = {
           location_lat: number | null
           location_lng: number | null
           name: string
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
           owner_id: string
           phone: string | null
           price_range: number | null
@@ -328,6 +330,8 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name: string
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           owner_id: string
           phone?: string | null
           price_range?: number | null
@@ -386,6 +390,8 @@ export type Database = {
           location_lat?: number | null
           location_lng?: number | null
           name?: string
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           owner_id?: string
           phone?: string | null
           price_range?: number | null
@@ -1049,6 +1055,8 @@ export type Database = {
           location_lng: number | null
           location_state: string | null
           location_zip: string | null
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
           phone: string | null
           preferred_language: string | null
           privacy_accepted_at: string | null
@@ -1074,6 +1082,8 @@ export type Database = {
           location_lng?: number | null
           location_state?: string | null
           location_zip?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           phone?: string | null
           preferred_language?: string | null
           privacy_accepted_at?: string | null
@@ -1099,6 +1109,8 @@ export type Database = {
           location_lng?: number | null
           location_state?: string | null
           location_zip?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           phone?: string | null
           preferred_language?: string | null
           privacy_accepted_at?: string | null

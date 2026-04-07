@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AccountTypeModal } from '@/components/auth/AccountTypeModal';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -18,6 +19,7 @@ import polishedLogo from '@/assets/logo-transparent.png';
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { accountType } = useAccountType();
@@ -112,12 +114,10 @@ export const Header = () => {
                     {t('nav', 'login')}
                   </Button>
                 </Link>
-                <Link to="/auth?mode=signup">
-                  <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90 text-cream">
-                    <UserPlus className="w-4 h-4 mr-1.5" />
-                    {t('nav', 'signUp')}
-                  </Button>
-                </Link>
+                <Button size="sm" className="rounded-lg bg-gradient-primary hover:opacity-90 text-cream" onClick={() => setShowAccountTypeModal(true)}>
+                  <UserPlus className="w-4 h-4 mr-1.5" />
+                  {t('nav', 'signUp')}
+                </Button>
               </>
             )}
 
@@ -269,6 +269,8 @@ export const Header = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AccountTypeModal open={showAccountTypeModal} onOpenChange={setShowAccountTypeModal} />
     </header>
   );
 };

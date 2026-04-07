@@ -85,7 +85,7 @@ export default function AdminSettings() {
               <Label className="text-cream/70 text-sm">Default Trial Duration (days)</Label>
               <Input
                 type="number"
-                value={settings.trial_duration_days || '14'}
+                value={settings.trial_duration_days || '30'}
                 onChange={(e) => update('trial_duration_days', e.target.value)}
                 className="mt-1 bg-[hsl(0,0%,14%)] border-[hsl(0,0%,20%)] text-cream w-24"
               />
