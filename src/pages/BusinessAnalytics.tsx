@@ -99,6 +99,9 @@ const FeatureGatedDashboard = ({ businessId, businessServices }: { businessId: s
           <Send className="w-4 h-4 mr-1" /> Follow-ups
         </TabsTrigger>
         <TabsTrigger value="gallery"><Image className="w-4 h-4 mr-1" /> Gallery</TabsTrigger>
+        <TabsTrigger value="ai_insights" className="gap-1">
+          <Bot className="w-4 h-4 mr-1" /> AI Insights
+        </TabsTrigger>
       </TabsList>
 
       {/* Overview – always visible (basic stats) */}
