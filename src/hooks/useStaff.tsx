@@ -87,6 +87,8 @@ export const useStaffManagement = (businessId: string) => {
     bio?: string;
     email?: string;
     phone?: string;
+    commissionType?: string;
+    commissionRate?: number;
     serviceIds?: string[];
     schedule?: { day_of_week: number; start_time: string; end_time: string; is_available: boolean }[];
   }) => {
@@ -100,7 +102,9 @@ export const useStaffManagement = (businessId: string) => {
           bio: data.bio || null,
           email: data.email || null,
           phone: data.phone || null,
-        })
+          commission_type: data.commissionType || 'none',
+          commission_rate: data.commissionRate || 0,
+        } as any)
         .select()
         .single();
 
