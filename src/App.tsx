@@ -36,6 +36,8 @@ import BusinessClasses from "./pages/BusinessClasses";
 import BusinessEmbedWidget from "./pages/BusinessEmbedWidget";
 import BusinessCommissions from "./pages/BusinessCommissions";
 import BusinessCustomReports from "./pages/BusinessCustomReports";
+import BusinessMigration from "./pages/BusinessMigration";
+import BusinessTemplates from "./pages/BusinessTemplates";
 import { AdminRoute } from "@/components/admin/AdminRoute";
 import { lazy, Suspense } from "react";
 
@@ -150,6 +152,16 @@ const App = () => {
                   <Route path="/business/custom-reports" element={
                     <ProtectedRoute requiredType="business">
                       <BusinessCustomReports />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/business/migration" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessMigration />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/business/templates" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessTemplates />
                     </ProtectedRoute>
                   } />
                   
