@@ -1027,6 +1027,143 @@ export type Database = {
           },
         ]
       }
+      intake_form_questions: {
+        Row: {
+          form_id: string
+          id: string
+          is_required: boolean | null
+          options: string[] | null
+          placeholder: string | null
+          question_text: string
+          question_type: string
+          sort_order: number | null
+        }
+        Insert: {
+          form_id: string
+          id?: string
+          is_required?: boolean | null
+          options?: string[] | null
+          placeholder?: string | null
+          question_text: string
+          question_type?: string
+          sort_order?: number | null
+        }
+        Update: {
+          form_id?: string
+          id?: string
+          is_required?: boolean | null
+          options?: string[] | null
+          placeholder?: string | null
+          question_text?: string
+          question_type?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_form_questions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "intake_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intake_form_submissions: {
+        Row: {
+          answers: Json
+          booking_id: string | null
+          business_id: string
+          form_id: string
+          id: string
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          booking_id?: string | null
+          business_id: string
+          form_id: string
+          id?: string
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          booking_id?: string | null
+          business_id?: string
+          form_id?: string
+          id?: string
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_form_submissions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intake_form_submissions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intake_form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "intake_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intake_forms: {
+        Row: {
+          business_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          require_for_new_clients_only: boolean | null
+          service_ids: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          require_for_new_clients_only?: boolean | null
+          service_ids?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          require_for_new_clients_only?: boolean | null
+          service_ids?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intake_forms_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_programs: {
         Row: {
           business_id: string
