@@ -1278,6 +1278,51 @@ export type Database = {
           },
         ]
       }
+      imported_clients: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          import_batch_id: string | null
+          import_status: string | null
+          invited_at: string | null
+          joined_at: string | null
+          matched_user_id: string | null
+          original_email: string | null
+          original_name: string | null
+          original_notes: string | null
+          original_phone: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          import_batch_id?: string | null
+          import_status?: string | null
+          invited_at?: string | null
+          joined_at?: string | null
+          matched_user_id?: string | null
+          original_email?: string | null
+          original_name?: string | null
+          original_notes?: string | null
+          original_phone?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          import_batch_id?: string | null
+          import_status?: string | null
+          invited_at?: string | null
+          joined_at?: string | null
+          matched_user_id?: string | null
+          original_email?: string | null
+          original_name?: string | null
+          original_notes?: string | null
+          original_phone?: string | null
+        }
+        Relationships: []
+      }
       intake_form_questions: {
         Row: {
           form_id: string
@@ -2415,6 +2460,30 @@ export type Database = {
           status?: string | null
           subject?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      template_sends: {
+        Row: {
+          business_id: string
+          id: string
+          sent_at: string
+          sent_to: string | null
+          template_type: string | null
+        }
+        Insert: {
+          business_id: string
+          id?: string
+          sent_at?: string
+          sent_to?: string | null
+          template_type?: string | null
+        }
+        Update: {
+          business_id?: string
+          id?: string
+          sent_at?: string
+          sent_to?: string | null
+          template_type?: string | null
         }
         Relationships: []
       }
