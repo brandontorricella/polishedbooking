@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Loader2, Hourglass } from 'lucide-react';
+import { Calendar, Loader2, Hourglass, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { BookingCard } from '@/components/booking/BookingCard';
 import { BusinessScheduleView } from '@/components/booking/BusinessScheduleView';
 import { MyWaitlist } from '@/components/waitlist/MyWaitlist';
 import { BusinessWaitlistManager } from '@/components/waitlist/BusinessWaitlistManager';
+import { MyClassesTab } from '@/components/classes/MyClassesTab';
 import { useBookings } from '@/hooks/useBookings';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
@@ -96,7 +97,7 @@ const BookingsPage = () => {
             </Tabs>
           ) : (
             <Tabs defaultValue="upcoming" className="space-y-6">
-              <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsList className="grid w-full max-w-md grid-cols-4">
                 <TabsTrigger value="upcoming">
                   {t('bookings', 'upcoming')}
                   {upcomingBookings.length > 0 && (
@@ -106,6 +107,9 @@ const BookingsPage = () => {
                   )}
                 </TabsTrigger>
                 <TabsTrigger value="past">{t('bookings', 'past')}</TabsTrigger>
+                <TabsTrigger value="classes">
+                  <Users className="w-3.5 h-3.5 mr-1" /> Classes
+                </TabsTrigger>
                 <TabsTrigger value="waitlist">
                   <Hourglass className="w-3.5 h-3.5 mr-1" /> {t('bookings', 'waitlist')}
                 </TabsTrigger>
@@ -151,6 +155,10 @@ const BookingsPage = () => {
                     <p className="text-muted-foreground">{t('bookings', 'historyHere')}</p>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="classes">
+                <MyClassesTab />
               </TabsContent>
 
               <TabsContent value="waitlist">
