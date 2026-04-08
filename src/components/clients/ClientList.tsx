@@ -1,12 +1,62 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, StickyNote, ChevronRight, Users } from 'lucide-react';
+import { Search, StickyNote, ChevronRight, Users, Upload, Link2, Mail } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useClientList, type ClientSummary } from '@/hooks/useClientNotes';
 import { cn } from '@/lib/utils';
+
+function ClientsEmptyState() {
+  const navigate = useNavigate();
+  return (
+    <div className="max-w-lg mx-auto text-center py-16 px-4">
+      <span className="text-6xl block mb-4">👥</span>
+      <h2 className="text-2xl font-bold mb-2">No clients yet</h2>
+      <p className="text-muted-foreground text-[15px] mb-7">
+        Your client list will grow automatically as people book with you.
+      </p>
+
+      <div className="bg-card border-2 border-primary/30 rounded-2xl p-6 mb-6 text-left">
+        <div className="flex gap-4 items-start mb-4">
+          <span className="text-4xl shrink-0">📥</span>
+          <div>
+            <h3 className="text-[17px] font-bold mb-1">Already have clients elsewhere?</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Import your existing client list from Vagaro, Booksy, StyleSeat, or any platform in under 2 minutes.
+            </p>
+          </div>
+        </div>
+        <div className="mb-4">
+          <Button onClick={() => navigate('/business/migration')} className="text-[15px] h-11 px-6">
+            <Upload className="w-4 h-4 mr-2" /> Import Client List →
+          </Button>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+          <span>Works with:</span>
+          {['Vagaro', 'Booksy', 'StyleSeat', 'Square Appointments', 'Any CSV file'].map(p => (
+            <span key={p} className="px-2.5 py-0.5 bg-muted border border-border rounded-full font-medium">{p}</span>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-sm text-muted-foreground mb-3">Or grow your client base organically:</p>
+        <div className="flex gap-2.5 justify-center flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => navigate('/business/embed-widget')}>
+            <Link2 className="w-3.5 h-3.5 mr-1.5" /> Get Your Booking Link
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/business/templates')}>
+            <Mail className="w-3.5 h-3.5 mr-1.5" /> Message Templates
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface ClientListProps {
   businessId: string;
@@ -50,12 +100,14 @@ export const ClientList = ({ businessId, onSelectClient }: ClientListProps) => {
 
       {/* Client Cards */}
       {clients.length === 0 ? (
-        <div className="text-center py-12">
-          <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">
-            {search ? 'No clients match your search' : 'No clients yet — they\'ll appear here after their first booking'}
-          </p>
-        </div>
+        search ? (
+          <div className="text-center py-12">
+            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">No clients match your search</p>
+          </div>
+        ) : (
+          <ClientsEmptyState />
+        )
       ) : (
         <div className="space-y-2">
           {clients.map((client, idx) => (

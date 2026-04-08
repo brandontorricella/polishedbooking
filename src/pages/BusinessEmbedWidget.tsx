@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, Check, Link2, Monitor, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { FeatureGate } from '@/components/subscription/FeatureGate';
 import { useAccountType } from '@/hooks/useAccountType';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,13 @@ const BusinessEmbedWidget = () => {
     widgetSize: 'medium',
   });
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Mark checklist item complete when business visits this page
+  useEffect(() => {
+    if (businessId) {
+      supabase.from('businesses').update({ checklist_booking_link_added: true } as any).eq('id', businessId);
+    }
+  }, [businessId]);
 
   const embedUrl = `${window.location.origin}/business/${businessId}`;
   const selectedSize = SIZE_OPTIONS.find(s => s.value === config.widgetSize)!;

@@ -399,6 +399,10 @@ export type Database = {
           cancellation_hours: number | null
           cancellation_policy: string | null
           categories: string[] | null
+          checklist_booking_link_added: boolean | null
+          checklist_clients_imported: boolean | null
+          checklist_dismissed: boolean | null
+          checklist_photo_uploaded: boolean | null
           city: string | null
           cover_photo_url: string | null
           created_at: string
@@ -465,6 +469,10 @@ export type Database = {
           cancellation_hours?: number | null
           cancellation_policy?: string | null
           categories?: string[] | null
+          checklist_booking_link_added?: boolean | null
+          checklist_clients_imported?: boolean | null
+          checklist_dismissed?: boolean | null
+          checklist_photo_uploaded?: boolean | null
           city?: string | null
           cover_photo_url?: string | null
           created_at?: string
@@ -533,6 +541,10 @@ export type Database = {
           cancellation_hours?: number | null
           cancellation_policy?: string | null
           categories?: string[] | null
+          checklist_booking_link_added?: boolean | null
+          checklist_clients_imported?: boolean | null
+          checklist_dismissed?: boolean | null
+          checklist_photo_uploaded?: boolean | null
           city?: string | null
           cover_photo_url?: string | null
           created_at?: string

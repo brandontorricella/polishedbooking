@@ -98,6 +98,7 @@ const BusinessOnboarding = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasUsedTrial, setHasUsedTrial] = useState(false);
+  const [showImportPrompt, setShowImportPrompt] = useState(true);
 
   // Business data
   const [businessName, setBusinessName] = useState('');
@@ -675,6 +676,30 @@ const BusinessOnboarding = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Import Prompt Card */}
+              {showImportPrompt && (
+                <div className="bg-gradient-to-br from-primary/[0.08] to-blue-500/[0.08] border-[1.5px] border-primary/30 rounded-xl p-6 mb-6 text-left">
+                  <div className="flex gap-4 items-start mb-4">
+                    <span className="text-4xl shrink-0">📥</span>
+                    <div>
+                      <h3 className="text-base font-bold mb-1">Coming from Vagaro, Booksy, or another platform?</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">Import your existing client list in under 2 minutes so you can invite them to book with you on Polished.</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-center flex-wrap mb-4">
+                    <Button onClick={() => navigate('/business/migration')}>Import My Clients →</Button>
+                    <button onClick={() => setShowImportPrompt(false)} className="text-sm text-muted-foreground underline hover:text-foreground transition-colors">Skip for now</button>
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+                    <span>Works with:</span>
+                    {['Vagaro', 'Booksy', 'StyleSeat', 'Square', 'Any CSV'].map(p => (
+                      <span key={p} className="px-2.5 py-0.5 bg-muted border border-border rounded-full text-xs font-medium">{p}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <Button
                 onClick={handleCreateBusiness}
                 disabled={isLoading}

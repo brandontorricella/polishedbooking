@@ -18,6 +18,7 @@ import { FeatureGate, LockedFeaturePage } from '@/components/subscription/Featur
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { PaymentWarningBanner } from '@/components/business/PaymentWarningBanner';
 import { AIInsightsWidget } from '@/components/business/AIInsightsWidget';
+import { GettingStartedChecklist } from '@/components/business/GettingStartedChecklist';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -107,6 +108,7 @@ const FeatureGatedDashboard = ({ businessId, businessServices }: { businessId: s
 
       {/* Overview – always visible (basic stats) */}
       <TabsContent value="overview">
+        {businessId && <GettingStartedChecklist businessId={businessId} />}
         {businessId && <AIInsightsWidget businessId={businessId} />}
         {businessId ? <AnalyticsDashboard businessId={businessId} /> : <NoBusinessPlaceholder text="view analytics" />}
       </TabsContent>
