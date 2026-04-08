@@ -557,6 +557,183 @@ export type Database = {
         }
         Relationships: []
       }
+      class_enrollments: {
+        Row: {
+          amount_paid: number | null
+          business_id: string
+          canceled_at: string | null
+          enrolled_at: string
+          id: string
+          payment_intent_id: string | null
+          session_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          business_id: string
+          canceled_at?: string | null
+          enrolled_at?: string
+          id?: string
+          payment_intent_id?: string | null
+          session_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number | null
+          business_id?: string
+          canceled_at?: string | null
+          enrolled_at?: string
+          id?: string
+          payment_intent_id?: string | null
+          session_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_enrollments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_enrollments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_schedules: {
+        Row: {
+          business_id: string
+          capacity: number
+          category: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          image_url: string | null
+          instructor_id: string | null
+          is_active: boolean | null
+          is_free: boolean | null
+          is_virtual: boolean | null
+          name: string
+          price: number
+          virtual_link: string | null
+        }
+        Insert: {
+          business_id: string
+          capacity?: number
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          instructor_id?: string | null
+          is_active?: boolean | null
+          is_free?: boolean | null
+          is_virtual?: boolean | null
+          name: string
+          price?: number
+          virtual_link?: string | null
+        }
+        Update: {
+          business_id?: string
+          capacity?: number
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          instructor_id?: string | null
+          is_active?: boolean | null
+          is_free?: boolean | null
+          is_virtual?: boolean | null
+          name?: string
+          price?: number
+          virtual_link?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_schedules_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_schedules_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_sessions: {
+        Row: {
+          business_id: string
+          cancel_reason: string | null
+          capacity: number
+          created_at: string
+          end_time: string
+          enrolled_count: number | null
+          id: string
+          is_canceled: boolean | null
+          schedule_id: string
+          session_date: string
+          start_time: string
+        }
+        Insert: {
+          business_id: string
+          cancel_reason?: string | null
+          capacity: number
+          created_at?: string
+          end_time: string
+          enrolled_count?: number | null
+          id?: string
+          is_canceled?: boolean | null
+          schedule_id: string
+          session_date: string
+          start_time: string
+        }
+        Update: {
+          business_id?: string
+          cancel_reason?: string | null
+          capacity?: number
+          created_at?: string
+          end_time?: string
+          enrolled_count?: number | null
+          id?: string
+          is_canceled?: boolean | null
+          schedule_id?: string
+          session_date?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_sessions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sessions_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "class_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_memberships: {
         Row: {
           business_id: string
