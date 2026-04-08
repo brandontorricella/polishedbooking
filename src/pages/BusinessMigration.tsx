@@ -140,6 +140,10 @@ export default function BusinessMigration() {
     setStep(3);
     setImporting(false);
     fetchClients();
+    // Mark checklist item complete
+    if (imported > 0 && businessId) {
+      supabase.from('businesses').update({ checklist_clients_imported: true } as any).eq('id', businessId);
+    }
   }
 
   async function handleSendInvite(clientId: string) {
