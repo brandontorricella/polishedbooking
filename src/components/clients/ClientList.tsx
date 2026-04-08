@@ -50,12 +50,14 @@ export const ClientList = ({ businessId, onSelectClient }: ClientListProps) => {
 
       {/* Client Cards */}
       {clients.length === 0 ? (
-        <div className="text-center py-12">
-          <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">
-            {search ? 'No clients match your search' : 'No clients yet — they\'ll appear here after their first booking'}
-          </p>
-        </div>
+        search ? (
+          <div className="text-center py-12">
+            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">No clients match your search</p>
+          </div>
+        ) : (
+          <ClientsEmptyState />
+        )
       ) : (
         <div className="space-y-2">
           {clients.map((client, idx) => (
