@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from '@/hooks/useTranslation';
+import { LogoSpinner } from '@/components/ui/LogoSpinner';
 
 function getStrength(pwd: string, t: (s: string, k: string) => string) {
   if (!pwd) return null;
@@ -101,10 +102,7 @@ const ResetPassword = () => {
   if (!sessionReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="text-center space-y-4">
-          <div className="w-10 h-10 border-3 border-border border-t-primary rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground">{t('resetPassword', 'verifying')}</p>
-        </div>
+        <LogoSpinner size="lg" text={t('resetPassword', 'verifying')} />
       </div>
     );
   }

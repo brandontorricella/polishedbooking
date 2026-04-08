@@ -72,7 +72,7 @@ export const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img src={polishedLogo} alt="Polished" className="w-10 h-10 object-contain" />
+            <img src={polishedLogo} alt="Polished" className="w-14 h-14 object-contain" />
             <span className="font-display text-xl font-semibold text-cream">Polished</span>
           </Link>
 

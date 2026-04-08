@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/hooks/useTranslation';
+import { LogoSpinner } from '@/components/ui/LogoSpinner';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
@@ -116,9 +117,7 @@ const AuthPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse">
-          <Sparkles className="w-12 h-12 text-primary" />
-        </div>
+        <LogoSpinner size="lg" />
       </div>
     );
   }

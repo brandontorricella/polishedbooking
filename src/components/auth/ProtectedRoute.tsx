@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAccountType, AccountType } from '@/hooks/useAccountType';
-import { Sparkles } from 'lucide-react';
+import { LogoSpinner } from '@/components/ui/LogoSpinner';
 import { saveIntendedDestination } from '@/components/auth/AuthGate';
 
 interface ProtectedRouteProps {
@@ -16,7 +16,7 @@ export const ProtectedRoute = ({ children, requiredType }: ProtectedRouteProps) 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Sparkles className="w-8 h-8 animate-pulse text-primary" />
+        <LogoSpinner size="lg" />
       </div>
     );
   }

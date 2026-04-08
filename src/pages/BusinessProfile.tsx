@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Header } from '@/components/layout/Header';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { LogoSpinner } from '@/components/ui/LogoSpinner';
 import { BookingFlow } from '@/components/booking/BookingFlow';
 import { AuthPromptModal } from '@/components/auth/AuthPromptModal';
 import { BookNowButton } from '@/components/booking/BookNowButton';
@@ -70,7 +71,7 @@ const BusinessProfile = () => {
   if (!business) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Sparkles className="w-8 h-8 animate-pulse text-primary" />
+        <LogoSpinner size="lg" />
       </div>
     );
   }
