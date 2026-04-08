@@ -2034,10 +2034,79 @@ export type Database = {
           },
         ]
       }
+      staff_commissions: {
+        Row: {
+          booking_id: string
+          business_id: string
+          commission_amount: number
+          commission_rate: number
+          commission_type: string
+          created_at: string
+          id: string
+          is_paid: boolean | null
+          paid_at: string | null
+          service_price: number
+          staff_id: string
+          tip_amount: number | null
+        }
+        Insert: {
+          booking_id: string
+          business_id: string
+          commission_amount: number
+          commission_rate: number
+          commission_type: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean | null
+          paid_at?: string | null
+          service_price: number
+          staff_id: string
+          tip_amount?: number | null
+        }
+        Update: {
+          booking_id?: string
+          business_id?: string
+          commission_amount?: number
+          commission_rate?: number
+          commission_type?: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean | null
+          paid_at?: string | null
+          service_price?: number
+          staff_id?: string
+          tip_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_commissions_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_commissions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_commissions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff_members: {
         Row: {
           bio: string | null
           business_id: string
+          commission_rate: number | null
+          commission_type: string | null
           created_at: string
           display_order: number | null
           email: string | null
@@ -2053,6 +2122,8 @@ export type Database = {
         Insert: {
           bio?: string | null
           business_id: string
+          commission_rate?: number | null
+          commission_type?: string | null
           created_at?: string
           display_order?: number | null
           email?: string | null
@@ -2068,6 +2139,8 @@ export type Database = {
         Update: {
           bio?: string | null
           business_id?: string
+          commission_rate?: number | null
+          commission_type?: string | null
           created_at?: string
           display_order?: number | null
           email?: string | null
