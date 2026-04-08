@@ -16,6 +16,7 @@ import { GalleryManager } from '@/components/gallery/GalleryManager';
 import { FeatureGate, LockedFeaturePage } from '@/components/subscription/FeatureGate';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { PaymentWarningBanner } from '@/components/business/PaymentWarningBanner';
+import { AIInsightsWidget } from '@/components/business/AIInsightsWidget';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
