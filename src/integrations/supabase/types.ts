@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_insights: {
+        Row: {
+          business_id: string
+          data_snapshot: Json | null
+          generated_at: string
+          id: string
+          insights_text: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          business_id: string
+          data_snapshot?: Json | null
+          generated_at?: string
+          id?: string
+          insights_text: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          business_id?: string
+          data_snapshot?: Json | null
+          generated_at?: string
+          id?: string
+          insights_text?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_insights_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_daily_stats: {
         Row: {
           bookings_canceled: number | null
