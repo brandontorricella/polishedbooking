@@ -30,7 +30,7 @@ interface BookingFlowProps {
   initialService?: Service;
 }
 
-type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'tip' | 'deposit';
+type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'tip' | 'deposit' | 'intake';
 
 const formatTime = (time: string): string => {
   const [hour, min] = time.split(':').map(Number);
