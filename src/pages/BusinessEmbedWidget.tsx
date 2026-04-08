@@ -32,6 +32,13 @@ const BusinessEmbedWidget = () => {
   });
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
+  // Mark checklist item complete when business visits this page
+  useEffect(() => {
+    if (businessId) {
+      supabase.from('businesses').update({ checklist_booking_link_added: true } as any).eq('id', businessId);
+    }
+  }, [businessId]);
+
   const embedUrl = `${window.location.origin}/business/${businessId}`;
   const selectedSize = SIZE_OPTIONS.find(s => s.value === config.widgetSize)!;
 
