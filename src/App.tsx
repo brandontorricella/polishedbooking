@@ -32,6 +32,7 @@ import HelpCenter from "./pages/HelpCenter";
 import BusinessPackages from "./pages/BusinessPackages";
 import BusinessMemberships from "./pages/BusinessMemberships";
 import BusinessIntakeForms from "./pages/BusinessIntakeForms";
+import BusinessClasses from "./pages/BusinessClasses";
 import { AdminRoute } from "@/components/admin/AdminRoute";
 import { lazy, Suspense } from "react";
 
@@ -126,6 +127,11 @@ const App = () => {
                   <Route path="/business/intake-forms" element={
                     <ProtectedRoute requiredType="business">
                       <BusinessIntakeForms />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/business/classes" element={
+                    <ProtectedRoute requiredType="business">
+                      <BusinessClasses />
                     </ProtectedRoute>
                   } />
                   
