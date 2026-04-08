@@ -311,9 +311,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
       }
 
       const tipMsg = tip > 0 ? ` A $${tip.toFixed(2)} tip was added.` : '';
-      toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
-      onClose();
-      navigate('/bookings');
+      await tryShowIntakeOrFinish(data.id, tipMsg);
     } catch (error: any) {
       console.error('Booking error:', error);
       toast({ title: "Booking failed", description: error.message || "Unable to complete booking.", variant: "destructive" });
