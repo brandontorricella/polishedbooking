@@ -24,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3, FileText, FileSpreadsheet, Loader2, Eye } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3, FileText, FileSpreadsheet, Loader2, Eye, Bot } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
