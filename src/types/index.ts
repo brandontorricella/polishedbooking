@@ -76,7 +76,10 @@ export interface Business {
   portfolioImages: string[];
   createdAt: Date;
   promotions?: Promotion[];
-  distance?: number; // Added for proximity sorting
+  distance?: number;
+  offersClasses?: boolean;
+  offersAppointments?: boolean;
+  offersVirtual?: boolean;
 }
 
 export interface Service {
