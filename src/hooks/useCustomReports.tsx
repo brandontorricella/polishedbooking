@@ -157,7 +157,7 @@ export function useCustomReports(businessId: string | null) {
       const bookings = allBookings || [];
       const completed = bookings.filter(b => b.status === 'completed');
       const canceled = bookings.filter(b => b.status === 'canceled');
-      const noShows = bookings.filter(b => b.status === 'no_show');
+      const noShows = bookings.filter(b => (b.status as string) === 'no_show');
       const revenue = completed.reduce((s, b) => s + Number(b.total_price || 0), 0);
       const tips = completed.reduce((s, b) => s + Number(b.tip_amount || 0), 0);
       const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
