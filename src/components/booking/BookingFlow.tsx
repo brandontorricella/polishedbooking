@@ -237,10 +237,12 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     }
   };
 
-  const handleDepositComplete = () => {
-    toast({ title: "Booking confirmed!", description: `Your deposit has been received. Appointment confirmed!` });
-    onClose();
-    navigate('/bookings');
+  const handleDepositComplete = async () => {
+    if (createdBookingId) {
+      await tryShowIntakeOrFinish(createdBookingId, '');
+    } else {
+      finishBooking();
+    }
   };
 
   const handleTipSelected = (amount: number) => {
