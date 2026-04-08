@@ -67,7 +67,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         fetchProfile(session.user.id);
       }
       setLoading(false);
+    }).catch((error) => {
+      console.error('Failed to get session:', error);
+      setLoading(false);
     });
+
+    // Safety timeout — if getSession never resolves, stop loading after 5s
+    const timeout = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn('Auth loading timeout — forcing ready state');
+        }
+        return false;
+      });
+    }, 5000);
 
     return () => subscription.unsubscribe();
   }, []);
