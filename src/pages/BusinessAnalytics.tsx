@@ -170,6 +170,23 @@ const FeatureGatedDashboard = ({ businessId, businessServices }: { businessId: s
       <TabsContent value="gallery">
         {businessId ? <GalleryManager businessId={businessId} services={businessServices} galleryLimit={galleryLimit} tier={tier} /> : <NoBusinessPlaceholder text="manage gallery" />}
       </TabsContent>
+
+      {/* AI Insights – Pro+ */}
+      <TabsContent value="ai_insights">
+        <FeatureGate feature="ai_weekly_insights"
+          fallback={
+            <LockedFeaturePage
+              icon={<Bot className="w-8 h-8 text-muted-foreground" />}
+              title="AI Weekly Insights"
+              description="Get plain-English summaries of your weekly performance with actionable recommendations."
+              requiredTier="pro"
+              benefits={['AI-generated weekly summaries', 'Actionable business insights', 'Week-over-week comparisons', 'Revenue and booking analysis']}
+            />
+          }
+        >
+          {businessId ? <AIInsightsFullTab businessId={businessId} /> : <NoBusinessPlaceholder text="view AI insights" />}
+        </FeatureGate>
+      </TabsContent>
     </Tabs>
   );
 };
