@@ -227,9 +227,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
         setStep('deposit');
       } else {
         const tipMsg = tipAmount > 0 ? ` A $${tipAmount.toFixed(2)} tip was added.` : '';
-        toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
-        onClose();
-        navigate('/bookings');
+        await tryShowIntakeOrFinish(data.id, tipMsg);
       }
     } catch (error: any) {
       console.error('Booking error:', error);
