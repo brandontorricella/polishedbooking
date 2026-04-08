@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
-import { Calendar, Clock, MapPin, MessageSquare, ChevronRight, CheckCircle, XCircle, AlertCircle, MoreVertical, Loader2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, MessageSquare, ChevronRight, CheckCircle, XCircle, AlertCircle, MoreVertical, Loader2, Monitor } from 'lucide-react';
+import { VirtualSessionLink } from './VirtualSessionLink';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -78,6 +79,21 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
                 {booking.business?.city && (
                   <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground"><MapPin className="w-3 h-3" /><span>{booking.business.city}, {booking.business.state}</span></div>
                 )}
+                {/* Virtual session link for upcoming virtual bookings */}
+                {(() => {
+                  const svc = booking.service as any;
+                  const biz = booking.business as any;
+                  const meetingLink = svc?.virtual_link || biz?.default_virtual_link;
+                  const isVirtual = svc?.is_virtual;
+                  const appointmentTime = new Date(`${booking.booking_date}T${booking.booking_time}`);
+                  const isUpcoming = appointmentTime > new Date();
+                  const isWithin30Min = (appointmentTime.getTime() - Date.now()) <= 30 * 60 * 1000 && isUpcoming;
+                  return isVirtual && meetingLink && isUpcoming ? (
+                    <div className="mt-2">
+                      <VirtualSessionLink meetingLink={meetingLink} isUpcoming={isUpcoming} isWithin30Min={isWithin30Min} compact />
+                    </div>
+                  ) : null;
+                })()}
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                   <div>
                     <span className="font-semibold">${booking.total_price}</span>
