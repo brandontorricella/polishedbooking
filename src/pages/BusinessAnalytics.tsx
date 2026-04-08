@@ -107,6 +107,7 @@ const FeatureGatedDashboard = ({ businessId, businessServices }: { businessId: s
 
       {/* Overview – always visible (basic stats) */}
       <TabsContent value="overview">
+        {businessId && <GettingStartedChecklist businessId={businessId} />}
         {businessId && <AIInsightsWidget businessId={businessId} />}
         {businessId ? <AnalyticsDashboard businessId={businessId} /> : <NoBusinessPlaceholder text="view analytics" />}
       </TabsContent>
