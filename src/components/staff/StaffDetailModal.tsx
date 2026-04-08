@@ -36,6 +36,8 @@ export const StaffDetailModal = ({ open, onOpenChange, staff, businessId, servic
   const [email, setEmail] = useState(staff.email || '');
   const [phone, setPhone] = useState(staff.phone || '');
   const [isAccepting, setIsAccepting] = useState(staff.is_accepting_bookings);
+  const [commissionType, setCommissionType] = useState(staff.commission_type || 'none');
+  const [commissionRate, setCommissionRate] = useState(staff.commission_rate || 0);
   const [selectedServices, setSelectedServices] = useState<string[]>(
     staff.staff_services.map(ss => ss.service_id)
   );
@@ -73,6 +75,8 @@ export const StaffDetailModal = ({ open, onOpenChange, staff, businessId, servic
       email: email.trim() || null,
       phone: phone.trim() || null,
       is_accepting_bookings: isAccepting,
+      commission_type: commissionType,
+      commission_rate: commissionRate,
     } as any);
 
     await updateStaffServices(staff.id, selectedServices);
@@ -158,6 +162,30 @@ export const StaffDetailModal = ({ open, onOpenChange, staff, businessId, servic
               </div>
             </div>
           )}
+
+          {/* Commission Settings */}
+          <div>
+            <Label className="mb-2 block">Commission</Label>
+            <select value={commissionType} onChange={e => setCommissionType(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <option value="none">No Commission</option>
+              <option value="percentage">Percentage of service price</option>
+              <option value="fixed">Fixed amount per booking</option>
+            </select>
+            {commissionType === 'percentage' && (
+              <div className="flex items-center gap-2 mt-2">
+                <Input type="number" min={0} max={100} step={0.5} value={commissionRate} onChange={e => setCommissionRate(parseFloat(e.target.value) || 0)} className="w-24 h-8 text-xs" />
+                <span className="text-xs text-muted-foreground">%</span>
+                <span className="text-xs text-muted-foreground ml-auto">On $100: ${commissionRate.toFixed(2)}</span>
+              </div>
+            )}
+            {commissionType === 'fixed' && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-xs">$</span>
+                <Input type="number" min={0} step={0.5} value={commissionRate} onChange={e => setCommissionRate(parseFloat(e.target.value) || 0)} className="w-24 h-8 text-xs" />
+                <span className="text-xs text-muted-foreground">per booking</span>
+              </div>
+            )}
+          </div>
 
           <div>
             <Label className="mb-2 block">Schedule</Label>

@@ -15,6 +15,8 @@ export interface StaffMember {
   is_active: boolean;
   is_accepting_bookings: boolean;
   display_order: number;
+  commission_type: string;
+  commission_rate: number;
   created_at: string;
 }
 
