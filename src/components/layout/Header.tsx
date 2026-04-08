@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AccountTypeModal } from '@/components/auth/AccountTypeModal';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, User, Heart, Calendar, MessageSquare,
@@ -21,6 +21,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { accountType } = useAccountType();
   const { isAdmin } = useAdmin();
@@ -147,7 +148,7 @@ export const Header = () => {
                   variant="ghost" 
                   size="icon" 
                   className="rounded-lg hidden sm:flex text-cream hover:bg-cream/10"
-                  onClick={() => signOut()}
+                  onClick={async () => { await signOut(); navigate('/'); }}
                 >
                   <LogOut className="w-5 h-5" />
                 </Button>
@@ -174,7 +175,7 @@ export const Header = () => {
                   variant="ghost" 
                   size="icon" 
                   className="rounded-lg hidden sm:flex text-cream hover:bg-cream/10"
-                  onClick={() => signOut()}
+                  onClick={async () => { await signOut(); navigate('/'); }}
                 >
                   <LogOut className="w-5 h-5" />
                 </Button>
@@ -259,7 +260,7 @@ export const Header = () => {
                     variant="ghost"
                     className="w-full justify-start text-cream/60 hover:text-cream hover:bg-cream/10"
                     size="lg"
-                    onClick={() => { signOut(); setMobileMenuOpen(false); }}
+                    onClick={async () => { await signOut(); setMobileMenuOpen(false); navigate('/'); }}
                   >
                     <LogOut className="w-5 h-5 mr-2" />
                     {t('nav', 'signOut')}

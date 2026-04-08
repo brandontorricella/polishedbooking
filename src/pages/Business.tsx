@@ -80,10 +80,8 @@ const BusinessPage = () => {
   const handleStartTrial = (tierId?: string) => {
     if (user && isBusinessUser) {
       startCheckout((tierId as 'basic' | 'pro' | 'elite') || 'basic');
-    } else if (user) {
-      navigate('/business/onboarding');
     } else {
-      navigate('/auth?mode=signup&redirect=/business/onboarding');
+      navigate('/auth?mode=signup&role=business');
     }
   };
 

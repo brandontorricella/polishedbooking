@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard, Building2, Users, CreditCard, DollarSign,
@@ -21,6 +21,7 @@ const navItems = [
 export function AdminLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { profile, signOut } = useAuth();
 
   const isActive = (path: string, exact?: boolean) =>
@@ -91,7 +92,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <h2 className="text-sm font-medium text-cream/70">Polished Admin</h2>
           <div className="flex items-center gap-3">
             <span className="text-sm text-cream/50">{profile?.display_name || 'Admin'}</span>
-            <Button variant="ghost" size="sm" onClick={signOut} className="text-cream/50 hover:text-cream">
+            <Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate('/'); }} className="text-cream/50 hover:text-cream">
               <LogOut className="w-4 h-4" />
             </Button>
           </div>
