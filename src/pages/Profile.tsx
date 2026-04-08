@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Settings, Bell, Shield, CreditCard,
-  LogOut, ChevronRight, Camera, Moon, Sun, Trash2, Globe, Crown, Eye
+  LogOut, ChevronRight, Camera, Trash2, Globe, Crown, Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -34,7 +34,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, profile, signOut, updateProfile, loading, session } = useAuth();
   const { toast } = useToast();
-  const { isDark, toggleTheme } = useTheme();
+  
   const { isSubscribed, showPaywall, subscription } = useSuperwall();
   const { businessId } = useAccountType();
   const { t } = useTranslation();
@@ -354,21 +354,6 @@ const Profile = () => {
               </div>
             </motion.div>
 
-            {/* Appearance */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-card rounded-2xl border border-border p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    {isDark ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
-                  </div>
-                  <div>
-                    <p className="font-medium">{t('profile', 'darkMode')}</p>
-                    <p className="text-sm text-muted-foreground">{t('profile', 'darkModeDesc')}</p>
-                  </div>
-                </div>
-                <Switch checked={isDark} onCheckedChange={toggleTheme} />
-              </div>
-            </motion.div>
 
             {/* Legal */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card rounded-2xl border border-border overflow-hidden">
