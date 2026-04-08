@@ -17,8 +17,10 @@ import { useAvailability } from '@/hooks/useAvailability';
 import { supabase } from '@/integrations/supabase/client';
 import { DepositPaymentStep } from '@/components/booking/DepositPaymentStep';
 import { TipSelectionStep } from '@/components/booking/TipSelectionStep';
+import { IntakeFormStep } from '@/components/booking/IntakeFormStep';
 import { CancellationPolicyDisplay } from '@/components/booking/CancellationPolicyDisplay';
 import type { Business, Service } from '@/types';
+import type { IntakeForm } from '@/hooks/useIntakeForms';
 import { cn } from '@/lib/utils';
 
 interface BookingFlowProps {
