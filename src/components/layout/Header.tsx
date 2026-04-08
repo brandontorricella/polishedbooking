@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AccountTypeModal } from '@/components/auth/AccountTypeModal';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, User, Heart, Calendar, MessageSquare,
@@ -21,7 +21,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
   const location = useLocation();
-  const navigate = (await import('react-router-dom')).useNavigate ? undefined : undefined;
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { accountType } = useAccountType();
   const { isAdmin } = useAdmin();
