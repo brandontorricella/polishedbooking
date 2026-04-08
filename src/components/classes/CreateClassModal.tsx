@@ -8,7 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { useClasses, ClassSchedule } from '@/hooks/useClasses';
-import { useStaff } from '@/hooks/useStaff';
+import { useStaffList } from '@/hooks/useStaff';
+import { useAccountType } from '@/hooks/useAccountType';
 
 const CLASS_CATEGORIES = [
   'Yoga', 'Pilates', 'HIIT', 'Strength Training', 'Dance Fitness',
@@ -23,7 +24,8 @@ interface Props {
 
 export const CreateClassModal = ({ schedule: existing, onClose }: Props) => {
   const { createSchedule, updateSchedule } = useClasses();
-  const { staff } = useStaff();
+  const { businessId } = useAccountType();
+  const { staff } = useStaffList(businessId);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: existing?.name || '',
