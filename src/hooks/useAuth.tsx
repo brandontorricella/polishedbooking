@@ -82,7 +82,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
     }, 5000);
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const fetchProfile = async (userId: string) => {
