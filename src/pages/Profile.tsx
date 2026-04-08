@@ -109,7 +109,7 @@ const Profile = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse"><Settings className="w-8 h-8 text-primary" /></div>
+        <LogoSpinner size="lg" />
       </div>
     );
   }

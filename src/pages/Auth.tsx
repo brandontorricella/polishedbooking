@@ -116,9 +116,7 @@ const AuthPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse">
-          <Sparkles className="w-12 h-12 text-primary" />
-        </div>
+        <LogoSpinner size="lg" />
       </div>
     );
   }
