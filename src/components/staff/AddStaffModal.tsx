@@ -27,6 +27,8 @@ export const AddStaffModal = ({ open, onOpenChange, businessId, services, onSucc
   const [bio, setBio] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [commissionType, setCommissionType] = useState('none');
+  const [commissionRate, setCommissionRate] = useState(0);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -55,6 +57,8 @@ export const AddStaffModal = ({ open, onOpenChange, businessId, services, onSucc
       bio: bio.trim() || undefined,
       email: email.trim() || undefined,
       phone: phone.trim() || undefined,
+      commissionType,
+      commissionRate,
       serviceIds: selectedServices,
       schedule: defaultSchedule,
     });
@@ -115,6 +119,30 @@ export const AddStaffModal = ({ open, onOpenChange, businessId, services, onSucc
               </div>
             </div>
           )}
+
+          {/* Commission Settings */}
+          <div>
+            <Label className="mb-2 block">Commission</Label>
+            <select value={commissionType} onChange={e => setCommissionType(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+              <option value="none">No Commission</option>
+              <option value="percentage">Percentage of service price</option>
+              <option value="fixed">Fixed amount per booking</option>
+            </select>
+            {commissionType === 'percentage' && (
+              <div className="flex items-center gap-2 mt-2">
+                <Input type="number" min={0} max={100} step={0.5} value={commissionRate} onChange={e => setCommissionRate(parseFloat(e.target.value) || 0)} className="w-24" />
+                <span className="text-sm text-muted-foreground">%</span>
+                <span className="text-xs text-muted-foreground ml-auto">On $100: ${commissionRate.toFixed(2)}</span>
+              </div>
+            )}
+            {commissionType === 'fixed' && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-sm">$</span>
+                <Input type="number" min={0} step={0.5} value={commissionRate} onChange={e => setCommissionRate(parseFloat(e.target.value) || 0)} className="w-24" />
+                <span className="text-sm text-muted-foreground">per booking</span>
+              </div>
+            )}
+          </div>
 
           <p className="text-xs text-muted-foreground">Default schedule (Mon-Fri 9AM-5PM) will be applied. You can edit it after.</p>
 
