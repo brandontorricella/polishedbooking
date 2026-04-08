@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useAIInsights, type AIInsight } from '@/hooks/useAIInsights';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -16,6 +17,7 @@ import { GalleryManager } from '@/components/gallery/GalleryManager';
 import { FeatureGate, LockedFeaturePage } from '@/components/subscription/FeatureGate';
 import { useFeatureAccess } from '@/hooks/useFeatureAccess';
 import { PaymentWarningBanner } from '@/components/business/PaymentWarningBanner';
+import { AIInsightsWidget } from '@/components/business/AIInsightsWidget';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -23,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3, FileText, FileSpreadsheet, Loader2, Eye } from 'lucide-react';
+import { Download, Calendar, RefreshCw, CreditCard, Crown, Sparkles, Lock, ArrowRight, Package, Star, Users, Hourglass, UserCheck, Send, Image, BarChart3, FileText, FileSpreadsheet, Loader2, Eye, Bot } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -98,10 +100,14 @@ const FeatureGatedDashboard = ({ businessId, businessServices }: { businessId: s
           <Send className="w-4 h-4 mr-1" /> Follow-ups
         </TabsTrigger>
         <TabsTrigger value="gallery"><Image className="w-4 h-4 mr-1" /> Gallery</TabsTrigger>
+        <TabsTrigger value="ai_insights" className="gap-1">
+          <Bot className="w-4 h-4 mr-1" /> AI Insights
+        </TabsTrigger>
       </TabsList>
 
       {/* Overview – always visible (basic stats) */}
       <TabsContent value="overview">
+        {businessId && <AIInsightsWidget businessId={businessId} />}
         {businessId ? <AnalyticsDashboard businessId={businessId} /> : <NoBusinessPlaceholder text="view analytics" />}
       </TabsContent>
 
@@ -165,7 +171,153 @@ const FeatureGatedDashboard = ({ businessId, businessServices }: { businessId: s
       <TabsContent value="gallery">
         {businessId ? <GalleryManager businessId={businessId} services={businessServices} galleryLimit={galleryLimit} tier={tier} /> : <NoBusinessPlaceholder text="manage gallery" />}
       </TabsContent>
+
+      {/* AI Insights – Pro+ */}
+      <TabsContent value="ai_insights">
+        <FeatureGate feature="ai_weekly_insights"
+          fallback={
+            <LockedFeaturePage
+              icon={<Bot className="w-8 h-8 text-muted-foreground" />}
+              title="AI Weekly Insights"
+              description="Get plain-English summaries of your weekly performance with actionable recommendations."
+              requiredTier="pro"
+              benefits={['AI-generated weekly summaries', 'Actionable business insights', 'Week-over-week comparisons', 'Revenue and booking analysis']}
+            />
+          }
+        >
+          {businessId ? <AIInsightsFullTab businessId={businessId} /> : <NoBusinessPlaceholder text="view AI insights" />}
+        </FeatureGate>
+      </TabsContent>
     </Tabs>
+  );
+};
+
+// Full-tab AI Insights view with week selector
+const AIInsightsFullTab = ({ businessId }: { businessId: string }) => {
+  const { insights, latestInsight, loading, generating, generateInsights } = useAIInsights(businessId);
+  const [selected, setSelected] = useState<AIInsight | null>(null);
+
+  useEffect(() => {
+    if (latestInsight && !selected) setSelected(latestInsight);
+  }, [latestInsight]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 p-8">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        <span className="text-muted-foreground">Loading insights...</span>
+      </div>
+    );
+  }
+
+  if (insights.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <Bot className="w-14 h-14 mx-auto text-muted-foreground mb-4" />
+        <h3 className="font-bold text-lg mb-2">No insights yet</h3>
+        <p className="text-muted-foreground mb-6">Insights are automatically generated every Monday. Generate your first one now.</p>
+        <Button onClick={generateInsights} disabled={generating}>
+          {generating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Now</>}
+        </Button>
+      </div>
+    );
+  }
+
+  const display = selected || latestInsight;
+  const snapshot = display?.data_snapshot;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="font-bold text-xl flex items-center gap-2"><Bot className="w-5 h-5" /> AI Weekly Insights</h2>
+          <p className="text-sm text-muted-foreground">Plain-English summaries generated from your actual performance data</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={generateInsights} disabled={generating}>
+          {generating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</> : <><RefreshCw className="w-4 h-4 mr-2" /> Generate This Week</>}
+        </Button>
+      </div>
+
+      <div className="grid md:grid-cols-[240px_1fr] gap-6">
+        {/* Week List */}
+        <div className="space-y-2">
+          {insights.map((ins) => (
+            <button
+              key={ins.id}
+              onClick={() => setSelected(ins)}
+              className={cn(
+                "w-full text-left p-3 rounded-xl border transition-colors",
+                display?.id === ins.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+              )}
+            >
+              <span className="text-xs font-semibold">
+                {new Date(ins.week_start + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – {new Date(ins.week_end + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+              {ins.data_snapshot && (
+                <span className="block text-[11px] text-muted-foreground mt-1">
+                  {ins.data_snapshot.completed} bookings · ${ins.data_snapshot.total_revenue?.toFixed(0)}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Detail */}
+        {display && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex justify-between items-start mb-5 pb-4 border-b border-border">
+                <h3 className="font-bold text-lg">
+                  Week of {new Date(display.week_start + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </h3>
+                <span className="text-xs text-muted-foreground">Generated {new Date(display.generated_at).toLocaleDateString()}</span>
+              </div>
+
+              {snapshot && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                  <div className="rounded-lg bg-muted/50 p-4 text-center">
+                    <span className="block text-xl font-extrabold">{snapshot.completed}</span>
+                    <span className="block text-[11px] text-muted-foreground">Bookings</span>
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-4 text-center">
+                    <span className="block text-xl font-extrabold">${snapshot.total_revenue?.toFixed(2)}</span>
+                    <span className="block text-[11px] text-muted-foreground">Revenue</span>
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-4 text-center">
+                    <span className="block text-xl font-extrabold">{snapshot.completion_rate}%</span>
+                    <span className="block text-[11px] text-muted-foreground">Completion Rate</span>
+                  </div>
+                  <div className="rounded-lg bg-muted/50 p-4 text-center">
+                    <span className="block text-xl font-extrabold">${snapshot.avg_booking_value?.toFixed(2)}</span>
+                    <span className="block text-[11px] text-muted-foreground">Avg Booking</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-xl bg-gradient-to-br from-[hsl(var(--primary)/0.08)] to-transparent p-5 mb-4">
+                {display.insights_text.split('\n').map((line, i) => {
+                  const trimmed = line.trim();
+                  if (!trimmed) return null;
+                  if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+                    return (
+                      <div key={i} className="flex gap-2.5 mb-3 items-start">
+                        <span className="text-primary font-bold mt-0.5">•</span>
+                        <span className="text-sm text-foreground/85 leading-relaxed">{trimmed.replace(/^[•\-*]\s*/, '')}</span>
+                      </div>
+                    );
+                  }
+                  return <p key={i} className="text-sm text-foreground/90 leading-relaxed mb-3">{trimmed}</p>;
+                })}
+              </div>
+
+              <p className="text-xs text-muted-foreground italic">
+                💡 These insights are AI-generated based on your booking data. Always use your own judgment when making business decisions.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 };
 
