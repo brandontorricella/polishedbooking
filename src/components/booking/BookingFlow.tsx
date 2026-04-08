@@ -82,6 +82,79 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     }
   }, [selectedDate, selectedService, business.id, business.hours, fetchAvailability]);
 
+  // Check for applicable intake form for a service
+  const checkIntakeForm = async (serviceId: string): Promise<IntakeForm | null> => {
+    try {
+      const { data: forms } = await supabase
+        .from('intake_forms')
+        .select('*')
+        .eq('business_id', business.id)
+        .eq('is_active', true);
+
+      if (!forms || forms.length === 0) return null;
+
+      // Find first applicable form (matching service or applies to all)
+      const applicableForm = forms.find(f => {
+        const sids = (f as any).service_ids as string[] | null;
+        if (sids && sids.length > 0) return sids.includes(serviceId);
+        return true;
+      });
+
+      if (!applicableForm) return null;
+
+      // If new-clients-only, check if user already submitted
+      if (applicableForm.require_for_new_clients_only && user) {
+        const { data: existing } = await supabase
+          .from('intake_form_submissions')
+          .select('id')
+          .eq('form_id', applicableForm.id)
+          .eq('user_id', user.id)
+          .limit(1);
+        if (existing && existing.length > 0) return null;
+      }
+
+      // Fetch questions
+      const { data: questions } = await supabase
+        .from('intake_form_questions')
+        .select('*')
+        .eq('form_id', applicableForm.id)
+        .order('sort_order', { ascending: true });
+
+      return {
+        ...applicableForm,
+        service_ids: (applicableForm as any).service_ids || [],
+        require_for_new_clients_only: applicableForm.require_for_new_clients_only ?? false,
+        questions: (questions || []).map(q => ({
+          ...q,
+          options: q.options || [],
+          is_required: q.is_required ?? false,
+          sort_order: q.sort_order ?? 0,
+        })),
+      } as IntakeForm;
+    } catch {
+      return null;
+    }
+  };
+
+  const finishBooking = (tipMsg: string = '') => {
+    toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
+    onClose();
+    navigate('/bookings');
+  };
+
+  const tryShowIntakeOrFinish = async (bookingId: string, tipMsg: string = '') => {
+    if (selectedService) {
+      const form = await checkIntakeForm(selectedService.id);
+      if (form) {
+        setIntakeForm(form);
+        setCreatedBookingId(bookingId);
+        setStep('intake');
+        return;
+      }
+    }
+    finishBooking(tipMsg);
+  };
+
   const handleNext = () => {
     const currentIndex = allSteps.indexOf(step);
     if (currentIndex < allSteps.length - 1) {
