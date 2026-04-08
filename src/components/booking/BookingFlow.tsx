@@ -534,6 +534,17 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                 />
               </motion.div>
             )}
+
+            {/* Step: Intake Form */}
+            {step === 'intake' && intakeForm && createdBookingId && (
+              <IntakeFormStep
+                form={intakeForm}
+                bookingId={createdBookingId}
+                businessName={business.name}
+                onCompleted={() => finishBooking()}
+                onSkip={() => finishBooking()}
+              />
+            )}
           </AnimatePresence>
         </div>
 
