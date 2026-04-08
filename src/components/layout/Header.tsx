@@ -15,7 +15,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { useTranslation } from '@/hooks/useTranslation';
-import polishedLogo from '@/assets/logo-transparent.png';
+import polishedLogo from '@/assets/logo.png';
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
