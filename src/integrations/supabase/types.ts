@@ -1006,6 +1006,42 @@ export type Database = {
           },
         ]
       }
+      custom_reports: {
+        Row: {
+          business_id: string
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_favorite: boolean | null
+          last_run_at: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          last_run_at?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          last_run_at?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_subscribers: {
         Row: {
           created_at: string | null
