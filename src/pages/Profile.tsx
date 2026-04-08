@@ -301,6 +301,16 @@ const Profile = () => {
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </Link>
+              <Link to="/business/classes" className="w-full bg-card rounded-2xl border border-border p-4 flex items-center justify-between hover:bg-muted/50 transition-colors block">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><span className="text-lg">👥</span></div>
+                  <div className="text-left">
+                    <p className="font-medium">Classes</p>
+                    <p className="text-sm text-muted-foreground">Group class schedules & enrollment</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </Link>
             </motion.div>
           )}
 
