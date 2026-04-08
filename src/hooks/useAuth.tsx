@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -150,14 +150,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: null };
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = useCallback(async () => {
+    // Clear local state FIRST so components don't re-render into protected route redirects
+    setUser(null);
+    setSession(null);
     setProfile(null);
+    // Then sign out from supabase
+    await supabase.auth.signOut();
     toast({
       title: "Signed out",
       description: "You've been signed out successfully.",
     });
-  };
+  }, [toast]);
 
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!user) return { error: new Error('Not authenticated') };
