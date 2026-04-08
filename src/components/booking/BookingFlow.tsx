@@ -53,7 +53,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [notes, setNotes] = useState('');
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
   const [tipAmount, setTipAmount] = useState(0);
-
+  const [intakeForm, setIntakeForm] = useState<IntakeForm | null>(null);
   const businessAny = business as any;
   const depositRequired = businessAny.deposit_required || false;
   const tipsEnabled = businessAny.tips_enabled !== false; // default true
