@@ -77,27 +77,25 @@ const PricingPage = () => {
 
   const handleSelectTier = async (tierId: string) => {
     if (!user) {
-      navigate(`/business/onboarding?tier=${tierId}`);
+      navigate('/auth?mode=signup&role=business');
       return;
     }
 
     if (profile?.role === 'client') {
-      navigate(`/business/onboarding?tier=${tierId}`);
+      navigate('/auth?mode=signup&role=business');
       return;
     }
 
     if (profile?.role === 'business') {
       if (isSubscribed) {
-        // Already subscribed - go to portal to change plan
         await manageSubscription();
       } else {
-        // Start new checkout
         await startCheckout(tierId as 'basic' | 'pro' | 'elite');
       }
       return;
     }
 
-    navigate(`/business/onboarding?tier=${tierId}`);
+    navigate('/auth?mode=signup&role=business');
   };
 
   const getButtonText = (tierId: string) => {

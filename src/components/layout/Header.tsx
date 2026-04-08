@@ -148,7 +148,7 @@ export const Header = () => {
                   variant="ghost" 
                   size="icon" 
                   className="rounded-lg hidden sm:flex text-cream hover:bg-cream/10"
-                  onClick={() => signOut()}
+                  onClick={async () => { await signOut(); navigate('/'); }}
                 >
                   <LogOut className="w-5 h-5" />
                 </Button>
@@ -175,7 +175,7 @@ export const Header = () => {
                   variant="ghost" 
                   size="icon" 
                   className="rounded-lg hidden sm:flex text-cream hover:bg-cream/10"
-                  onClick={() => signOut()}
+                  onClick={async () => { await signOut(); navigate('/'); }}
                 >
                   <LogOut className="w-5 h-5" />
                 </Button>
@@ -260,7 +260,7 @@ export const Header = () => {
                     variant="ghost"
                     className="w-full justify-start text-cream/60 hover:text-cream hover:bg-cream/10"
                     size="lg"
-                    onClick={() => { signOut(); setMobileMenuOpen(false); }}
+                    onClick={async () => { await signOut(); setMobileMenuOpen(false); navigate('/'); }}
                   >
                     <LogOut className="w-5 h-5 mr-2" />
                     {t('nav', 'signOut')}
