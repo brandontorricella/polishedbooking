@@ -17,8 +17,10 @@ import { useAvailability } from '@/hooks/useAvailability';
 import { supabase } from '@/integrations/supabase/client';
 import { DepositPaymentStep } from '@/components/booking/DepositPaymentStep';
 import { TipSelectionStep } from '@/components/booking/TipSelectionStep';
+import { IntakeFormStep } from '@/components/booking/IntakeFormStep';
 import { CancellationPolicyDisplay } from '@/components/booking/CancellationPolicyDisplay';
 import type { Business, Service } from '@/types';
+import type { IntakeForm } from '@/hooks/useIntakeForms';
 import { cn } from '@/lib/utils';
 
 interface BookingFlowProps {
@@ -28,7 +30,7 @@ interface BookingFlowProps {
   initialService?: Service;
 }
 
-type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'tip' | 'deposit';
+type BookingStep = 'service' | 'date' | 'time' | 'confirm' | 'tip' | 'deposit' | 'intake';
 
 const formatTime = (time: string): string => {
   const [hour, min] = time.split(':').map(Number);
@@ -51,7 +53,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [notes, setNotes] = useState('');
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
   const [tipAmount, setTipAmount] = useState(0);
-
+  const [intakeForm, setIntakeForm] = useState<IntakeForm | null>(null);
   const businessAny = business as any;
   const depositRequired = businessAny.deposit_required || false;
   const tipsEnabled = businessAny.tips_enabled !== false; // default true
@@ -79,6 +81,79 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
       );
     }
   }, [selectedDate, selectedService, business.id, business.hours, fetchAvailability]);
+
+  // Check for applicable intake form for a service
+  const checkIntakeForm = async (serviceId: string): Promise<IntakeForm | null> => {
+    try {
+      const { data: forms } = await supabase
+        .from('intake_forms')
+        .select('*')
+        .eq('business_id', business.id)
+        .eq('is_active', true);
+
+      if (!forms || forms.length === 0) return null;
+
+      // Find first applicable form (matching service or applies to all)
+      const applicableForm = forms.find(f => {
+        const sids = (f as any).service_ids as string[] | null;
+        if (sids && sids.length > 0) return sids.includes(serviceId);
+        return true;
+      });
+
+      if (!applicableForm) return null;
+
+      // If new-clients-only, check if user already submitted
+      if (applicableForm.require_for_new_clients_only && user) {
+        const { data: existing } = await supabase
+          .from('intake_form_submissions')
+          .select('id')
+          .eq('form_id', applicableForm.id)
+          .eq('user_id', user.id)
+          .limit(1);
+        if (existing && existing.length > 0) return null;
+      }
+
+      // Fetch questions
+      const { data: questions } = await supabase
+        .from('intake_form_questions')
+        .select('*')
+        .eq('form_id', applicableForm.id)
+        .order('sort_order', { ascending: true });
+
+      return {
+        ...applicableForm,
+        service_ids: (applicableForm as any).service_ids || [],
+        require_for_new_clients_only: applicableForm.require_for_new_clients_only ?? false,
+        questions: (questions || []).map(q => ({
+          ...q,
+          options: q.options || [],
+          is_required: q.is_required ?? false,
+          sort_order: q.sort_order ?? 0,
+        })),
+      } as IntakeForm;
+    } catch {
+      return null;
+    }
+  };
+
+  const finishBooking = (tipMsg: string = '') => {
+    toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
+    onClose();
+    navigate('/bookings');
+  };
+
+  const tryShowIntakeOrFinish = async (bookingId: string, tipMsg: string = '') => {
+    if (selectedService) {
+      const form = await checkIntakeForm(selectedService.id);
+      if (form) {
+        setIntakeForm(form);
+        setCreatedBookingId(bookingId);
+        setStep('intake');
+        return;
+      }
+    }
+    finishBooking(tipMsg);
+  };
 
   const handleNext = () => {
     const currentIndex = allSteps.indexOf(step);
@@ -152,9 +227,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
         setStep('deposit');
       } else {
         const tipMsg = tipAmount > 0 ? ` A $${tipAmount.toFixed(2)} tip was added.` : '';
-        toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
-        onClose();
-        navigate('/bookings');
+        await tryShowIntakeOrFinish(data.id, tipMsg);
       }
     } catch (error: any) {
       console.error('Booking error:', error);
@@ -164,10 +237,12 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     }
   };
 
-  const handleDepositComplete = () => {
-    toast({ title: "Booking confirmed!", description: `Your deposit has been received. Appointment confirmed!` });
-    onClose();
-    navigate('/bookings');
+  const handleDepositComplete = async () => {
+    if (createdBookingId) {
+      await tryShowIntakeOrFinish(createdBookingId, '');
+    } else {
+      finishBooking();
+    }
   };
 
   const handleTipSelected = (amount: number) => {
@@ -236,9 +311,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
       }
 
       const tipMsg = tip > 0 ? ` A $${tip.toFixed(2)} tip was added.` : '';
-      toast({ title: "Booking confirmed!", description: `Your appointment with ${business.name} is confirmed.${tipMsg}` });
-      onClose();
-      navigate('/bookings');
+      await tryShowIntakeOrFinish(data.id, tipMsg);
     } catch (error: any) {
       console.error('Booking error:', error);
       toast({ title: "Booking failed", description: error.message || "Unable to complete booking.", variant: "destructive" });
@@ -265,7 +338,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
 
   // Determine which step is the "action" step (confirm booking vs continue)
   const isConfirmStep = tipsEnabled ? step === 'confirm' : step === 'confirm';
-  const showNavButtons = step !== 'deposit' && step !== 'tip';
+  const showNavButtons = step !== 'deposit' && step !== 'tip' && step !== 'intake';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -460,6 +533,17 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                   onPaymentComplete={handleDepositComplete}
                 />
               </motion.div>
+            )}
+
+            {/* Step: Intake Form */}
+            {step === 'intake' && intakeForm && createdBookingId && (
+              <IntakeFormStep
+                form={intakeForm}
+                bookingId={createdBookingId}
+                businessName={business.name}
+                onCompleted={() => finishBooking()}
+                onSkip={() => finishBooking()}
+              />
             )}
           </AnimatePresence>
         </div>
