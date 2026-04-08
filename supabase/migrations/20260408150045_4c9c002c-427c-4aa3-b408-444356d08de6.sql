@@ -1,0 +1,5 @@
+ALTER TABLE public.businesses
+ADD COLUMN IF NOT EXISTS checklist_clients_imported BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS checklist_booking_link_added BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS checklist_photo_uploaded BOOLEAN DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS checklist_dismissed BOOLEAN DEFAULT FALSE;
