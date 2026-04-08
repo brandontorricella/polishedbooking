@@ -36,6 +36,7 @@ import { JoinWaitlistModal } from '@/components/waitlist/JoinWaitlistModal';
 import { StaffSection } from '@/components/staff/StaffSection';
 import { GallerySection } from '@/components/gallery/GallerySection';
 import { CommunityBadges } from '@/components/CommunityBadges';
+import { BusinessClassesSection } from '@/components/classes/BusinessClassesSection';
 import { toast } from 'sonner';
 
 const BusinessProfile = () => {
@@ -347,6 +348,11 @@ const BusinessProfile = () => {
 
         {/* Loyalty Points */}
         {id && accountType === 'customer' && <LoyaltyPointsCard businessId={id} businessName={business.name} />}
+
+        {/* Classes Section */}
+        {id && business.offersClasses && (
+          <BusinessClassesSection businessId={id} />
+        )}
 
         {/* Staff Section */}
         {id && (
