@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { LogoSpinner } from '@/components/ui/LogoSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
