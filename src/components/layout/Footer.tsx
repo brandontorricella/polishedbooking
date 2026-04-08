@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { useTranslation } from '@/hooks/useTranslation';
-import polishedLogo from '@/assets/logo-transparent.png';
+import polishedLogo from '@/assets/logo.png';
 
 export const Footer = () => {
   const { t } = useTranslation();
