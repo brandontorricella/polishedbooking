@@ -338,7 +338,7 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
 
   // Determine which step is the "action" step (confirm booking vs continue)
   const isConfirmStep = tipsEnabled ? step === 'confirm' : step === 'confirm';
-  const showNavButtons = step !== 'deposit' && step !== 'tip';
+  const showNavButtons = step !== 'deposit' && step !== 'tip' && step !== 'intake';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
