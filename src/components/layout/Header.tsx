@@ -21,6 +21,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
   const location = useLocation();
+  const navigate = (await import('react-router-dom')).useNavigate ? undefined : undefined;
   const { user, signOut } = useAuth();
   const { accountType } = useAccountType();
   const { isAdmin } = useAdmin();
