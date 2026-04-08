@@ -98,6 +98,7 @@ const BusinessOnboarding = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasUsedTrial, setHasUsedTrial] = useState(false);
+  const [showImportPrompt, setShowImportPrompt] = useState(true);
 
   // Business data
   const [businessName, setBusinessName] = useState('');
