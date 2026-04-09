@@ -548,50 +548,41 @@ const Index = () => {
       </section>
       )}
 
-      {/* CTA Section */}
-      <section className="py-16 bg-[hsl(0,0%,5%)]">
+      {/* For Business Owners Section */}
+      <ForBusinessSection />
+
+      {/* CTA Section — dual audience */}
+      <section className="py-20 bg-gradient-to-br from-[hsl(260,30%,10%)] to-[hsl(210,30%,10%)]">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="max-w-xl mx-auto"
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
-              {t('cta', 'readyTitle')} <span className="text-primary">{t('cta', 'readyAccent')}</span>?
+              Ready to Get <span className="text-primary">Polished</span>?
             </h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-8">
-              {t('cta', 'readyDesc')}
+            <p className="text-lg text-white/60 mb-8 leading-relaxed">
+              Join thousands of satisfied clients who book their beauty & wellness
+              services through Polished — or list your business and start growing today.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              {accountType === 'guest' ? (
-                <>
-                  <Link to="/auth?mode=signup">
-                    <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'createFreeAccount')}
-                    </Button>
-                  </Link>
-                  <Link to="/business">
-                    <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'listYourBusiness')}
-                    </Button>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/search">
-                    <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'findServices')}
-                    </Button>
-                  </Link>
-                  <Link to="/bookings">
-                    <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'viewBookings')}
-                    </Button>
-                  </Link>
-                </>
-              )}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
+              <Link to="/search">
+                <Button size="lg" variant="outline" className="text-white border-white/30 hover:bg-white/10 bg-transparent text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
+                  Find Services
+                </Button>
+              </Link>
+              <Link to="/signup/business">
+                <Button size="lg" className="bg-primary hover:bg-primary/80 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_24px_hsl(340,75%,55%,0.35)]">
+                  List My Business →
+                </Button>
+              </Link>
             </div>
+            <p className="text-sm text-white/35">
+              Free to book as a client · Business plans from $29/month · 1 month free trial
+            </p>
           </motion.div>
         </div>
       </section>
