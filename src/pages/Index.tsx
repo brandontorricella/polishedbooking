@@ -239,7 +239,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Top Rated Businesses */}
+      {/* Top Rated Businesses — hidden when no data */}
+      {!(!loading && topRated.length === 0) && (
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
@@ -292,6 +293,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Black-Owned Businesses */}
       <section className="py-16 bg-midnight text-cream">
@@ -508,7 +510,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Promotions Section */}
+      {/* Promotions Section — hidden when no promotions */}
+      {promotions.length > 0 && (
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
@@ -525,30 +528,24 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {promotions.length > 0 ? (
-              promotions.slice(0, 3).map((promo, index) => (
-                <motion.div
-                  key={promo.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <PromotionCard 
-                    promotion={promo}
-                    isClaimed={claimedIds.has(promo.id)}
-                    onClaim={claimPromotion}
-                  />
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                <Tag className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                <p>{t('sections', 'noPromotions')}</p>
-              </div>
-            )}
+            {promotions.slice(0, 3).map((promo, index) => (
+              <motion.div
+                key={promo.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <PromotionCard 
+                  promotion={promo}
+                  isClaimed={claimedIds.has(promo.id)}
+                  onClaim={claimPromotion}
+                />
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-16 bg-[hsl(0,0%,5%)]">
