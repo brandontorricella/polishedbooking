@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AccountTypeModal } from '@/components/auth/AccountTypeModal';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin, Loader2, Tag } from 'lucide-react';
+import { ArrowRight, Sparkles, Star, Users, Shield, ChevronRight, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BusinessCard } from '@/components/ui/BusinessCard';
@@ -12,6 +12,7 @@ import { Footer } from '@/components/layout/Footer';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { StayUpdatedWidget } from '@/components/subscription/StayUpdatedWidget';
 import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
+import { ForBusinessSection } from '@/components/home/ForBusinessSection';
 import { categories, mockBusinesses } from '@/data/mockData';
 import { SERVICE_CATEGORIES, FEATURED_CATEGORY_IDS } from '@/constants/categories';
 import { useAuth } from '@/hooks/useAuth';
@@ -239,7 +240,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Top Rated Businesses */}
+      {/* Top Rated Businesses — hidden when no data */}
+      {!(!loading && topRated.length === 0) && (
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
@@ -292,6 +294,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Black-Owned Businesses */}
       <section className="py-16 bg-midnight text-cream">
@@ -508,7 +511,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Promotions Section */}
+      {/* Promotions Section — hidden when no promotions */}
+      {promotions.length > 0 && (
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
@@ -525,75 +529,60 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {promotions.length > 0 ? (
-              promotions.slice(0, 3).map((promo, index) => (
-                <motion.div
-                  key={promo.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                >
-                  <PromotionCard 
-                    promotion={promo}
-                    isClaimed={claimedIds.has(promo.id)}
-                    onClaim={claimPromotion}
-                  />
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-12 text-muted-foreground">
-                <Tag className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                <p>{t('sections', 'noPromotions')}</p>
-              </div>
-            )}
+            {promotions.slice(0, 3).map((promo, index) => (
+              <motion.div
+                key={promo.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <PromotionCard 
+                  promotion={promo}
+                  isClaimed={claimedIds.has(promo.id)}
+                  onClaim={claimPromotion}
+                />
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
+      )}
 
-      {/* CTA Section */}
-      <section className="py-16 bg-[hsl(0,0%,5%)]">
+      {/* For Business Owners Section */}
+      <ForBusinessSection />
+
+      {/* CTA Section — dual audience */}
+      <section className="py-20 bg-gradient-to-br from-[hsl(260,30%,10%)] to-[hsl(210,30%,10%)]">
         <div className="container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            className="max-w-xl mx-auto"
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
-              {t('cta', 'readyTitle')} <span className="text-primary">{t('cta', 'readyAccent')}</span>?
+              Ready to Get <span className="text-primary">Polished</span>?
             </h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-8">
-              {t('cta', 'readyDesc')}
+            <p className="text-lg text-white/60 mb-8 leading-relaxed">
+              Join thousands of satisfied clients who book their beauty & wellness
+              services through Polished — or list your business and start growing today.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              {accountType === 'guest' ? (
-                <>
-                  <Link to="/auth?mode=signup">
-                    <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'createFreeAccount')}
-                    </Button>
-                  </Link>
-                  <Link to="/business">
-                    <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'listYourBusiness')}
-                    </Button>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/search">
-                    <Button size="lg" className="bg-gradient-primary hover:opacity-90 text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'findServices')}
-                    </Button>
-                  </Link>
-                  <Link to="/bookings">
-                    <Button size="lg" variant="outline" className="text-lg px-8 h-14 rounded-xl">
-                      {t('cta', 'viewBookings')}
-                    </Button>
-                  </Link>
-                </>
-              )}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
+              <Link to="/search">
+                <Button size="lg" variant="outline" className="text-white border-white/30 hover:bg-white/10 bg-transparent text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
+                  Find Services
+                </Button>
+              </Link>
+              <Link to="/signup/business">
+                <Button size="lg" className="bg-primary hover:bg-primary/80 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_24px_hsl(340,75%,55%,0.35)]">
+                  List My Business →
+                </Button>
+              </Link>
             </div>
+            <p className="text-sm text-white/35">
+              Free to book as a client · Business plans from $29/month · 1 month free trial
+            </p>
           </motion.div>
         </div>
       </section>

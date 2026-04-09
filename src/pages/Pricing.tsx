@@ -17,6 +17,7 @@ const pricingTiers = [
     description: 'Everything you need to get started',
     icon: Sparkles,
     features: [
+      'Up to 1 staff member (owner only)',
       'Public business profile',
       'Appear in local & wellness search',
       'Appointments, classes & virtual sessions',
@@ -37,6 +38,7 @@ const pricingTiers = [
     icon: Star,
     features: [
       'Everything in Basic',
+      'Up to 5 staff members',
       'Priority search placement',
       '"Recommended" badge',
       'Analytics dashboard + AI insights',
@@ -57,6 +59,7 @@ const pricingTiers = [
     icon: Crown,
     features: [
       'Everything in Pro',
+      'Unlimited staff members',
       'Featured placement at top of search',
       'Top-of-map positioning',
       '"Verified Elite" badge',

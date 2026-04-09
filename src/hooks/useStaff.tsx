@@ -93,8 +93,19 @@ export const useStaffManagement = (businessId: string) => {
     commissionRate?: number;
     serviceIds?: string[];
     schedule?: { day_of_week: number; start_time: string; end_time: string; is_available: boolean }[];
-  }) => {
+  }, options?: { staffLimit?: number }) => {
     try {
+      // Check staff limit if provided
+      if (options?.staffLimit !== undefined) {
+        const { count, error: countErr } = await supabase
+          .from('staff_members')
+          .select('*', { count: 'exact', head: true })
+          .eq('business_id', businessId);
+        if (!countErr && count !== null && count >= options.staffLimit) {
+          toast({ title: 'Staff limit reached', description: 'Upgrade your plan to add more staff members.', variant: 'destructive' });
+          return false;
+        }
+      }
       const { data: staffData, error } = await supabase
         .from('staff_members')
         .insert({
