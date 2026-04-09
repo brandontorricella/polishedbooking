@@ -28,6 +28,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
+import BusinessSignup from "./pages/BusinessSignup";
 import HelpCenter from "./pages/HelpCenter";
 import BusinessPackages from "./pages/BusinessPackages";
 import BusinessMemberships from "./pages/BusinessMemberships";
@@ -72,6 +73,9 @@ const App = () => {
                   <Route path="/business" element={<Business />} />
                   <Route path="/business/:id" element={<BusinessProfile />} />
                   <Route path="/business/pricing" element={<Pricing />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/signup/business" element={<BusinessSignup />} />
+                  <Route path="/business/signup" element={<BusinessSignup />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/help" element={<HelpCenter />} />

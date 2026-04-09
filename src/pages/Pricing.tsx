@@ -80,12 +80,12 @@ const PricingPage = () => {
 
   const handleSelectTier = async (tierId: string) => {
     if (!user) {
-      navigate('/auth?mode=signup&role=business');
+      navigate(`/signup/business?plan=${tierId}`);
       return;
     }
 
     if (profile?.role === 'client') {
-      navigate('/auth?mode=signup&role=business');
+      navigate(`/signup/business?plan=${tierId}`);
       return;
     }
 
@@ -98,7 +98,7 @@ const PricingPage = () => {
       return;
     }
 
-    navigate('/auth?mode=signup&role=business');
+    navigate(`/signup/business?plan=${tierId}`);
   };
 
   const getButtonText = (tierId: string) => {
