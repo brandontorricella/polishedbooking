@@ -81,7 +81,7 @@ const BusinessPage = () => {
     if (user && isBusinessUser) {
       startCheckout((tierId as 'basic' | 'pro' | 'elite') || 'basic');
     } else {
-      navigate('/auth?mode=signup&role=business');
+      navigate(tierId ? `/signup/business?plan=${tierId}` : '/signup/business');
     }
   };
 

@@ -61,7 +61,7 @@ const SampleDashboardOverlay = () => {
           This is a sample dashboard. Sign up for a business account to track your real performance metrics, bookings, and revenue.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/auth?mode=signup&role=business">
+          <Link to="/signup/business">
             <Button className="bg-gradient-primary text-primary-foreground">
               Start Free Trial
               <ArrowRight className="w-4 h-4 ml-2" />
