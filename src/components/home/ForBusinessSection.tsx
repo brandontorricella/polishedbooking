@@ -111,7 +111,7 @@ export const ForBusinessSection = () => {
 
             <div className="text-center mt-4">
               <button
-                onClick={() => navigate('/pricing')}
+                onClick={() => navigate('/business/pricing')}
                 className="text-sm text-white/40 underline hover:text-white/60 transition-colors bg-transparent border-none cursor-pointer"
               >
                 Compare all features →
