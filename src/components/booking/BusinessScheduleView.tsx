@@ -324,6 +324,27 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
           </div>
         </div>
       )}
+      {collectPaymentBooking && (
+        <CollectPaymentModal
+          open={!!collectPaymentBooking}
+          onOpenChange={(open) => { if (!open) setCollectPaymentBooking(null); }}
+          booking={{
+            id: collectPaymentBooking.id,
+            business_id: businessId,
+            total_price: collectPaymentBooking.total_price,
+            client: collectPaymentBooking.client ? {
+              display_name: collectPaymentBooking.client.display_name,
+              email: collectPaymentBooking.client.email,
+              phone: collectPaymentBooking.client.phone,
+            } : null,
+            service: collectPaymentBooking.service ? { name: collectPaymentBooking.service.name } : null,
+          }}
+          onPaymentCollected={() => {
+            setCollectPaymentBooking(null);
+            fetchBookings();
+          }}
+        />
+      )}
     </div>
   );
 };
