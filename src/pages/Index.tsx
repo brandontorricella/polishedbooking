@@ -13,6 +13,8 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { StayUpdatedWidget } from '@/components/subscription/StayUpdatedWidget';
 import { GuestConversionBanner } from '@/components/auth/GuestConversionBanner';
 import { ForBusinessSection } from '@/components/home/ForBusinessSection';
+import { MadeForYouSection } from '@/components/home/MadeForYouSection';
+import { GivesBackSection } from '@/components/home/GivesBackSection';
 import { categories, mockBusinesses } from '@/data/mockData';
 import { SERVICE_CATEGORIES, FEATURED_CATEGORY_IDS } from '@/constants/categories';
 import { useAuth } from '@/hooks/useAuth';
@@ -548,8 +550,14 @@ const Index = () => {
       </section>
       )}
 
+      {/* Made for You */}
+      <MadeForYouSection />
+
       {/* For Business Owners Section */}
       <ForBusinessSection />
+
+      {/* Gives Back */}
+      <GivesBackSection />
 
       {/* CTA Section — dual audience */}
       <section className="py-20 bg-gradient-to-br from-[hsl(260,30%,10%)] to-[hsl(210,30%,10%)]">
@@ -581,7 +589,7 @@ const Index = () => {
               </Link>
             </div>
             <p className="text-sm text-white/35">
-              Free to book as a client · Business plans from $29/month · 1 month free trial
+              Free to book as a client · Start free or from $29/month · 1 month free trial on paid plans
             </p>
           </motion.div>
         </div>

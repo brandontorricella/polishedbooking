@@ -55,7 +55,7 @@ export const Footer = () => {
               <li><Link to="/business" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'joinPolished')}</Link></li>
               <li><Link to="/business/pricing" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'pricing')}</Link></li>
               <li><Link to="/business/analytics" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'analytics')}</Link></li>
-              <li><Link to="/business/resources" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'resources')}</Link></li>
+              <li><Link to="/gives-back" className="text-cream/70 hover:text-cream transition-colors">💝 Gives Back</Link></li>
             </ul>
           </div>
 
