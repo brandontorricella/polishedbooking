@@ -11,9 +11,10 @@ const benefits = [
 ];
 
 const tiers = [
-  { name: 'Basic', price: 29, icon: '✨', highlights: ['Up to 2 staff', 'Appointments & classes', 'BNPL payments', 'Community badges'], popular: false },
-  { name: 'Pro', price: 59, icon: '⭐', highlights: ['Up to 5 staff', 'Analytics + AI insights', 'Service packages', 'Priority placement'], popular: true },
-  { name: 'Elite', price: 99, icon: '👑', highlights: ['Unlimited staff', 'Featured placement', 'Custom reports', 'Verified badge'], popular: false },
+  { name: 'Starter', price: 0, icon: '🆓', highlights: ['1 staff member', 'Online booking', 'Reviews & ratings', '3% per booking fee'], popular: false, free: true },
+  { name: 'Basic', price: 29, icon: '✨', highlights: ['Up to 2 staff', 'Appointments & classes', 'BNPL payments', 'Community badges'], popular: false, free: false },
+  { name: 'Pro', price: 59, icon: '⭐', highlights: ['Up to 5 staff', 'Analytics + AI insights', 'Service packages', 'Priority placement'], popular: true, free: false },
+  { name: 'Elite', price: 99, icon: '👑', highlights: ['Unlimited staff', 'Featured placement', 'Custom reports', 'Verified badge'], popular: false, free: false },
 ];
 
 export const ForBusinessSection = () => {
@@ -96,8 +97,17 @@ export const ForBusinessSection = () => {
                   <span className="text-lg font-bold text-white">{tier.name}</span>
                 </div>
                 <div className="mb-3">
-                  <span className="block text-base font-bold text-primary">1 month FREE</span>
-                  <span className="block text-xs text-white/40 mt-0.5">then ${tier.price}/mo</span>
+                  {tier.free ? (
+                    <>
+                      <span className="block text-base font-bold text-green-400">FREE forever</span>
+                      <span className="block text-xs text-white/40 mt-0.5">3% per booking</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="block text-base font-bold text-primary">1 month FREE</span>
+                      <span className="block text-xs text-white/40 mt-0.5">then ${tier.price}/mo</span>
+                    </>
+                  )}
                 </div>
                 <ul className="flex flex-col gap-1.5">
                   {tier.highlights.map((h, i) => (
