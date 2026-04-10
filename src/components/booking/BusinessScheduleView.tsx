@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format, addDays, parseISO, startOfToday, isSameDay } from 'date-fns';
-import { Calendar, Clock, User, Scissors, ChevronLeft, ChevronRight, Loader2, Phone, Mail } from 'lucide-react';
+import { Calendar, Clock, User, Scissors, ChevronLeft, ChevronRight, Loader2, Phone, Mail, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CollectPaymentModal } from './CollectPaymentModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
