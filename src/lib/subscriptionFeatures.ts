@@ -50,6 +50,17 @@ export type FeatureKey =
   | 'benchmarking_analytics'
   | 'revenue_projections';
 
+const STARTER_FEATURES: FeatureKey[] = [
+  'public_profile',
+  'local_search',
+  'service_list',
+  'in_app_booking',
+  'reviews_ratings',
+  'community_identity_badges',
+  'basic_analytics',
+  'client_messaging',
+];
+
 const BASIC_FEATURES: FeatureKey[] = [
   'public_profile',
   'local_search',
@@ -106,6 +117,10 @@ const ELITE_EXTRAS: FeatureKey[] = [
 ];
 
 export const SUBSCRIPTION_FEATURES: Record<SubscriptionTier, { price: number; features: FeatureKey[] }> = {
+  starter: {
+    price: 0,
+    features: [...STARTER_FEATURES],
+  },
   basic: {
     price: 29,
     features: [...BASIC_FEATURES],
@@ -121,6 +136,7 @@ export const SUBSCRIPTION_FEATURES: Record<SubscriptionTier, { price: number; fe
 };
 
 export const GALLERY_LIMITS: Record<SubscriptionTier, number> = {
+  starter: 3,
   basic: 5,
   pro: 20,
   elite: Infinity,
@@ -192,6 +208,6 @@ export function getGalleryLimit(tier: SubscriptionTier | undefined | null): numb
 }
 
 export function getTierOrder(tier: SubscriptionTier | undefined | null): number {
-  const order: Record<SubscriptionTier, number> = { basic: 0, pro: 1, elite: 2 };
+  const order: Record<SubscriptionTier, number> = { starter: -1, basic: 0, pro: 1, elite: 2 };
   return order[tier || 'basic'];
 }
