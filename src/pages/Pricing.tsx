@@ -17,7 +17,7 @@ const pricingTiers = [
     description: 'Everything you need to get started',
     icon: Sparkles,
     features: [
-      'Up to 1 staff member (owner only)',
+      'Up to 2 staff members',
       'Public business profile',
       'Appear in local & wellness search',
       'Appointments, classes & virtual sessions',

@@ -19,7 +19,7 @@ const tiers = [
     icon: '✨',
     tagline: 'Perfect for solo practitioners',
     features: [
-      '1 staff member (owner only)',
+      'Up to 2 staff members',
       'Public profile & local search',
       'Appointment & class booking',
       'Virtual session support',
