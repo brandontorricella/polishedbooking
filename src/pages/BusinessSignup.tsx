@@ -13,7 +13,15 @@ import { BillingToggle } from '@/components/pricing/BillingToggle';
 import { PRICING, getTierPrice, type BillingInterval, type TierId } from '@/constants/pricing';
 import polishedLogo from '@/assets/logo.png';
 
-const tierFeatures: Record<TierId, string[]> = {
+const tierFeatures: Partial<Record<TierId, string[]>> = {
+  starter: [
+    '1 staff member',
+    'Public profile & local search',
+    'Online booking',
+    'Reviews & ratings',
+    'Community identity badges',
+    'Client messaging',
+  ],
   basic: [
     'Up to 2 staff members',
     'Public profile & local search',
@@ -67,7 +75,7 @@ const BusinessSignup = () => {
 
   useEffect(() => {
     const plan = searchParams.get('plan');
-    if (plan && ['basic', 'pro', 'elite'].includes(plan)) {
+    if (plan && ['starter', 'basic', 'pro', 'elite'].includes(plan)) {
       setSelectedTier(plan as TierId);
     }
     const billing = searchParams.get('billing');

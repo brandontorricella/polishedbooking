@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Star, Crown, Sparkles, Lock, CreditCard, Calendar, Gift, RefreshCw, XCircle } from 'lucide-react';
+import { Check, Star, Crown, Sparkles, Lock as LockIcon, CreditCard, Calendar, Gift, RefreshCw, XCircle, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,7 @@ import { BottomNav } from '@/components/layout/BottomNav';
 import { useSubscription } from '@/hooks/useSuperwall';
 import { useAuth } from '@/hooks/useAuth';
 import { BillingToggle } from '@/components/pricing/BillingToggle';
-import { PRICING, getTierPrice, type BillingInterval, type TierId } from '@/constants/pricing';
+import { PRICING, getTierPrice, PAID_TIER_IDS, type BillingInterval, type TierId } from '@/constants/pricing';
 import {
   Accordion,
   AccordionContent,
@@ -18,7 +18,19 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-const pricingTiers = [
+const starterFeatures = [
+  { text: '1 staff member', locked: false },
+  { text: 'Public profile & local search', locked: false },
+  { text: 'Online booking', locked: false },
+  { text: 'Reviews & ratings', locked: false },
+  { text: 'Community identity badges', locked: false },
+  { text: 'Client messaging', locked: false },
+  { text: 'BNPL payments', locked: true },
+  { text: 'Analytics dashboard', locked: true },
+  { text: 'Priority placement', locked: true },
+];
+
+const paidTiers = [
   {
     id: 'basic' as TierId,
     icon: Sparkles,
@@ -77,7 +89,7 @@ const noContractItems = [
   { icon: Calendar, title: 'No long-term contract', desc: "Month-to-month by default. Stay because you love it, not because you're locked in." },
   { icon: XCircle, title: 'No cancellation fees', desc: 'Cancel anytime with no penalties, no questions asked, no runaround.' },
   { icon: RefreshCw, title: 'Switch plans anytime', desc: 'Upgrade or downgrade at any time. Changes take effect on your next billing date.' },
-  { icon: Gift, title: '1 month free to start', desc: 'Every plan starts with a free month. No credit card required to begin.' },
+  { icon: Gift, title: '1 month free to start', desc: 'Every paid plan starts with a free month. No credit card required to begin.' },
 ];
 
 const faqItems = [
@@ -86,6 +98,7 @@ const faqItems = [
   { q: 'Can I switch from monthly to annual later?', a: "Yes. Switch to annual billing anytime from your dashboard settings and you'll get the 10% discount from your next billing date." },
   { q: 'What is the Price Lock Guarantee?', a: 'Your subscription rate never increases as long as you stay subscribed. If Polished raises prices for new customers, existing customers keep their current rate forever.' },
   { q: 'Are there fees on top of my subscription?', a: "The only additional fee is Stripe's standard payment processing rate (2.9% + 30¢ per transaction). Polished charges zero platform fees on top of that." },
+  { q: 'What is the Starter plan?', a: 'Starter is free forever — instead of a monthly fee, Polished takes a 3% fee on each booking. It\'s perfect for solo practitioners just getting started. Upgrade to Basic anytime to remove the booking fee and unlock more features.' },
 ];
 
 const PricingPage = () => {
@@ -107,10 +120,10 @@ const PricingPage = () => {
   };
 
   const getButtonText = (tierId: string) => {
-    if (!user || profile?.role !== 'business') return 'Start Free Trial';
+    if (!user || profile?.role !== 'business') return tierId === 'starter' ? 'Get Started Free' : 'Start Free Trial';
     if (subscription?.tier === tierId && isSubscribed) return 'Current Plan';
     if (isSubscribed) return 'Switch Plan';
-    return 'Start Free Trial';
+    return tierId === 'starter' ? 'Get Started Free' : 'Start Free Trial';
   };
 
   const isCurrentPlan = (tierId: string) => isSubscribed && subscription?.tier === tierId;
@@ -118,25 +131,83 @@ const PricingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-
       <main className="pt-24 pb-24 md:pb-8">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4 max-w-7xl">
           {/* Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-4">
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
               Simple, Transparent <span className="text-gradient">Pricing</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              No per-booking fees. No hidden charges. No surprises. Just a flat monthly rate — and your first month is free.
+              No per-booking fees on paid plans. No hidden charges. No surprises. Start free or go all-in with a flat monthly rate.
             </p>
           </motion.div>
 
           {/* Billing Toggle */}
           <BillingToggle interval={billingInterval} onChange={setBillingInterval} />
 
-          {/* Tier Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {pricingTiers.map((tier, index) => {
+          {/* Tier Cards — 4 columns */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-16">
+            {/* Starter Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`relative rounded-2xl border p-6 flex flex-col ${
+                isCurrentPlan('starter')
+                  ? 'border-green-500 bg-green-500/5 shadow-elevated'
+                  : 'border-green-500/40 bg-card'
+              }`}
+            >
+              {isCurrentPlan('starter') && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white">Your Plan</Badge>
+              )}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-green-500/10">
+                  <Zap className="w-6 h-6 text-green-500" />
+                </div>
+                <h3 className="font-display text-xl font-bold">Starter</h3>
+              </div>
+
+              <div className="mb-1">
+                <span className="text-4xl font-bold">FREE</span>
+                <span className="text-muted-foreground"> forever</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                We take <strong className="text-foreground">3% per booking</strong> instead of a monthly fee
+              </p>
+
+              <ul className="space-y-3 mb-6 flex-1">
+                {starterFeatures.map((f, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    {f.locked ? (
+                      <LockIcon className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground/50" />
+                    ) : (
+                      <Check className="w-5 h-5 mt-0.5 flex-shrink-0 text-green-500" />
+                    )}
+                    <span className={`text-sm ${f.locked ? 'text-muted-foreground/50 line-through' : ''}`}>{f.text}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                onClick={() => handleSelectTier('starter')}
+                disabled={isCurrentPlan('starter')}
+                variant="outline"
+                className={`w-full ${
+                  isCurrentPlan('starter')
+                    ? 'bg-green-500/20 text-green-700 cursor-default'
+                    : 'border-green-500 text-green-500 hover:bg-green-500 hover:text-white'
+                }`}
+              >
+                {getButtonText('starter')}
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2 italic">
+                Upgrade to Basic anytime to remove the booking fee
+              </p>
+            </motion.div>
+
+            {/* Paid Tier Cards */}
+            {paidTiers.map((tier, index) => {
               const Icon = tier.icon;
               const isCurrent = isCurrentPlan(tier.id);
               const pricing = PRICING[tier.id];
@@ -147,7 +218,7 @@ const PricingPage = () => {
                   key={tier.id}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: (index + 1) * 0.1 }}
                   className={`relative rounded-2xl border ${
                     isCurrent
                       ? 'border-green-500 bg-green-500/5 shadow-elevated'
@@ -169,18 +240,14 @@ const PricingPage = () => {
                     }`}>
                       <Icon className={`w-6 h-6 ${isCurrent ? 'text-green-500' : tier.recommended ? 'text-primary' : 'text-foreground'}`} />
                     </div>
-                    <div>
-                      <h3 className="font-display text-xl font-bold">{pricing.name}</h3>
-                    </div>
+                    <h3 className="font-display text-xl font-bold">{pricing.name}</h3>
                   </div>
 
-                  {/* Trial */}
                   <div className="flex items-baseline gap-1.5 mb-1">
                     <span className="text-2xl font-extrabold text-primary">FREE</span>
                     <span className="text-sm text-muted-foreground">first month</span>
                   </div>
 
-                  {/* Price */}
                   <div className="mb-1">
                     <span className="text-4xl font-bold">${price % 1 === 0 ? price : price.toFixed(2)}</span>
                     <span className="text-muted-foreground">/mo</span>
@@ -245,7 +312,7 @@ const PricingPage = () => {
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xl mx-auto mb-6">
               Stripe processes all payments on Polished. The standard Stripe fee is{' '}
               <strong className="text-foreground">2.9% + 30¢ per transaction</strong>. That's it.
-              Polished charges <strong className="text-foreground">zero additional platform fees</strong> on top of this.
+              Polished charges <strong className="text-foreground">zero additional platform fees</strong> on paid plans.
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
               <div className="flex flex-col gap-1 p-4 bg-card border border-border rounded-xl text-left">
@@ -266,7 +333,7 @@ const PricingPage = () => {
             viewport={{ once: true }}
             className="flex gap-5 items-start p-7 bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-2xl mb-8"
           >
-            <Lock className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
+            <LockIcon className="w-8 h-8 text-primary flex-shrink-0 mt-1" />
             <div>
               <h3 className="text-lg font-bold mb-2">Polished Price Lock Guarantee</h3>
               <p className="text-sm text-muted-foreground leading-relaxed m-0">
@@ -316,7 +383,6 @@ const PricingPage = () => {
             </Accordion>
           </motion.div>
 
-          {/* Help */}
           <div className="text-center">
             <p className="text-muted-foreground">
               Questions? Visit our{' '}
@@ -328,7 +394,6 @@ const PricingPage = () => {
           </div>
         </div>
       </main>
-
       <Footer />
       <BottomNav />
     </div>
