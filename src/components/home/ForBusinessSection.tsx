@@ -11,7 +11,7 @@ const benefits = [
 ];
 
 const tiers = [
-  { name: 'Basic', price: 29, icon: '✨', highlights: ['1 staff member', 'Appointments & classes', 'BNPL payments', 'Community badges'], popular: false },
+  { name: 'Basic', price: 29, icon: '✨', highlights: ['Up to 2 staff', 'Appointments & classes', 'BNPL payments', 'Community badges'], popular: false },
   { name: 'Pro', price: 59, icon: '⭐', highlights: ['Up to 5 staff', 'Analytics + AI insights', 'Service packages', 'Priority placement'], popular: true },
   { name: 'Elite', price: 99, icon: '👑', highlights: ['Unlimited staff', 'Featured placement', 'Custom reports', 'Verified badge'], popular: false },
 ];

@@ -55,7 +55,7 @@ export const StaffManager = ({ businessId, services }: StaffManagerProps) => {
         {atLimit ? (
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground bg-secondary px-3 py-1.5 rounded-lg">
-              {tier === 'basic' ? '1 staff included on Basic' : `${staffLimit} staff included on Pro`}
+              {tier === 'basic' ? '2 staff included on Basic' : `${staffLimit} staff included on Pro`}
             </span>
             <Button
               onClick={() => navigate('/business/settings/subscription')}
