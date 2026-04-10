@@ -1,6 +1,6 @@
 // Subscription feature definitions and gating utilities
 
-export type SubscriptionTier = 'basic' | 'pro' | 'elite';
+export type SubscriptionTier = 'starter' | 'basic' | 'pro' | 'elite';
 
 export type FeatureKey =
   | 'public_profile'
