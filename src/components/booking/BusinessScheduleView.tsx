@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format, addDays, parseISO, startOfToday, isSameDay } from 'date-fns';
-import { Calendar, Clock, User, Scissors, ChevronLeft, ChevronRight, Loader2, Phone, Mail } from 'lucide-react';
+import { Calendar, Clock, User, Scissors, ChevronLeft, ChevronRight, Loader2, Phone, Mail, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CollectPaymentModal } from './CollectPaymentModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -63,6 +64,7 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
   const [isLoading, setIsLoading] = useState(true);
   const [weekStart, setWeekStart] = useState(startOfToday());
   const [selectedDay, setSelectedDay] = useState(startOfToday());
+  const [collectPaymentBooking, setCollectPaymentBooking] = useState<BusinessBooking | null>(null);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -292,9 +294,20 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
                   )}
                 </div>
 
-                {/* Price */}
-                <div className="shrink-0 text-right">
+                {/* Price & Collect Payment */}
+                <div className="shrink-0 text-right space-y-2">
                   <span className="font-bold text-sm">${booking.total_price}</span>
+                  {(booking.status === 'confirmed' || booking.status === 'pending') && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs flex items-center gap-1"
+                      onClick={(e) => { e.stopPropagation(); setCollectPaymentBooking(booking); }}
+                    >
+                      <CreditCard className="w-3 h-3" />
+                      Collect
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
@@ -310,6 +323,27 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
             </span>
           </div>
         </div>
+      )}
+      {collectPaymentBooking && (
+        <CollectPaymentModal
+          open={!!collectPaymentBooking}
+          onOpenChange={(open) => { if (!open) setCollectPaymentBooking(null); }}
+          booking={{
+            id: collectPaymentBooking.id,
+            business_id: businessId,
+            total_price: collectPaymentBooking.total_price,
+            client: collectPaymentBooking.client ? {
+              display_name: collectPaymentBooking.client.display_name,
+              email: collectPaymentBooking.client.email,
+              phone: collectPaymentBooking.client.phone,
+            } : null,
+            service: collectPaymentBooking.service ? { name: collectPaymentBooking.service.name } : null,
+          }}
+          onPaymentCollected={() => {
+            setCollectPaymentBooking(null);
+            fetchBookings();
+          }}
+        />
       )}
     </div>
   );

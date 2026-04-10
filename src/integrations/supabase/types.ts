@@ -122,6 +122,9 @@ export type Database = {
           id: string
           notes: string | null
           paid_with_package: boolean | null
+          payment_collected_inperson: boolean | null
+          payment_link_sent_at: string | null
+          payment_link_stripe_id: string | null
           payment_method_type: string | null
           remaining_balance: number | null
           service_id: string
@@ -151,6 +154,9 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_with_package?: boolean | null
+          payment_collected_inperson?: boolean | null
+          payment_link_sent_at?: string | null
+          payment_link_stripe_id?: string | null
           payment_method_type?: string | null
           remaining_balance?: number | null
           service_id: string
@@ -180,6 +186,9 @@ export type Database = {
           id?: string
           notes?: string | null
           paid_with_package?: boolean | null
+          payment_collected_inperson?: boolean | null
+          payment_link_sent_at?: string | null
+          payment_link_stripe_id?: string | null
           payment_method_type?: string | null
           remaining_balance?: number | null
           service_id?: string
@@ -1459,6 +1468,57 @@ export type Database = {
         }
         Relationships: []
       }
+      inperson_payments: {
+        Row: {
+          amount: number
+          booking_id: string
+          business_id: string
+          id: string
+          payment_method: string
+          payment_method_note: string | null
+          recorded_at: string
+          recorded_by: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          business_id: string
+          id?: string
+          payment_method: string
+          payment_method_note?: string | null
+          recorded_at?: string
+          recorded_by: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          business_id?: string
+          id?: string
+          payment_method?: string
+          payment_method_note?: string | null
+          recorded_at?: string
+          recorded_by?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inperson_payments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inperson_payments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intake_form_questions: {
         Row: {
           form_id: string
@@ -2523,6 +2583,47 @@ export type Database = {
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_readers: {
+        Row: {
+          business_id: string
+          device_type: string | null
+          id: string
+          is_active: boolean | null
+          label: string | null
+          location_id: string | null
+          registered_at: string
+          stripe_reader_id: string
+        }
+        Insert: {
+          business_id: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string | null
+          location_id?: string | null
+          registered_at?: string
+          stripe_reader_id: string
+        }
+        Update: {
+          business_id?: string
+          device_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          label?: string | null
+          location_id?: string | null
+          registered_at?: string
+          stripe_reader_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_readers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
