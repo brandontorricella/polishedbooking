@@ -294,9 +294,20 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
                   )}
                 </div>
 
-                {/* Price */}
-                <div className="shrink-0 text-right">
+                {/* Price & Collect Payment */}
+                <div className="shrink-0 text-right space-y-2">
                   <span className="font-bold text-sm">${booking.total_price}</span>
+                  {(booking.status === 'confirmed' || booking.status === 'pending') && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs flex items-center gap-1"
+                      onClick={(e) => { e.stopPropagation(); setCollectPaymentBooking(booking); }}
+                    >
+                      <CreditCard className="w-3 h-3" />
+                      Collect
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
