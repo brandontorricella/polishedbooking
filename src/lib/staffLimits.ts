@@ -1,7 +1,7 @@
 import type { SubscriptionTier } from './subscriptionFeatures';
 
 export const STAFF_LIMITS: Record<SubscriptionTier, number> = {
-  basic: 1,
+  basic: 2,
   pro: 5,
   elite: Infinity,
 };
