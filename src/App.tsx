@@ -30,6 +30,7 @@ import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import BusinessSignup from "./pages/BusinessSignup";
 import GivesBack from "./pages/GivesBack";
+import ForBusiness from "./pages/ForBusiness";
 import HelpCenter from "./pages/HelpCenter";
 import BusinessPackages from "./pages/BusinessPackages";
 import BusinessMemberships from "./pages/BusinessMemberships";
@@ -81,6 +82,7 @@ const App = () => {
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/help" element={<HelpCenter />} />
                   <Route path="/gives-back" element={<GivesBack />} />
+                  <Route path="/for-business" element={<ForBusiness />} />
                   
                   {/* Customer-protected routes */}
                   <Route path="/favorites" element={

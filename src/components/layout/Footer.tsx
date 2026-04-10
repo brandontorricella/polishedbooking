@@ -52,9 +52,9 @@ export const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-display text-lg font-semibold text-cream">{t('footer', 'forBusinesses')}</h4>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/business" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'joinPolished')}</Link></li>
+              <li><Link to="/for-business" className="text-cream/70 hover:text-cream transition-colors">How It Works for Businesses</Link></li>
+              <li><Link to="/for-business#payments" className="text-cream/70 hover:text-cream transition-colors">Payment Options</Link></li>
               <li><Link to="/business/pricing" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'pricing')}</Link></li>
-              <li><Link to="/business/analytics" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'analytics')}</Link></li>
               <li><Link to="/gives-back" className="text-cream/70 hover:text-cream transition-colors">💝 Gives Back</Link></li>
             </ul>
           </div>
