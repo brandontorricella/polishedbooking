@@ -65,7 +65,7 @@ export const ForBusinessSection = () => {
               >
                 Start Free Trial →
               </Button>
-              <span className="text-sm text-white/40">1 month free · No credit card required · Cancel anytime</span>
+              <span className="text-sm text-white/40">1 month free · No credit card required · Cancel anytime · 🔒 Price locked forever</span>
             </div>
           </motion.div>
 
