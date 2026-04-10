@@ -13,7 +13,15 @@ import { BillingToggle } from '@/components/pricing/BillingToggle';
 import { PRICING, getTierPrice, type BillingInterval, type TierId } from '@/constants/pricing';
 import polishedLogo from '@/assets/logo.png';
 
-const tierFeatures: Record<TierId, string[]> = {
+const tierFeatures: Partial<Record<TierId, string[]>> = {
+  starter: [
+    '1 staff member',
+    'Public profile & local search',
+    'Online booking',
+    'Reviews & ratings',
+    'Community identity badges',
+    'Client messaging',
+  ],
   basic: [
     'Up to 2 staff members',
     'Public profile & local search',
