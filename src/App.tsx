@@ -43,6 +43,7 @@ import BusinessMigration from "./pages/BusinessMigration";
 import BusinessTemplates from "./pages/BusinessTemplates";
 import { AdminRoute } from "@/components/admin/AdminRoute";
 import { lazy, Suspense } from "react";
+import ScrollToTop from "./components/ScrollToTop";
 
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
 const AdminBusinesses = lazy(() => import("./pages/admin/AdminBusinesses"));
@@ -65,6 +66,7 @@ const App = () => {
               <Toaster />
               <Sonner />
               <BrowserRouter>
+                <ScrollToTop />
                 <Routes>
                   {/* Public routes */}
                   <Route path="/" element={<Index />} />
