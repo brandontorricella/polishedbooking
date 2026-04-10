@@ -1,5 +1,5 @@
 export type BillingInterval = 'monthly' | 'annual';
-export type TierId = 'basic' | 'pro' | 'elite';
+export type TierId = 'starter' | 'basic' | 'pro' | 'elite';
 
 export interface TierPricing {
   name: string;
@@ -9,9 +9,20 @@ export interface TierPricing {
   annualMonthly: number;
   annualTotal: number;
   annualSavings: number;
+  bookingFeePct?: number;
 }
 
 export const PRICING: Record<TierId, TierPricing> = {
+  starter: {
+    name: 'Starter',
+    icon: '🆓',
+    staffLimit: 1,
+    monthly: 0,
+    annualMonthly: 0,
+    annualTotal: 0,
+    annualSavings: 0,
+    bookingFeePct: 3,
+  },
   basic: {
     name: 'Basic',
     icon: '✨',
@@ -41,10 +52,14 @@ export const PRICING: Record<TierId, TierPricing> = {
   },
 };
 
+export const PAID_TIER_IDS: TierId[] = ['basic', 'pro', 'elite'];
+export const ALL_TIER_IDS: TierId[] = ['starter', 'basic', 'pro', 'elite'];
+
 export function getStaffLimitLabel(tier: TierId | undefined | null): string {
   const t = tier || 'basic';
   if (t === 'elite') return 'Unlimited staff members';
   if (t === 'pro') return 'Up to 5 staff members';
+  if (t === 'starter') return '1 staff member';
   return 'Up to 2 staff members';
 }
 
