@@ -75,7 +75,7 @@ const BusinessSignup = () => {
 
   useEffect(() => {
     const plan = searchParams.get('plan');
-    if (plan && ['basic', 'pro', 'elite'].includes(plan)) {
+    if (plan && ['starter', 'basic', 'pro', 'elite'].includes(plan)) {
       setSelectedTier(plan as TierId);
     }
     const billing = searchParams.get('billing');
