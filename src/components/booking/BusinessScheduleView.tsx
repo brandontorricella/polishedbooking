@@ -64,6 +64,7 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
   const [isLoading, setIsLoading] = useState(true);
   const [weekStart, setWeekStart] = useState(startOfToday());
   const [selectedDay, setSelectedDay] = useState(startOfToday());
+  const [collectPaymentBooking, setCollectPaymentBooking] = useState<BusinessBooking | null>(null);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
