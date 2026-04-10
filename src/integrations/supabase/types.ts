@@ -394,6 +394,7 @@ export type Database = {
         Row: {
           address: string | null
           bio: string | null
+          booking_fee_pct: number | null
           cancellation_fee_amount: number | null
           cancellation_fee_type: string | null
           cancellation_hours: number | null
@@ -464,6 +465,7 @@ export type Database = {
         Insert: {
           address?: string | null
           bio?: string | null
+          booking_fee_pct?: number | null
           cancellation_fee_amount?: number | null
           cancellation_fee_type?: string | null
           cancellation_hours?: number | null
@@ -536,6 +538,7 @@ export type Database = {
         Update: {
           address?: string | null
           bio?: string | null
+          booking_fee_pct?: number | null
           cancellation_fee_amount?: number | null
           cancellation_fee_type?: string | null
           cancellation_hours?: number | null
@@ -606,6 +609,35 @@ export type Database = {
           zip?: string | null
         }
         Relationships: []
+      }
+      cause_votes: {
+        Row: {
+          cause_id: string
+          id: string
+          user_id: string
+          voted_at: string
+        }
+        Insert: {
+          cause_id: string
+          id?: string
+          user_id: string
+          voted_at?: string
+        }
+        Update: {
+          cause_id?: string
+          id?: string
+          user_id?: string
+          voted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cause_votes_cause_id_fkey"
+            columns: ["cause_id"]
+            isOneToOne: false
+            referencedRelation: "giving_causes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       class_enrollments: {
         Row: {
@@ -1054,6 +1086,47 @@ export type Database = {
         }
         Relationships: []
       }
+      donation_records: {
+        Row: {
+          cause_id: string | null
+          donated_at: string
+          donation_amount: number
+          donation_pct: number | null
+          id: string
+          month: number
+          revenue_base: number
+          year: number
+        }
+        Insert: {
+          cause_id?: string | null
+          donated_at?: string
+          donation_amount: number
+          donation_pct?: number | null
+          id?: string
+          month: number
+          revenue_base: number
+          year: number
+        }
+        Update: {
+          cause_id?: string | null
+          donated_at?: string
+          donation_amount?: number
+          donation_pct?: number | null
+          id?: string
+          month?: number
+          revenue_base?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donation_records_cause_id_fkey"
+            columns: ["cause_id"]
+            isOneToOne: false
+            referencedRelation: "giving_causes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_subscribers: {
         Row: {
           created_at: string | null
@@ -1289,6 +1362,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      giving_causes: {
+        Row: {
+          amount_donated: number | null
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_current: boolean | null
+          logo_url: string | null
+          month: number
+          name: string
+          organization: string | null
+          votes: number | null
+          website_url: string | null
+          year: number
+        }
+        Insert: {
+          amount_donated?: number | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_current?: boolean | null
+          logo_url?: string | null
+          month: number
+          name: string
+          organization?: string | null
+          votes?: number | null
+          website_url?: string | null
+          year: number
+        }
+        Update: {
+          amount_donated?: number | null
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_current?: boolean | null
+          logo_url?: string | null
+          month?: number
+          name?: string
+          organization?: string | null
+          votes?: number | null
+          website_url?: string | null
+          year?: number
+        }
+        Relationships: []
       }
       imported_clients: {
         Row: {
@@ -2781,7 +2905,7 @@ export type Database = {
         | "past_due"
         | "canceled"
         | "unpaid"
-      subscription_tier: "basic" | "pro" | "elite"
+      subscription_tier: "starter" | "basic" | "pro" | "elite"
       user_role: "client" | "business"
     }
     CompositeTypes: {
@@ -2919,7 +3043,7 @@ export const Constants = {
         "canceled",
         "unpaid",
       ],
-      subscription_tier: ["basic", "pro", "elite"],
+      subscription_tier: ["starter", "basic", "pro", "elite"],
       user_role: ["client", "business"],
     },
   },
