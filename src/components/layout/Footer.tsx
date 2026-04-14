@@ -59,6 +59,25 @@ export const Footer = () => {
             </ul>
           </div>
 
+          {/* Contact */}
+          <div className="space-y-4">
+            <h4 className="font-display text-lg font-semibold text-cream">Contact</h4>
+            <div className="flex flex-col gap-3.5">
+              <div className="flex flex-col gap-1">
+                <a href="mailto:support@polishedbooking.com" className="text-[13px] text-primary no-underline font-medium hover:underline">
+                  support@polishedbooking.com
+                </a>
+                <p className="text-[11px] text-cream/40 m-0">Booking help, account issues &amp; technical support</p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <a href="mailto:hello@polishedbooking.com" className="text-[13px] text-primary no-underline font-medium hover:underline">
+                  hello@polishedbooking.com
+                </a>
+                <p className="text-[11px] text-cream/40 m-0">Partnerships, press &amp; general inquiries</p>
+              </div>
+            </div>
+          </div>
+
           {/* Newsletter */}
           <div className="space-y-4">
             <h4 className="font-display text-lg font-semibold text-cream">{t('footer', 'stayUpdated')}</h4>

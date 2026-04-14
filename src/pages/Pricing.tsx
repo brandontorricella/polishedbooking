@@ -383,13 +383,13 @@ const PricingPage = () => {
             </Accordion>
           </motion.div>
 
-          <div className="text-center">
-            <p className="text-muted-foreground">
-              Questions? Visit our{' '}
-              <button onClick={() => navigate('/help')} className="text-primary hover:underline font-medium bg-transparent border-none cursor-pointer">
-                Help Center
-              </button>{' '}
-              or contact support.
+          <div className="text-center pt-5 border-t border-border mt-2">
+            <p className="text-sm text-muted-foreground m-0">
+              Have a question not answered above?{' '}
+              <a href="mailto:support@polishedbooking.com?subject=Pricing question — Polished" className="text-primary no-underline font-medium hover:underline">
+                Email us at support@polishedbooking.com
+              </a>{' '}
+              and we respond within one business day.
             </p>
           </div>
         </div>
