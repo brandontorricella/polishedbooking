@@ -26,6 +26,7 @@ import { saveIntendedDestination } from '@/components/auth/AuthGate';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from '@/hooks/useTranslation';
 import heroImage from '@/assets/hero-beauty.jpg';
+import { HelpFloatingButton } from '@/components/HelpFloatingButton';
 
 const BusinessCardSkeleton = () => (
   <div className="rounded-2xl border border-border bg-card p-4">
@@ -598,6 +599,7 @@ const Index = () => {
       <Footer />
       <BottomNav />
       <StayUpdatedWidget />
+      <HelpFloatingButton />
       <AccountTypeModal open={showAccountTypeModal} onOpenChange={setShowAccountTypeModal} />
     </div>
   );

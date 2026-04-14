@@ -16,6 +16,13 @@ const NotFound = () => {
         <a href="/" className="text-primary underline hover:text-primary/90">
           Return to Home
         </a>
+        <p className="mt-5 text-sm text-muted-foreground">
+          If you need help finding something or ran into a problem,{' '}
+          <a href="mailto:support@polishedbooking.com?subject=Help — page not found on Polished" className="text-primary no-underline hover:underline">
+            email our support team
+          </a>{' '}
+          and we'll get you sorted.
+        </p>
       </div>
     </div>
   );

@@ -378,6 +378,14 @@ const BusinessSignup = () => {
                   <Link to="/privacy" className="underline">Privacy Policy</Link>.
                 </p>
 
+                <p className="text-xs text-muted-foreground text-center pt-3">
+                  Having trouble signing up?{' '}
+                  <a href="mailto:support@polishedbooking.com?subject=Help signing up my business on Polished" className="text-primary no-underline hover:underline">
+                    Email support@polishedbooking.com
+                  </a>{' '}
+                  and we'll get you set up within 24 hours.
+                </p>
+
                 <button type="button" onClick={() => setStep(1)} className="flex items-center justify-center gap-2 text-sm text-muted-foreground bg-transparent border-none cursor-pointer hover:text-foreground transition-colors mx-auto">
                   <ArrowLeft className="w-4 h-4" /> Back to plan selection
                 </button>

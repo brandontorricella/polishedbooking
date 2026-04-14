@@ -410,6 +410,52 @@ const Profile = () => {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+
+              {/* Help & Support */}
+              <Separator className="my-2" />
+              <div className="p-4">
+                <h3 className="font-semibold mb-1">Help &amp; Support</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {isBusinessUser
+                    ? 'Our support team is available Monday through Friday. We respond to every email within one business day.'
+                    : 'Need help with a booking, payment, or your account? We\'re here for you.'}
+                </p>
+                <div className="flex flex-col gap-2.5">
+                  <a
+                    href={`mailto:support@polishedbooking.com?subject=${isBusinessUser ? 'Support request — Polished Business' : 'Client support request — Polished'}`}
+                    className="flex gap-3 items-start p-4 bg-secondary border border-border rounded-xl no-underline hover:border-primary transition-colors"
+                  >
+                    <div>
+                      <span className="block text-sm font-semibold text-foreground">
+                        {isBusinessUser ? 'Technical Support & Account Help' : 'Booking & Account Support'}
+                      </span>
+                      <span className="block text-[13px] text-muted-foreground leading-snug mt-1">
+                        {isBusinessUser
+                          ? 'Booking issues, payment problems, account access, billing questions, feature help'
+                          : 'Problems with a booking, payment issues, cancellation help, account access, or anything else'}
+                      </span>
+                      <span className="block text-[13px] text-primary font-medium mt-1">support@polishedbooking.com</span>
+                    </div>
+                  </a>
+                  {isBusinessUser && (
+                    <a
+                      href="mailto:hello@polishedbooking.com?subject=Business inquiry — Polished"
+                      className="flex gap-3 items-start p-4 bg-secondary border border-border rounded-xl no-underline hover:border-primary transition-colors"
+                    >
+                      <div>
+                        <span className="block text-sm font-semibold text-foreground">General Business Inquiries</span>
+                        <span className="block text-[13px] text-muted-foreground leading-snug mt-1">
+                          Partnership opportunities, referrals, feature requests, feedback about the platform
+                        </span>
+                        <span className="block text-[13px] text-primary font-medium mt-1">hello@polishedbooking.com</span>
+                      </div>
+                    </a>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground italic mt-3">
+                  We respond to every email within one business day — usually much faster.
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>

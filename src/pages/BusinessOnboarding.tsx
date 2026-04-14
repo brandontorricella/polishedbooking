@@ -700,6 +700,13 @@ const BusinessOnboarding = () => {
                 </div>
               )}
 
+              <div className="flex items-center justify-center gap-2 flex-wrap p-3 bg-secondary rounded-lg mb-4 text-[13px] text-muted-foreground text-center">
+                <span>Need help getting set up?</span>
+                <a href="mailto:support@polishedbooking.com?subject=Help setting up my Polished account" className="text-primary no-underline font-medium hover:underline">
+                  support@polishedbooking.com
+                </a>
+              </div>
+
               <Button
                 onClick={handleCreateBusiness}
                 disabled={isLoading}

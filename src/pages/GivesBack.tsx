@@ -117,6 +117,20 @@ const GivesBackPage = () => {
           </motion.div>
         </div>
 
+          {/* Suggest a Cause */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mt-10 pt-8 border-t border-border">
+            <h3 className="text-xl font-bold mb-2">Suggest a Cause</h3>
+            <p className="text-[15px] text-muted-foreground mb-4">
+              Know an organization that aligns with our mission? We review cause nominations from our community every month.
+            </p>
+            <a
+              href="mailto:hello@polishedbooking.com?subject=Cause nomination for Polished Gives Back"
+              className="inline-block px-6 py-2.5 border border-border rounded-lg text-sm font-medium text-foreground no-underline hover:bg-secondary transition-colors"
+            >
+              Nominate a Cause — hello@polishedbooking.com
+            </a>
+          </motion.div>
+
         {/* Voting widget */}
         <GivesBackSection />
       </main>
