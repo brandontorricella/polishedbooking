@@ -15,6 +15,7 @@ import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ─── Helpers ────────────────────────────────────────────
 function formatRelativeTime(dateStr: string) {
@@ -24,7 +25,8 @@ function formatRelativeTime(dateStr: string) {
   const mins = Math.floor(diffMs / 60000);
   const hrs = Math.floor(diffMs / 3600000);
   const days = Math.floor(diffMs / 86400000);
-  if (mins < 1) return 'Just now';
+  if (mins < 1) return t('messages', 'justNow');
+  const { t } = { t: (s: string, k: string) => { const m: Record<string, string> = { justNow: 'Just now' }; return m[k] || k; } };
   if (mins < 60) return `${mins}m`;
   if (hrs < 24) return `${hrs}h`;
   if (days < 7) return `${days}d`;
