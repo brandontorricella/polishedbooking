@@ -8,10 +8,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TIER_PRICES: Record<string, string> = {
-  basic: Deno.env.get("STRIPE_PRICE_BASIC") || "",
-  pro: Deno.env.get("STRIPE_PRICE_PRO") || "",
-  elite: Deno.env.get("STRIPE_PRICE_ELITE") || "",
+const TIER_PRICES: Record<string, Record<string, string>> = {
+  basic: {
+    monthly: "price_1TMBwDKGB55HVIvLRqmAeNjj",
+    annual: "price_1TMBweKGB55HVIvL9iIiMxZz",
+  },
+  pro: {
+    monthly: "price_1TMBwuKGB55HVIvLRRAPR0xG",
+    annual: "price_1TMBxDKGB55HVIvLAuTtBq8R",
+  },
+  elite: {
+    monthly: "price_1TMBxSKGB55HVIvLWLwTkKvY",
+    annual: "price_1TMBxlKGB55HVIvLdKMDNBWp",
+  },
 };
 
 const TIER_ORDER: Record<string, number> = { basic: 1, pro: 2, elite: 3 };
@@ -48,23 +57,23 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { new_tier } = await req.json();
+    const { new_tier, billing } = await req.json();
+    const interval = billing || "monthly";
     if (!["basic", "pro", "elite"].includes(new_tier)) {
       throw new Error("Invalid subscription tier");
     }
 
-    const newPriceId = TIER_PRICES[new_tier];
-    if (!newPriceId) throw new Error(`Price ID not configured for tier: ${new_tier}`);
-    logStep("Target tier", { new_tier, newPriceId });
+    const newPriceId = TIER_PRICES[new_tier]?.[interval];
+    if (!newPriceId) throw new Error(`Price ID not configured for tier: ${new_tier}/${interval}`);
+    logStep("Target tier", { new_tier, interval, newPriceId });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Find Stripe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     if (customers.data.length === 0) {
-      // No customer yet — redirect to checkout instead
       logStep("No Stripe customer found, creating checkout session");
-      const origin = req.headers.get("origin") || "https://id-preview--4b68f67f-f99e-438c-a615-c52490432989.lovable.app";
+      const origin = req.headers.get("origin") || "https://polishedbooking.com";
       const session = await stripe.checkout.sessions.create({
         customer_email: user.email,
         line_items: [{ price: newPriceId, quantity: 1 }],
@@ -72,9 +81,9 @@ serve(async (req) => {
         success_url: `${origin}/business/analytics?success=true&plan=${new_tier}`,
         cancel_url: `${origin}/business/analytics?canceled=true`,
         subscription_data: {
-          metadata: { user_id: user.id, tier: new_tier },
+          metadata: { user_id: user.id, tier: new_tier, billing: interval },
         },
-        metadata: { user_id: user.id, tier: new_tier },
+        metadata: { user_id: user.id, tier: new_tier, billing: interval },
       });
       return new Response(JSON.stringify({ checkout_url: session.url }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -92,7 +101,6 @@ serve(async (req) => {
       limit: 1,
     });
 
-    // Also check trialing
     let activeSub = subscriptions.data[0];
     if (!activeSub) {
       const trialingSubs = await stripe.subscriptions.list({
@@ -104,16 +112,15 @@ serve(async (req) => {
     }
 
     if (!activeSub) {
-      // No active subscription — create checkout
       logStep("No active subscription, creating checkout session");
-      const origin = req.headers.get("origin") || "https://id-preview--4b68f67f-f99e-438c-a615-c52490432989.lovable.app";
+      const origin = req.headers.get("origin") || "https://polishedbooking.com";
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         line_items: [{ price: newPriceId, quantity: 1 }],
         mode: "subscription",
         success_url: `${origin}/business/analytics?success=true&plan=${new_tier}`,
         cancel_url: `${origin}/business/analytics?canceled=true`,
-        metadata: { user_id: user.id, tier: new_tier },
+        metadata: { user_id: user.id, tier: new_tier, billing: interval },
       });
       return new Response(JSON.stringify({ checkout_url: session.url }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -141,7 +148,7 @@ serve(async (req) => {
         price: newPriceId,
       }],
       proration_behavior: isUpgrade ? "create_prorations" : "none",
-      metadata: { ...activeSub.metadata, tier: new_tier },
+      metadata: { ...activeSub.metadata, tier: new_tier, billing: interval },
     });
     logStep("Subscription updated", { subscriptionId: updatedSubscription.id });
 

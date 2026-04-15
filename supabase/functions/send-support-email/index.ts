@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to support team
     const supportEmailResult = await sendEmail({
-      from: "Polished Support <noreply@resend.dev>",
+      from: "Polished Support <noreply@polishedbooking.com>",
       to: [supportEmail],
       replyTo: email,
       subject: `[Polished Support] ${subject || "New Message"} from ${name}`,
@@ -91,8 +91,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation to customer
     const confirmationResult = await sendEmail({
-      from: "Polished <noreply@resend.dev>",
+      from: "Polished <noreply@polishedbooking.com>",
       to: [email],
+      replyTo: "support@polishedbooking.com",
       subject: "We received your message - Polished Support",
       html: `
         <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
