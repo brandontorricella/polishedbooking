@@ -1,24 +1,26 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-
-const benefits = [
-  { icon: '💳', title: 'Flat monthly pricing', desc: 'No surprise per-booking fees ever. Keep more of what you earn.' },
-  { icon: '📲', title: 'Buy Now Pay Later built in', desc: 'Afterpay, Klarna, and Affirm — clients pay over time, you get paid upfront.' },
-  { icon: '🤖', title: 'AI weekly business insights', desc: 'Plain-English summaries of your performance every Monday morning.' },
-  { icon: '🌟', title: 'Community identity badges', desc: 'Black-Owned, Hispanic-Owned, and LGBTQ+ badges — free on every plan.' },
-  { icon: '📥', title: 'Migrate from Vagaro or Booksy', desc: 'Import your client list in 2 minutes. We make switching painless.' },
-];
-
-const tiers = [
-  { name: 'Starter', price: 0, icon: '🆓', highlights: ['1 staff member', 'Online booking', 'Reviews & ratings', '3% per booking fee'], popular: false, free: true },
-  { name: 'Basic', price: 29, icon: '✨', highlights: ['Up to 2 staff', 'Appointments & classes', 'BNPL payments', 'Community badges'], popular: false, free: false },
-  { name: 'Pro', price: 59, icon: '⭐', highlights: ['Up to 5 staff', 'Analytics + AI insights', 'Service packages', 'Priority placement'], popular: true, free: false },
-  { name: 'Elite', price: 99, icon: '👑', highlights: ['Unlimited staff', 'Featured placement', 'Custom reports', 'Verified badge'], popular: false, free: false },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const ForBusinessSection = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const benefits = [
+    { icon: '💳', titleKey: 'flatPricing', descKey: 'flatPricingDesc' },
+    { icon: '📲', titleKey: 'bnpl', descKey: 'bnplDesc' },
+    { icon: '🤖', titleKey: 'aiInsights', descKey: 'aiInsightsDesc' },
+    { icon: '🌟', titleKey: 'communityBadges', descKey: 'communityBadgesDesc' },
+    { icon: '📥', titleKey: 'migrate', descKey: 'migrateDesc' },
+  ];
+
+  const tiers = [
+    { name: 'Starter', price: 0, icon: '🆓', highlights: ['1 staff member', 'Online booking', 'Reviews & ratings', '3% per booking fee'], popular: false, free: true },
+    { name: 'Basic', price: 29, icon: '✨', highlights: ['Up to 2 staff', 'Appointments & classes', 'BNPL payments', 'Community badges'], popular: false, free: false },
+    { name: 'Pro', price: 59, icon: '⭐', highlights: ['Up to 5 staff', 'Analytics + AI insights', 'Service packages', 'Priority placement'], popular: true, free: false },
+    { name: 'Elite', price: 99, icon: '👑', highlights: ['Unlimited staff', 'Featured placement', 'Custom reports', 'Verified badge'], popular: false, free: false },
+  ];
 
   return (
     <section className="py-20 px-5 md:px-10 bg-gradient-to-br from-[hsl(240,40%,6%)] via-[hsl(280,30%,8%)] to-[hsl(210,40%,7%)] relative overflow-hidden">
@@ -35,16 +37,15 @@ export const ForBusinessSection = () => {
             transition={{ duration: 0.5 }}
           >
             <span className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold text-primary bg-primary/15 border border-primary/30 mb-4">
-              For Business Owners
+              {t('forBusinessHome', 'forBusinessOwners')}
             </span>
 
             <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-4">
-              Grow Your Beauty &<br />Wellness Business
+              {t('forBusinessHome', 'growTitle')}
             </h2>
 
             <p className="text-white/60 text-base leading-relaxed mb-8 max-w-lg">
-              Join salons, spas, studios, and wellness practitioners already on Polished.
-              No per-booking fees. No hardware required. Just more clients.
+              {t('forBusinessHome', 'growDesc')}
             </p>
 
             <div className="flex flex-col gap-4 mb-8">
@@ -52,8 +53,8 @@ export const ForBusinessSection = () => {
                 <div key={i} className="flex gap-3.5 items-start">
                   <span className="text-xl flex-shrink-0 mt-0.5">{b.icon}</span>
                   <div>
-                    <span className="block text-sm font-bold text-white">{b.title}</span>
-                    <span className="block text-sm text-white/50 leading-snug">{b.desc}</span>
+                    <span className="block text-sm font-bold text-white">{t('forBusinessHome', b.titleKey)}</span>
+                    <span className="block text-sm text-white/50 leading-snug">{t('forBusinessHome', b.descKey)}</span>
                   </div>
                 </div>
               ))}
@@ -64,9 +65,9 @@ export const ForBusinessSection = () => {
                 onClick={() => navigate('/signup/business')}
                 className="bg-primary hover:bg-primary/80 text-white font-bold text-base px-8 py-6 rounded-xl self-start shadow-[0_8px_24px_hsl(340,75%,55%,0.35)]"
               >
-                Start Free Trial →
+                {t('forBusinessHome', 'startFreeTrial')}
               </Button>
-              <span className="text-sm text-white/40">1 month free · No credit card required · Cancel anytime · 🔒 Price locked forever</span>
+              <span className="text-sm text-white/40">{t('forBusinessHome', 'trialInfo')}</span>
             </div>
           </motion.div>
 
@@ -89,7 +90,7 @@ export const ForBusinessSection = () => {
               >
                 {tier.popular && (
                   <span className="absolute -top-px right-4 bg-primary text-white text-[11px] font-bold px-3 py-1 rounded-b-lg">
-                    Most Popular
+                    {t('pricing', 'mostPopular')}
                   </span>
                 )}
                 <div className="flex items-center gap-2.5 mb-2.5">
@@ -99,13 +100,13 @@ export const ForBusinessSection = () => {
                 <div className="mb-3">
                   {tier.free ? (
                     <>
-                      <span className="block text-base font-bold text-green-400">FREE forever</span>
-                      <span className="block text-xs text-white/40 mt-0.5">3% per booking</span>
+                      <span className="block text-base font-bold text-green-400">{t('forBusinessHome', 'freeForever')}</span>
+                      <span className="block text-xs text-white/40 mt-0.5">{t('forBusinessHome', 'perBooking')}</span>
                     </>
                   ) : (
                     <>
-                      <span className="block text-base font-bold text-primary">1 month FREE</span>
-                      <span className="block text-xs text-white/40 mt-0.5">then ${tier.price}/mo</span>
+                      <span className="block text-base font-bold text-primary">{t('forBusinessHome', 'oneMonthFree')}</span>
+                      <span className="block text-xs text-white/40 mt-0.5">{t('forBusinessHome', 'thenPerMo')} ${tier.price}/mo</span>
                     </>
                   )}
                 </div>
@@ -124,7 +125,7 @@ export const ForBusinessSection = () => {
                 onClick={() => navigate('/business/pricing')}
                 className="text-sm text-white/40 underline hover:text-white/60 transition-colors bg-transparent border-none cursor-pointer"
               >
-                Compare all features →
+                {t('forBusinessHome', 'compareAll')}
               </button>
             </div>
           </motion.div>

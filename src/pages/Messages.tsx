@@ -15,6 +15,7 @@ import { useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { useAccountType } from '@/hooks/useAccountType';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ─── Helpers ────────────────────────────────────────────
 function formatRelativeTime(dateStr: string) {
@@ -51,6 +52,7 @@ const MessagesPage = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { accountType, businessId: ownerBusinessId } = useAccountType();
+  const { t } = useTranslation();
   const {
     conversations,
     messages,
@@ -214,12 +216,12 @@ const MessagesPage = () => {
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{activeDisplay.otherName}</p>
               {activeDisplay.otherProfileLink && (
-                <button
-                  onClick={() => navigate(activeDisplay.otherProfileLink!)}
-                  className="text-xs text-primary hover:underline"
-                >
-                  View Profile
-                </button>
+                  <button
+                    onClick={() => navigate(activeDisplay.otherProfileLink!)}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {t('booking', 'viewProfile')}
+                  </button>
               )}
             </div>
           </div>
@@ -230,7 +232,7 @@ const MessagesPage = () => {
               {messages.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                  <p>No messages yet. Start the conversation!</p>
+                  <p>{t('messages', 'noMessagesYet')}</p>
                 </div>
               ) : (
                 <AnimatePresence>
@@ -278,7 +280,7 @@ const MessagesPage = () => {
           <div className="px-4 py-3 border-t border-border bg-card">
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Type a message..."
+                placeholder={t('messages', 'typeMessage')}
                 value={newMessage}
                 onChange={e => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -307,22 +309,22 @@ const MessagesPage = () => {
       <main className="pt-20 pb-24 md:pb-8">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="mb-8">
-            <h1 className="font-display text-3xl font-bold">Messages</h1>
+            <h1 className="font-display text-3xl font-bold">{t('messages', 'title')}</h1>
             <p className="text-muted-foreground mt-2">
               {isBusiness
-                ? 'Manage conversations with your clients'
-                : 'Connect with businesses and manage your conversations'}
+                ? t('messages', 'manageClients')
+                : t('messages', 'connectBusiness')}
             </p>
           </div>
 
           {conversationDisplays.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <MessageCircle className="w-16 h-16 mx-auto mb-4 opacity-30" />
-              <h3 className="text-lg font-semibold mb-2">No messages yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('messages', 'noMessages')}</h3>
               <p className="text-sm">
                 {isBusiness
-                  ? "When customers message you, they'll appear here."
-                  : 'Start a conversation by tapping "Message" on a business profile.'}
+                  ? t('messages', 'clientsAppear')
+                  : t('messages', 'startConversation')}
               </p>
             </div>
           ) : (

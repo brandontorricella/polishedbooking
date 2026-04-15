@@ -488,14 +488,14 @@ const Index = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { id: 'yoga', emoji: '🧘', name: 'Yoga' },
-              { id: 'pilates', emoji: '🤸', name: 'Pilates' },
-              { id: 'meditation', emoji: '🧘', name: 'Meditation' },
-              { id: 'personal_training', emoji: '💪', name: 'Personal Training' },
-              { id: 'acupuncture', emoji: '📍', name: 'Acupuncture' },
-              { id: 'health_coaching', emoji: '🍎', name: 'Health Coaching' },
-              { id: 'massage', emoji: '🧘', name: 'Massage' },
-              { id: 'nutrition', emoji: '🥗', name: 'Nutrition' },
+              { id: 'yoga', emoji: '🧘', key: 'yoga' },
+              { id: 'pilates', emoji: '🤸', key: 'pilates' },
+              { id: 'meditation', emoji: '🧘', key: 'meditation' },
+              { id: 'personal_training', emoji: '💪', key: 'personalTraining' },
+              { id: 'acupuncture', emoji: '📍', key: 'acupuncture' },
+              { id: 'health_coaching', emoji: '🍎', key: 'healthCoaching' },
+              { id: 'massage', emoji: '🧘', key: 'massage' },
+              { id: 'nutrition', emoji: '🥗', key: 'nutrition' },
             ].map((cat, index) => (
               <motion.button
                 key={cat.id}
@@ -507,7 +507,7 @@ const Index = () => {
                 className="flex flex-col items-center gap-2 p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all"
               >
                 <span className="text-3xl">{cat.emoji}</span>
-                <span className="text-sm font-medium text-cream">{cat.name}</span>
+                <span className="text-sm font-medium text-cream">{t('categories', cat.key)}</span>
               </motion.button>
             ))}
           </div>
@@ -571,26 +571,25 @@ const Index = () => {
             className="max-w-xl mx-auto"
           >
             <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
-              Ready to Get <span className="text-primary">Polished</span>?
+              {t('cta', 'readyTitle')} <span className="text-primary">Polished</span>?
             </h2>
             <p className="text-lg text-white/60 mb-8 leading-relaxed">
-              Join thousands of satisfied clients who book their beauty & wellness
-              services through Polished — or list your business and start growing today.
+              {t('cta', 'readyDescAlt')}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
               <Link to="/search">
                 <Button size="lg" variant="outline" className="text-white border-white/30 hover:bg-white/10 bg-transparent text-lg px-8 h-14 rounded-xl w-full sm:w-auto">
-                  Find Services
+                  {t('cta', 'findServices')}
                 </Button>
               </Link>
               <Link to="/signup/business">
                 <Button size="lg" className="bg-primary hover:bg-primary/80 text-white text-lg px-8 h-14 rounded-xl w-full sm:w-auto shadow-[0_8px_24px_hsl(340,75%,55%,0.35)]">
-                  List My Business →
+                  {t('cta', 'listMyBusiness')}
                 </Button>
               </Link>
             </div>
             <p className="text-sm text-white/35">
-              Free to book as a client · Start free or from $29/month · 1 month free trial on paid plans
+              {t('cta', 'freeToBook')}
             </p>
           </motion.div>
         </div>

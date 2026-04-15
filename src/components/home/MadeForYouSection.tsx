@@ -1,15 +1,18 @@
 import { motion } from 'framer-motion';
-
-const features = [
-  { emoji: '💳', title: 'Pay Your Way', desc: 'Afterpay, Klarna, Affirm, Apple Pay, Google Pay — pay how you want for every appointment.' },
-  { emoji: '🌟', title: 'Support Your Community', desc: 'Discover and book with Black-Owned, Hispanic-Owned, and LGBTQ+ businesses in your area.' },
-  { emoji: '🎁', title: 'Earn Loyalty Points', desc: 'Every booking earns points you can redeem for discounts on future appointments.' },
-  { emoji: '📲', title: 'Book in Seconds', desc: 'No phone calls. No waiting on hold. Book any time, from anywhere, in seconds.' },
-  { emoji: '💝', title: 'We Give Back', desc: '1% of every subscription goes to a cause chosen by our community every month.' },
-  { emoji: '✅', title: 'Free to Book', desc: 'Creating an account and booking is always free for clients. No hidden fees, ever.' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 export const MadeForYouSection = () => {
+  const { t } = useTranslation();
+
+  const features = [
+    { emoji: '💳', titleKey: 'payYourWay', descKey: 'payYourWayDesc' },
+    { emoji: '🌟', titleKey: 'supportCommunity', descKey: 'supportCommunityDesc' },
+    { emoji: '🎁', titleKey: 'earnLoyalty', descKey: 'earnLoyaltyDesc' },
+    { emoji: '📲', titleKey: 'bookInSeconds', descKey: 'bookInSecondsDesc' },
+    { emoji: '💝', titleKey: 'weGiveBack', descKey: 'weGiveBackDesc' },
+    { emoji: '✅', titleKey: 'freeToBook', descKey: 'freeToBookDesc' },
+  ];
+
   return (
     <section className="py-16 md:py-20 bg-secondary/50">
       <div className="container mx-auto px-4">
@@ -20,13 +23,13 @@ export const MadeForYouSection = () => {
           className="text-center max-w-xl mx-auto mb-12"
         >
           <span className="inline-block px-4 py-1.5 rounded-full text-sm font-bold text-primary bg-primary/10 border border-primary/25 mb-4">
-            Built Different
+            {t('madeForYou', 'badge')}
           </span>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-3">
-            Beauty & Wellness, Built for the <span className="text-primary">Next Generation</span>
+            {t('madeForYou', 'title')} <span className="text-primary">{t('madeForYou', 'titleAccent')}</span>
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            Polished is designed for people who expect more — from their beauty experience and from the platforms they use.
+            {t('madeForYou', 'desc')}
           </p>
         </motion.div>
 
@@ -41,8 +44,8 @@ export const MadeForYouSection = () => {
               className="bg-card border border-border rounded-2xl p-6 hover:border-primary/50 hover:-translate-y-0.5 transition-all hover:shadow-lg"
             >
               <span className="text-3xl block mb-3">{f.emoji}</span>
-              <h4 className="text-sm font-bold mb-1.5">{f.title}</h4>
-              <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+              <h4 className="text-sm font-bold mb-1.5">{t('madeForYou', f.titleKey)}</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">{t('madeForYou', f.descKey)}</p>
             </motion.div>
           ))}
         </div>
