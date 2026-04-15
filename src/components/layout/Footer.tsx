@@ -52,28 +52,28 @@ export const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-display text-lg font-semibold text-cream">{t('footer', 'forBusinesses')}</h4>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/for-business" className="text-cream/70 hover:text-cream transition-colors">How It Works for Businesses</Link></li>
-              <li><Link to="/for-business#payments" className="text-cream/70 hover:text-cream transition-colors">Payment Options</Link></li>
+              <li><Link to="/for-business" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'howItWorksForBiz')}</Link></li>
+              <li><Link to="/for-business#payments" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'paymentOptions')}</Link></li>
               <li><Link to="/business/pricing" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'pricing')}</Link></li>
-              <li><Link to="/gives-back" className="text-cream/70 hover:text-cream transition-colors">💝 Gives Back</Link></li>
+              <li><Link to="/gives-back" className="text-cream/70 hover:text-cream transition-colors">{t('footer', 'givesBackLink')}</Link></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div className="space-y-4">
-            <h4 className="font-display text-lg font-semibold text-cream">Contact</h4>
+            <h4 className="font-display text-lg font-semibold text-cream">{t('footer', 'contact')}</h4>
             <div className="flex flex-col gap-3.5">
               <div className="flex flex-col gap-1">
                 <a href="mailto:support@polishedbooking.com" className="text-[13px] text-primary no-underline font-medium hover:underline">
                   support@polishedbooking.com
                 </a>
-                <p className="text-[11px] text-cream/40 m-0">Booking help, account issues &amp; technical support</p>
+                <p className="text-[11px] text-cream/40 m-0">{t('footer', 'supportDesc')}</p>
               </div>
               <div className="flex flex-col gap-1">
                 <a href="mailto:hello@polishedbooking.com" className="text-[13px] text-primary no-underline font-medium hover:underline">
                   hello@polishedbooking.com
                 </a>
-                <p className="text-[11px] text-cream/40 m-0">Partnerships, press &amp; general inquiries</p>
+                <p className="text-[11px] text-cream/40 m-0">{t('footer', 'partnershipDesc')}</p>
               </div>
             </div>
           </div>
