@@ -118,7 +118,7 @@ const PricingPage = () => {
     if (isSubscribed) {
       await manageSubscription();
     } else {
-      await startCheckout(tierId as 'basic' | 'pro' | 'elite');
+      await startCheckout(tierId as 'basic' | 'pro' | 'elite', billingInterval);
     }
   };
 

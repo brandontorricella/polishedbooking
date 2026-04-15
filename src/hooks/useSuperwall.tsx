@@ -16,7 +16,7 @@ interface SubscriptionContextValue {
   subscription: StripeSubscription | null;
   isLoading: boolean;
   error: string | null;
-  startCheckout: (tier: 'basic' | 'pro' | 'elite') => Promise<void>;
+  startCheckout: (tier: 'basic' | 'pro' | 'elite', billing?: 'monthly' | 'annual') => Promise<void>;
   manageSubscription: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
   isTrialing: boolean;
@@ -130,7 +130,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     return () => clearInterval(interval);
   }, [user, profile, refreshSubscription]);
 
-  const startCheckout = useCallback(async (tier: 'basic' | 'pro' | 'elite') => {
+  const startCheckout = useCallback(async (tier: 'basic' | 'pro' | 'elite', billing?: 'monthly' | 'annual') => {
     if (!user) {
       setError('User must be logged in');
       return;
@@ -141,7 +141,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       if (!session) throw new Error('No session');
 
       const { data, error: fnError } = await supabase.functions.invoke('create-checkout', {
-        body: { tier },
+        body: { tier, billing: billing || 'monthly' },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 

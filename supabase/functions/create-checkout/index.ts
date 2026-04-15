@@ -8,10 +8,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TIER_PRICES: Record<string, string> = {
-  basic: Deno.env.get("STRIPE_PRICE_BASIC") || "",
-  pro: Deno.env.get("STRIPE_PRICE_PRO") || "",
-  elite: Deno.env.get("STRIPE_PRICE_ELITE") || "",
+const TIER_PRICES: Record<string, Record<string, string>> = {
+  basic: {
+    monthly: "price_1TMBwDKGB55HVIvLRqmAeNjj",
+    annual: "price_1TMBweKGB55HVIvL9iIiMxZz",
+  },
+  pro: {
+    monthly: "price_1TMBwuKGB55HVIvLRRAPR0xG",
+    annual: "price_1TMBxDKGB55HVIvLAuTtBq8R",
+  },
+  elite: {
+    monthly: "price_1TMBxSKGB55HVIvLWLwTkKvY",
+    annual: "price_1TMBxlKGB55HVIvLdKMDNBWp",
+  },
 };
 
 serve(async (req) => {
@@ -31,9 +40,10 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { tier } = await req.json();
-    const priceId = TIER_PRICES[tier];
-    if (!priceId) throw new Error(`Invalid tier: ${tier}. Price IDs not configured.`);
+    const { tier, billing } = await req.json();
+    const interval = billing || "monthly";
+    const priceId = TIER_PRICES[tier]?.[interval];
+    if (!priceId) throw new Error(`Invalid tier/billing: ${tier}/${interval}`);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -45,7 +55,7 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    const origin = req.headers.get("origin") || "https://id-preview--4b68f67f-f99e-438c-a615-c52490432989.lovable.app";
+    const origin = req.headers.get("origin") || "https://polishedbooking.com";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -56,9 +66,9 @@ serve(async (req) => {
       cancel_url: `${origin}/business/pricing`,
       subscription_data: {
         trial_period_days: 30,
-        metadata: { user_id: user.id, tier },
+        metadata: { user_id: user.id, tier, billing: interval },
       },
-      metadata: { user_id: user.id, tier },
+      metadata: { user_id: user.id, tier, billing: interval },
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
