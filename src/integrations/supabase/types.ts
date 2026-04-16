@@ -444,6 +444,7 @@ export type Database = {
           checklist_dismissed: boolean | null
           checklist_photo_uploaded: boolean | null
           city: string | null
+          collect_payments_externally: boolean
           cover_photo_url: string | null
           created_at: string
           credentials: string[] | null
@@ -515,6 +516,7 @@ export type Database = {
           checklist_dismissed?: boolean | null
           checklist_photo_uploaded?: boolean | null
           city?: string | null
+          collect_payments_externally?: boolean
           cover_photo_url?: string | null
           created_at?: string
           credentials?: string[] | null
@@ -588,6 +590,7 @@ export type Database = {
           checklist_dismissed?: boolean | null
           checklist_photo_uploaded?: boolean | null
           city?: string | null
+          collect_payments_externally?: boolean
           cover_photo_url?: string | null
           created_at?: string
           credentials?: string[] | null

@@ -84,6 +84,7 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
   const [byStaff, setByStaff] = useState<{ name: string; revenue: number; count: number }[]>([]);
   const [byDayOfWeek, setByDayOfWeek] = useState<{ name: string; revenue: number }[]>([]);
   const [topClients, setTopClients] = useState<TopClient[]>([]);
+  const [paymentSplit, setPaymentSplit] = useState<{ online: number; external: number }>({ online: 0, external: 0 });
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -94,23 +95,72 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
     const endStr = end.toISOString().split('T')[0];
     const days = Math.max(1, parseInt(dateRange));
 
-    // Get completed bookings
+    // Get completed bookings (online captures)
     const { data: bookings } = await supabase
       .from('bookings')
-      .select('id, booking_date, total_price, service_id, staff_id, client_id, status')
+      .select('id, booking_date, total_price, final_service_amount, payment_collected_inperson, service_id, staff_id, client_id, status')
       .eq('business_id', businessId)
       .gte('booking_date', startStr)
       .lte('booking_date', endStr)
       .eq('status', 'completed');
 
-    const rows = bookings || [];
-    const totalRev = rows.reduce((s, b) => s + Number(b.total_price || 0), 0);
+    const allBookings = bookings || [];
+
+    // External (in-person) payments in window
+    const { data: extPayments } = await supabase
+      .from('inperson_payments')
+      .select('id, booking_id, amount, payment_method, recorded_at')
+      .eq('business_id', businessId)
+      .gte('recorded_at', start.toISOString())
+      .lte('recorded_at', end.toISOString());
+
+    const externals = extPayments || [];
+    const externalBookingIds = new Set(externals.map(p => p.booking_id));
+
+    // Online bookings = completed bookings NOT recorded as in-person
+    const onlineBookings = allBookings.filter(b => !b.payment_collected_inperson && !externalBookingIds.has(b.id));
+    const onlineRev = onlineBookings.reduce((s, b) => s + Number(b.final_service_amount ?? b.total_price ?? 0), 0);
+    const externalRev = externals.reduce((s, p) => s + Number(p.amount || 0), 0);
+    const totalRev = onlineRev + externalRev;
+
+    setPaymentSplit({ online: onlineRev, external: externalRev });
+
+    // For revenue attribution we need bookings for external payments too
+    const extBookingMap: Record<string, typeof allBookings[number]> = {};
+    allBookings.forEach(b => { if (externalBookingIds.has(b.id) || b.payment_collected_inperson) extBookingMap[b.id] = b; });
+
+    // Build a unified per-revenue-line list for downstream analytics
+    type Line = { booking_date: string; revenue: number; service_id: string | null; staff_id: string | null; client_id: string | null; source: 'online' | 'external' };
+    const lines: Line[] = [];
+    onlineBookings.forEach(b => {
+      lines.push({
+        booking_date: b.booking_date,
+        revenue: Number(b.final_service_amount ?? b.total_price ?? 0),
+        service_id: b.service_id,
+        staff_id: b.staff_id,
+        client_id: b.client_id,
+        source: 'online',
+      });
+    });
+    externals.forEach(p => {
+      const b = extBookingMap[p.booking_id];
+      lines.push({
+        booking_date: b?.booking_date || (p.recorded_at as string).split('T')[0],
+        revenue: Number(p.amount || 0),
+        service_id: b?.service_id ?? null,
+        staff_id: b?.staff_id ?? null,
+        client_id: b?.client_id ?? null,
+        source: 'external',
+      });
+    });
+
+    const totalBookingsCount = onlineBookings.length + externals.length;
     const dailyAvg = totalRev / days;
 
     setSummary({
       totalRevenue: totalRev,
-      totalBookings: rows.length,
-      avgOrderValue: rows.length > 0 ? totalRev / rows.length : 0,
+      totalBookings: totalBookingsCount,
+      avgOrderValue: totalBookingsCount > 0 ? totalRev / totalBookingsCount : 0,
       dailyAverage: dailyAvg,
       projectedMonthly: dailyAvg * 30,
       projectedYearly: dailyAvg * 365,
@@ -120,18 +170,32 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
     if (compareEnabled) {
       const prevEnd = new Date(start.getTime() - 86400000);
       const prevStart = new Date(prevEnd.getTime() - (end.getTime() - start.getTime()));
-      const { data: prevBookings } = await supabase
-        .from('bookings')
-        .select('total_price')
-        .eq('business_id', businessId)
-        .gte('booking_date', prevStart.toISOString().split('T')[0])
-        .lte('booking_date', prevEnd.toISOString().split('T')[0])
-        .eq('status', 'completed');
+      const [{ data: prevBookings }, { data: prevExt }] = await Promise.all([
+        supabase
+          .from('bookings')
+          .select('id, total_price, final_service_amount, payment_collected_inperson')
+          .eq('business_id', businessId)
+          .gte('booking_date', prevStart.toISOString().split('T')[0])
+          .lte('booking_date', prevEnd.toISOString().split('T')[0])
+          .eq('status', 'completed'),
+        supabase
+          .from('inperson_payments')
+          .select('booking_id, amount')
+          .eq('business_id', businessId)
+          .gte('recorded_at', prevStart.toISOString())
+          .lte('recorded_at', prevEnd.toISOString()),
+      ]);
 
-      const prevRows = prevBookings || [];
-      const prevRev = prevRows.reduce((s, b) => s + Number(b.total_price || 0), 0);
+      const prevAll = prevBookings || [];
+      const prevExtArr = prevExt || [];
+      const prevExtIds = new Set(prevExtArr.map(p => p.booking_id));
+      const prevOnline = prevAll.filter(b => !b.payment_collected_inperson && !prevExtIds.has(b.id));
+      const prevRev =
+        prevOnline.reduce((s, b) => s + Number(b.final_service_amount ?? b.total_price ?? 0), 0) +
+        prevExtArr.reduce((s, p) => s + Number(p.amount || 0), 0);
+      const prevCount = prevOnline.length + prevExtArr.length;
       const revChange = prevRev > 0 ? Math.round(((totalRev - prevRev) / prevRev) * 100 * 10) / 10 : (totalRev > 0 ? 100 : 0);
-      const bkgChange = prevRows.length > 0 ? Math.round(((rows.length - prevRows.length) / prevRows.length) * 100 * 10) / 10 : (rows.length > 0 ? 100 : 0);
+      const bkgChange = prevCount > 0 ? Math.round(((totalBookingsCount - prevCount) / prevCount) * 100 * 10) / 10 : (totalBookingsCount > 0 ? 100 : 0);
       setComparison({ revenueChange: revChange, bookingsChange: bkgChange, prevRevenue: prevRev });
     } else {
       setComparison(null);
@@ -139,8 +203,8 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
 
     // Daily revenue
     const dailyMap: Record<string, number> = {};
-    rows.forEach(b => {
-      dailyMap[b.booking_date] = (dailyMap[b.booking_date] || 0) + Number(b.total_price || 0);
+    lines.forEach(l => {
+      dailyMap[l.booking_date] = (dailyMap[l.booking_date] || 0) + l.revenue;
     });
     setDailyRevenue(
       Object.entries(dailyMap)
@@ -157,10 +221,11 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
     ]);
     const svcNames = (svcRes.data || []).reduce((m, s) => ({ ...m, [s.id]: s.name }), {} as Record<string, string>);
     const svcMap: Record<string, { revenue: number; count: number }> = {};
-    rows.forEach(b => {
-      if (!svcMap[b.service_id]) svcMap[b.service_id] = { revenue: 0, count: 0 };
-      svcMap[b.service_id].revenue += Number(b.total_price || 0);
-      svcMap[b.service_id].count++;
+    lines.forEach(l => {
+      if (!l.service_id) return;
+      if (!svcMap[l.service_id]) svcMap[l.service_id] = { revenue: 0, count: 0 };
+      svcMap[l.service_id].revenue += l.revenue;
+      svcMap[l.service_id].count++;
     });
     setByService(
       Object.entries(svcMap)
@@ -172,10 +237,10 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
     const staffRes = await supabase.from('staff_members').select('id, name').eq('business_id', businessId);
     const staffNames = (staffRes.data || []).reduce((m, s) => ({ ...m, [s.id]: s.name }), {} as Record<string, string>);
     const staffMap: Record<string, { revenue: number; count: number }> = {};
-    rows.filter(b => b.staff_id).forEach(b => {
-      if (!staffMap[b.staff_id!]) staffMap[b.staff_id!] = { revenue: 0, count: 0 };
-      staffMap[b.staff_id!].revenue += Number(b.total_price || 0);
-      staffMap[b.staff_id!].count++;
+    lines.filter(l => l.staff_id).forEach(l => {
+      if (!staffMap[l.staff_id!]) staffMap[l.staff_id!] = { revenue: 0, count: 0 };
+      staffMap[l.staff_id!].revenue += l.revenue;
+      staffMap[l.staff_id!].count++;
     });
     setByStaff(
       Object.entries(staffMap)
@@ -186,18 +251,19 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
     // By day of week
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const dowMap: number[] = [0, 0, 0, 0, 0, 0, 0];
-    rows.forEach(b => {
-      const dow = new Date(b.booking_date).getDay();
-      dowMap[dow] += Number(b.total_price || 0);
+    lines.forEach(l => {
+      const dow = new Date(l.booking_date).getDay();
+      dowMap[dow] += l.revenue;
     });
     setByDayOfWeek(dayNames.map((name, i) => ({ name, revenue: Math.round(dowMap[i] * 100) / 100 })));
 
     // Top clients
     const clientMap: Record<string, { totalSpent: number; visits: number }> = {};
-    rows.forEach(b => {
-      if (!clientMap[b.client_id]) clientMap[b.client_id] = { totalSpent: 0, visits: 0 };
-      clientMap[b.client_id].totalSpent += Number(b.total_price || 0);
-      clientMap[b.client_id].visits++;
+    lines.forEach(l => {
+      if (!l.client_id) return;
+      if (!clientMap[l.client_id]) clientMap[l.client_id] = { totalSpent: 0, visits: 0 };
+      clientMap[l.client_id].totalSpent += l.revenue;
+      clientMap[l.client_id].visits++;
     });
 
     const clientIds = Object.keys(clientMap);
@@ -283,7 +349,33 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
         <StatCard title="Projected Monthly" value={`$${Math.round(summary.projectedMonthly).toLocaleString()}`} subtitle="Based on current pace" />
       </div>
 
-      {/* Revenue Over Time */}
+      {/* Payment Method Breakdown */}
+      {(paymentSplit.online > 0 || paymentSplit.external > 0) && (
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-lg">Payment Method Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-4 rounded-xl border border-border bg-card">
+                <p className="text-xs text-muted-foreground">Online (Polished)</p>
+                <p className="text-2xl font-bold mt-1">${paymentSplit.online.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {summary.totalRevenue > 0 ? Math.round((paymentSplit.online / summary.totalRevenue) * 100) : 0}% of total
+                </p>
+              </div>
+              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                <p className="text-xs text-muted-foreground">Externally collected</p>
+                <p className="text-2xl font-bold mt-1">${paymentSplit.external.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {summary.totalRevenue > 0 ? Math.round((paymentSplit.external / summary.totalRevenue) * 100) : 0}% of total
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-border">
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-lg">Revenue Over Time</CardTitle>

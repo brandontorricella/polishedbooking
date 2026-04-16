@@ -14,6 +14,8 @@ import { useAvailability } from '@/hooks/useAvailability';
 import { supabase } from '@/integrations/supabase/client';
 import { PaymentAuthorizationStep } from '@/components/booking/PaymentAuthorizationStep';
 import { IntakeFormStep } from '@/components/booking/IntakeFormStep';
+import { useBusinessPaymentMode } from '@/hooks/useBusinessPaymentMode';
+import { Wallet } from 'lucide-react';
 import type { Business, Service } from '@/types';
 import type { IntakeForm } from '@/hooks/useIntakeForms';
 import { cn } from '@/lib/utils';
@@ -51,7 +53,11 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [confirmedZero, setConfirmedZero] = useState(false);
 
   const today = startOfToday();
-  const allSteps: BookingStep[] = ['service', 'date', 'time', 'confirm', 'payment'];
+  const { collectExternally } = useBusinessPaymentMode(business.id);
+  const isExternalPay = collectExternally === true;
+  const allSteps: BookingStep[] = isExternalPay
+    ? ['service', 'date', 'time', 'confirm']
+    : ['service', 'date', 'time', 'confirm', 'payment'];
 
   useEffect(() => {
     if (selectedDate && selectedService) {
@@ -146,7 +152,19 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     setIsSubmitting(true);
     try {
       const id = await createPendingBooking();
-      if (id) { setCreatedBookingId(id); setStep('payment'); }
+      if (!id) return;
+      setCreatedBookingId(id);
+      if (isExternalPay) {
+        // External payment: confirm immediately, no payment step.
+        const { error } = await supabase
+          .from('bookings')
+          .update({ status: 'confirmed', payment_auth_type: 'external' } as any)
+          .eq('id', id);
+        if (error) throw error;
+        await tryShowIntakeOrFinish(id, ` Payment will be collected by ${business.name} at your appointment.`);
+      } else {
+        setStep('payment');
+      }
     } catch (e: any) {
       toast({ title: 'Booking failed', description: e.message, variant: 'destructive' });
     } finally { setIsSubmitting(false); }
@@ -313,12 +331,26 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                     <span>Charged today</span><span>$0.00</span>
                   </div>
                 </div>
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30 p-3 flex items-start gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                    Your card will not be charged until after your appointment is complete.
-                  </p>
-                </div>
+                {isExternalPay ? (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-3 flex items-start gap-2">
+                    <Wallet className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                      <p className="font-semibold">Payment is collected at your appointment</p>
+                      <p>
+                        {business.name} collects payment directly at your appointment. Accepted methods may
+                        include cash, card, Venmo, or Zelle — contact the business directly if you have
+                        questions about payment.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30 p-3 flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                      Your card will not be charged until after your appointment is complete.
+                    </p>
+                  </div>
+                )}
                 <div>
                   <label className="text-sm font-medium">Notes (optional)</label>
                   <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any special requests..."
@@ -361,7 +393,9 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
             )}
             {step === 'confirm' ? (
               <Button onClick={handleProceedToPayment} disabled={isSubmitting} className="flex-1 bg-gradient-primary">
-                {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Reserving…</> : 'Continue to payment'}
+                {isSubmitting
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Reserving…</>
+                  : (isExternalPay ? 'Confirm booking' : 'Continue to payment')}
               </Button>
             ) : (
               <Button onClick={handleNext} disabled={!canProceed()} className="flex-1 bg-gradient-primary">
