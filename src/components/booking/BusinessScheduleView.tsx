@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format, addDays, parseISO, startOfToday, isSameDay } from 'date-fns';
-import { Calendar, Clock, User, Scissors, ChevronLeft, ChevronRight, Loader2, Phone, Mail, CreditCard } from 'lucide-react';
+import { Calendar, Clock, User, Scissors, ChevronLeft, ChevronRight, Loader2, Phone, Mail, CreditCard, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CollectPaymentModal } from './CollectPaymentModal';
+import { CompleteAppointmentModal } from './CompleteAppointmentModal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,6 +24,9 @@ interface BusinessBooking {
   booking_time: string;
   status: string;
   total_price: number;
+  final_service_amount?: number | null;
+  payment_auth_type?: string | null;
+  bnpl_provider?: string | null;
   notes: string | null;
   client_id: string;
   staff_id: string | null;
@@ -48,8 +52,19 @@ interface BusinessScheduleViewProps {
 const statusStyles: Record<string, string> = {
   confirmed: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
   pending: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20',
+  in_progress: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  awaiting_payment: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
   completed: 'bg-muted text-muted-foreground border-border',
   canceled: 'bg-destructive/10 text-destructive border-destructive/20',
+};
+
+const statusLabels: Record<string, string> = {
+  confirmed: 'confirmed',
+  pending: 'pending',
+  in_progress: 'in progress',
+  awaiting_payment: 'awaiting payment',
+  completed: 'completed',
+  canceled: 'canceled',
 };
 
 function formatTime(time: string): string {
@@ -65,6 +80,7 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
   const [weekStart, setWeekStart] = useState(startOfToday());
   const [selectedDay, setSelectedDay] = useState(startOfToday());
   const [collectPaymentBooking, setCollectPaymentBooking] = useState<BusinessBooking | null>(null);
+  const [completeBooking, setCompleteBooking] = useState<BusinessBooking | null>(null);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -76,14 +92,14 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
     const { data, error } = await supabase
       .from('bookings')
       .select(`
-        id, booking_date, booking_time, status, total_price, notes, client_id, staff_id,
+        id, booking_date, booking_time, status, total_price, final_service_amount, payment_auth_type, bnpl_provider, notes, client_id, staff_id,
         service:services(id, name, duration, price, category),
         staff:staff_members(id, name, profile_photo_url)
       `)
       .eq('business_id', businessId)
       .gte('booking_date', start)
       .lte('booking_date', end)
-      .in('status', ['confirmed', 'pending'])
+      .in('status', ['confirmed', 'pending', 'in_progress', 'awaiting_payment'])
       .order('booking_date', { ascending: true })
       .order('booking_time', { ascending: true });
 
@@ -283,7 +299,7 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
                       </Badge>
                     )}
                     <Badge className={cn('text-xs border', statusStyles[booking.status || 'pending'])}>
-                      {booking.status}
+                      {statusLabels[booking.status] || booking.status}
                     </Badge>
                   </div>
 
@@ -294,9 +310,24 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
                   )}
                 </div>
 
-                {/* Price & Collect Payment */}
-                <div className="shrink-0 text-right space-y-2">
+                {/* Price & Actions */}
+                <div className="shrink-0 text-right space-y-2 flex flex-col items-end">
                   <span className="font-bold text-sm">${booking.total_price}</span>
+                  {(booking.status === 'confirmed' || booking.status === 'pending' || booking.status === 'in_progress') && (
+                    <Button
+                      size="sm"
+                      className="text-xs flex items-center gap-1 bg-gradient-primary"
+                      onClick={(e) => { e.stopPropagation(); setCompleteBooking(booking); }}
+                    >
+                      <CheckCircle className="w-3 h-3" />
+                      Complete
+                    </Button>
+                  )}
+                  {booking.status === 'awaiting_payment' && (
+                    <Badge className="text-[10px] bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
+                      Awaiting tip
+                    </Badge>
+                  )}
                   {(booking.status === 'confirmed' || booking.status === 'pending') && (
                     <Button
                       size="sm"
@@ -341,6 +372,28 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
           }}
           onPaymentCollected={() => {
             setCollectPaymentBooking(null);
+            fetchBookings();
+          }}
+        />
+      )}
+      {completeBooking && (
+        <CompleteAppointmentModal
+          open={!!completeBooking}
+          onOpenChange={(open) => { if (!open) setCompleteBooking(null); }}
+          booking={{
+            id: completeBooking.id,
+            total_price: completeBooking.total_price,
+            final_service_amount: completeBooking.final_service_amount,
+            payment_auth_type: completeBooking.payment_auth_type,
+            bnpl_provider: completeBooking.bnpl_provider,
+            service: completeBooking.service ? { name: completeBooking.service.name } : null,
+            client: completeBooking.client ? {
+              display_name: completeBooking.client.display_name,
+              email: completeBooking.client.email,
+            } : null,
+          }}
+          onCompleted={() => {
+            setCompleteBooking(null);
             fetchBookings();
           }}
         />
