@@ -442,7 +442,13 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
                   </div>
                 ) : noSlots ? (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">😔 {closedReason || 'No available times on this date.'}</p>
+                    <p className="text-muted-foreground">
+                      😔 {closedReason
+                        ? closedReason
+                        : selectedDate && selectedDate.toDateString() === today.toDateString()
+                          ? 'No times available today.'
+                          : 'No available times on this date.'}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">Please try a different day.</p>
                   </div>
                 ) : (
