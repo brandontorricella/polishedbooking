@@ -3,7 +3,7 @@ import { loadStripe, type Stripe } from '@stripe/stripe-js';
 // Stripe publishable key — safe to expose client-side.
 // TODO: Replace with the real publishable key from Stripe dashboard or move to env.
 const STRIPE_PUBLISHABLE_KEY =
-  'pk_live_51RgK7B2NKCi8B1ABCDEFGHIJKLMNOPQRSTUVWXYZ'; // placeholder fallback
+  'pk_test_51S5AGnKGB55HVIvLjqA0eXWv9108527wgWxvbb2UhualuxV3vXd2uMz927JGa9hNS8hRVpLnCtVNpiIavCqerKOy00aO5zbvCF';
 
 let stripePromise: Promise<Stripe | null> | null = null;
 

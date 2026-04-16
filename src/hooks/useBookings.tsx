@@ -107,18 +107,18 @@ export const useBookings = () => {
 
   const getUpcomingBookings = () => {
     const today = new Date().toISOString().split('T')[0];
-    return bookings.filter(b => 
-      (b.status === 'confirmed' || b.status === 'pending') &&
+    return bookings.filter(b =>
+      (b.status === 'confirmed' || b.status === 'pending' || b.status === 'in_progress' || b.status === 'awaiting_payment') &&
       b.booking_date >= today
     );
   };
 
   const getPastBookings = () => {
     const today = new Date().toISOString().split('T')[0];
-    return bookings.filter(b => 
-      b.status === 'completed' || 
+    return bookings.filter(b =>
+      b.status === 'completed' ||
       b.status === 'canceled' ||
-      b.booking_date < today
+      (b.booking_date < today && b.status !== 'awaiting_payment')
     );
   };
 
