@@ -104,6 +104,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          bnpl_provider: string | null
           booking_date: string
           booking_time: string
           business_id: string
@@ -119,23 +120,33 @@ export type Database = {
           deposit_amount: number | null
           deposit_paid: boolean | null
           deposit_payment_intent_id: string | null
+          final_service_amount: number | null
           id: string
           notes: string | null
           paid_with_package: boolean | null
+          payment_auth_type: string | null
+          payment_capture_intent_id: string | null
+          payment_captured_at: string | null
           payment_collected_inperson: boolean | null
           payment_link_sent_at: string | null
           payment_link_stripe_id: string | null
+          payment_method_id: string | null
           payment_method_type: string | null
           remaining_balance: number | null
           service_id: string
           staff_id: string | null
           status: Database["public"]["Enums"]["booking_status"] | null
+          stripe_customer_id: string | null
           tip_amount: number | null
           tip_collected: boolean | null
+          tip_request_sent_at: string | null
+          tip_submitted_at: string | null
+          tip_token: string | null
           total_price: number
           updated_at: string
         }
         Insert: {
+          bnpl_provider?: string | null
           booking_date: string
           booking_time: string
           business_id: string
@@ -151,23 +162,33 @@ export type Database = {
           deposit_amount?: number | null
           deposit_paid?: boolean | null
           deposit_payment_intent_id?: string | null
+          final_service_amount?: number | null
           id?: string
           notes?: string | null
           paid_with_package?: boolean | null
+          payment_auth_type?: string | null
+          payment_capture_intent_id?: string | null
+          payment_captured_at?: string | null
           payment_collected_inperson?: boolean | null
           payment_link_sent_at?: string | null
           payment_link_stripe_id?: string | null
+          payment_method_id?: string | null
           payment_method_type?: string | null
           remaining_balance?: number | null
           service_id: string
           staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
+          stripe_customer_id?: string | null
           tip_amount?: number | null
           tip_collected?: boolean | null
+          tip_request_sent_at?: string | null
+          tip_submitted_at?: string | null
+          tip_token?: string | null
           total_price: number
           updated_at?: string
         }
         Update: {
+          bnpl_provider?: string | null
           booking_date?: string
           booking_time?: string
           business_id?: string
@@ -183,19 +204,28 @@ export type Database = {
           deposit_amount?: number | null
           deposit_paid?: boolean | null
           deposit_payment_intent_id?: string | null
+          final_service_amount?: number | null
           id?: string
           notes?: string | null
           paid_with_package?: boolean | null
+          payment_auth_type?: string | null
+          payment_capture_intent_id?: string | null
+          payment_captured_at?: string | null
           payment_collected_inperson?: boolean | null
           payment_link_sent_at?: string | null
           payment_link_stripe_id?: string | null
+          payment_method_id?: string | null
           payment_method_type?: string | null
           remaining_balance?: number | null
           service_id?: string
           staff_id?: string | null
           status?: Database["public"]["Enums"]["booking_status"] | null
+          stripe_customer_id?: string | null
           tip_amount?: number | null
           tip_collected?: boolean | null
+          tip_request_sent_at?: string | null
+          tip_submitted_at?: string | null
+          tip_token?: string | null
           total_price?: number
           updated_at?: string
         }
@@ -2998,7 +3028,13 @@ export type Database = {
       }
     }
     Enums: {
-      booking_status: "pending" | "confirmed" | "completed" | "canceled"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "completed"
+        | "canceled"
+        | "in_progress"
+        | "awaiting_payment"
       service_setting: "in_studio" | "mobile" | "both"
       subscription_status:
         | "trialing"
@@ -3135,7 +3171,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      booking_status: ["pending", "confirmed", "completed", "canceled"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "completed",
+        "canceled",
+        "in_progress",
+        "awaiting_payment",
+      ],
       service_setting: ["in_studio", "mobile", "both"],
       subscription_status: [
         "trialing",
