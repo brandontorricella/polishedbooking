@@ -40,3 +40,9 @@ verify_jwt = false
 
 [functions.check-expired-trials]
 verify_jwt = false
+
+[functions.submit-tip-and-capture]
+verify_jwt = false
+
+[functions.auto-capture-expired-tips]
+verify_jwt = false
