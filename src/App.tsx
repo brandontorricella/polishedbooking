@@ -41,6 +41,7 @@ import BusinessCommissions from "./pages/BusinessCommissions";
 import BusinessCustomReports from "./pages/BusinessCustomReports";
 import BusinessMigration from "./pages/BusinessMigration";
 import BusinessTemplates from "./pages/BusinessTemplates";
+import TipPayment from "./pages/TipPayment";
 import { AdminRoute } from "@/components/admin/AdminRoute";
 import { lazy, Suspense } from "react";
 import ScrollToTop from "./components/ScrollToTop";
@@ -85,6 +86,7 @@ const App = () => {
                   <Route path="/help" element={<HelpCenter />} />
                   <Route path="/gives-back" element={<GivesBack />} />
                   <Route path="/for-business" element={<ForBusiness />} />
+                  <Route path="/tip/:bookingId" element={<TipPayment />} />
                   
                   {/* Customer-protected routes */}
                   <Route path="/favorites" element={

@@ -8,7 +8,7 @@ export type SubscriptionTier = 'basic' | 'pro' | 'elite';
 
 export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid';
 
-export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'canceled';
+export type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'awaiting_payment' | 'completed' | 'canceled';
 
 export type ServiceSetting = 'in_studio' | 'mobile' | 'both';
 

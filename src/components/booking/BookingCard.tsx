@@ -32,9 +32,11 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
   const [isCanceling, setIsCanceling] = useState(false);
   const { t } = useTranslation();
 
-  const statusConfig = {
+  const statusConfig: Record<string, { label: string; icon: typeof CheckCircle; className: string }> = {
     confirmed: { label: t('booking', 'confirmed'), icon: CheckCircle, className: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400' },
     pending: { label: t('booking', 'pending'), icon: AlertCircle, className: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400' },
+    in_progress: { label: 'In Progress', icon: Clock, className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400' },
+    awaiting_payment: { label: 'Awaiting Payment', icon: AlertCircle, className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400' },
     completed: { label: t('booking', 'completed'), icon: CheckCircle, className: 'bg-muted text-muted-foreground' },
     canceled: { label: t('booking', 'canceled'), icon: XCircle, className: 'bg-destructive/10 text-destructive' },
   };
