@@ -349,7 +349,33 @@ export const RevenueAnalytics = ({ businessId }: RevenueAnalyticsProps) => {
         <StatCard title="Projected Monthly" value={`$${Math.round(summary.projectedMonthly).toLocaleString()}`} subtitle="Based on current pace" />
       </div>
 
-      {/* Revenue Over Time */}
+      {/* Payment Method Breakdown */}
+      {(paymentSplit.online > 0 || paymentSplit.external > 0) && (
+        <Card className="border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="font-display text-lg">Payment Method Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-4 rounded-xl border border-border bg-card">
+                <p className="text-xs text-muted-foreground">Online (Polished)</p>
+                <p className="text-2xl font-bold mt-1">${paymentSplit.online.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {summary.totalRevenue > 0 ? Math.round((paymentSplit.online / summary.totalRevenue) * 100) : 0}% of total
+                </p>
+              </div>
+              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                <p className="text-xs text-muted-foreground">Externally collected</p>
+                <p className="text-2xl font-bold mt-1">${paymentSplit.external.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {summary.totalRevenue > 0 ? Math.round((paymentSplit.external / summary.totalRevenue) * 100) : 0}% of total
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-border">
         <CardHeader className="pb-2">
           <CardTitle className="font-display text-lg">Revenue Over Time</CardTitle>
