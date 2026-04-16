@@ -14,6 +14,8 @@ import { useAvailability } from '@/hooks/useAvailability';
 import { supabase } from '@/integrations/supabase/client';
 import { PaymentAuthorizationStep } from '@/components/booking/PaymentAuthorizationStep';
 import { IntakeFormStep } from '@/components/booking/IntakeFormStep';
+import { useBusinessPaymentMode } from '@/hooks/useBusinessPaymentMode';
+import { Wallet } from 'lucide-react';
 import type { Business, Service } from '@/types';
 import type { IntakeForm } from '@/hooks/useIntakeForms';
 import { cn } from '@/lib/utils';
@@ -51,7 +53,11 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
   const [confirmedZero, setConfirmedZero] = useState(false);
 
   const today = startOfToday();
-  const allSteps: BookingStep[] = ['service', 'date', 'time', 'confirm', 'payment'];
+  const { collectExternally } = useBusinessPaymentMode(business.id);
+  const isExternalPay = collectExternally === true;
+  const allSteps: BookingStep[] = isExternalPay
+    ? ['service', 'date', 'time', 'confirm']
+    : ['service', 'date', 'time', 'confirm', 'payment'];
 
   useEffect(() => {
     if (selectedDate && selectedService) {
@@ -146,7 +152,19 @@ export const BookingFlow = ({ business, isOpen, onClose, initialService }: Booki
     setIsSubmitting(true);
     try {
       const id = await createPendingBooking();
-      if (id) { setCreatedBookingId(id); setStep('payment'); }
+      if (!id) return;
+      setCreatedBookingId(id);
+      if (isExternalPay) {
+        // External payment: confirm immediately, no payment step.
+        const { error } = await supabase
+          .from('bookings')
+          .update({ status: 'confirmed', payment_auth_type: 'external' } as any)
+          .eq('id', id);
+        if (error) throw error;
+        await tryShowIntakeOrFinish(id, ` Payment will be collected by ${business.name} at your appointment.`);
+      } else {
+        setStep('payment');
+      }
     } catch (e: any) {
       toast({ title: 'Booking failed', description: e.message, variant: 'destructive' });
     } finally { setIsSubmitting(false); }
