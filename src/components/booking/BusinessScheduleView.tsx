@@ -26,6 +26,7 @@ interface BusinessBooking {
   total_price: number;
   final_service_amount?: number | null;
   payment_auth_type?: string | null;
+  payment_collected_inperson?: boolean | null;
   bnpl_provider?: string | null;
   notes: string | null;
   client_id: string;
@@ -92,14 +93,14 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
     const { data, error } = await supabase
       .from('bookings')
       .select(`
-        id, booking_date, booking_time, status, total_price, final_service_amount, payment_auth_type, bnpl_provider, notes, client_id, staff_id,
+        id, booking_date, booking_time, status, total_price, final_service_amount, payment_auth_type, payment_collected_inperson, bnpl_provider, notes, client_id, staff_id,
         service:services(id, name, duration, price, category),
         staff:staff_members(id, name, profile_photo_url)
       `)
       .eq('business_id', businessId)
       .gte('booking_date', start)
       .lte('booking_date', end)
-      .in('status', ['confirmed', 'pending', 'in_progress', 'awaiting_payment'])
+      .in('status', ['confirmed', 'pending', 'in_progress', 'awaiting_payment', 'completed'])
       .order('booking_date', { ascending: true })
       .order('booking_time', { ascending: true });
 
@@ -301,6 +302,11 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
                     <Badge className={cn('text-xs border', statusStyles[booking.status || 'pending'])}>
                       {statusLabels[booking.status] || booking.status}
                     </Badge>
+                    {booking.payment_collected_inperson && (
+                      <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-700 dark:text-amber-400 bg-amber-500/10">
+                        💵 Paid externally
+                      </Badge>
+                    )}
                   </div>
 
                   {booking.notes && (
@@ -382,6 +388,7 @@ export const BusinessScheduleView = ({ businessId }: BusinessScheduleViewProps) 
           onOpenChange={(open) => { if (!open) setCompleteBooking(null); }}
           booking={{
             id: completeBooking.id,
+            business_id: businessId,
             total_price: completeBooking.total_price,
             final_service_amount: completeBooking.final_service_amount,
             payment_auth_type: completeBooking.payment_auth_type,
