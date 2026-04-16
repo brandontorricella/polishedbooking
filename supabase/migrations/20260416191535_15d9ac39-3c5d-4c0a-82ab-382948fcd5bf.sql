@@ -1,0 +1,1 @@
+ALTER TABLE public.businesses ADD COLUMN IF NOT EXISTS collect_payments_externally boolean NOT NULL DEFAULT false;
