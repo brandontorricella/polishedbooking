@@ -99,6 +99,49 @@ export const CompleteAppointmentModal = ({ open, onOpenChange, booking, onComple
         .eq('id', booking.id);
       if (updErr) throw updErr;
 
+      // Record staff commission for externally-collected payment
+      try {
+        const { data: bk } = await supabase
+          .from('bookings')
+          .select('staff_id')
+          .eq('id', booking.id)
+          .maybeSingle();
+        const staffId = (bk as any)?.staff_id;
+        if (staffId && booking.business_id) {
+          const { data: existing } = await supabase
+            .from('staff_commissions')
+            .select('id')
+            .eq('booking_id', booking.id)
+            .maybeSingle();
+          if (!existing) {
+            const { data: staff } = await supabase
+              .from('staff_members')
+              .select('commission_type, commission_rate')
+              .eq('id', staffId)
+              .maybeSingle();
+            const type = (staff as any)?.commission_type || 'none';
+            const rate = Number((staff as any)?.commission_rate || 0);
+            if (type !== 'none' && rate > 0) {
+              const commissionAmount = type === 'percentage'
+                ? Number((finalAmt * (rate / 100)).toFixed(2))
+                : Number(rate.toFixed(2));
+              await supabase.from('staff_commissions').insert({
+                business_id: booking.business_id,
+                staff_id: staffId,
+                booking_id: booking.id,
+                service_price: finalAmt,
+                tip_amount: 0,
+                commission_type: type,
+                commission_rate: rate,
+                commission_amount: commissionAmount,
+              } as any);
+            }
+          }
+        }
+      } catch (commErr) {
+        console.error('commission record failed', commErr);
+      }
+
       toast.success('Payment recorded ✅');
       onCompleted();
       onOpenChange(false);

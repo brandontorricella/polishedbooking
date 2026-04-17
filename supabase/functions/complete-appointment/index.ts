@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { recordStaffCommission } from "../_shared/commission.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -96,6 +97,16 @@ serve(async (req) => {
       .update(updates)
       .eq("id", booking_id);
     if (updErr) throw updErr;
+
+    // Record staff commission if booking is now completed (not for awaiting_payment - tip will trigger it later)
+    if (updates.status === "completed") {
+      await recordStaffCommission(supabaseAdmin, {
+        bookingId: booking_id,
+        businessId: biz.id,
+        serviceAmount: Number(final_amount),
+        tipAmount: 0,
+      });
+    }
 
     // If tip request was sent, notify client (in-app + email)
     if (tipsEnabled && !isBnpl && updates.tip_token) {

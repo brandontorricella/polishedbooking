@@ -5,7 +5,7 @@ import {
   Star, MapPin, Clock, Phone, Globe, MessageCircle,
   Heart, Share2, ChevronRight, Check, Sparkles,
   Calendar, Package, Hourglass, Award, Gem,
-  Edit, Settings, Eye, Loader2
+  Edit, Settings, Eye, Loader2, Wallet, CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -60,6 +60,22 @@ const BusinessProfile = () => {
   const [showPhoneNumber, setShowPhoneNumber] = useState(false);
   const [isStartingChat, setIsStartingChat] = useState(false);
   const { getOrCreateConversation } = useMessages();
+  const [collectExternally, setCollectExternally] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data } = await supabase
+        .from('businesses')
+        .select('collect_payments_externally')
+        .eq('id', id)
+        .maybeSingle();
+      if (!cancelled) setCollectExternally(!!(data as any)?.collect_payments_externally);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const isOwner = accountType === 'business' && ownerBusinessId === id && !previewAsCustomer;
   const { reviews: dbReviews, stats: reviewStats, canReview, createReview, replyToReview, deleteReply, flagReview, sort: reviewSort, setSort: setReviewSort, loading: reviewsLoading } = useReviews(id);
@@ -341,6 +357,23 @@ const BusinessProfile = () => {
             </>
           )}
         </div>
+
+        {/* Payment mode hint (clients only) */}
+        {!isOwner && collectExternally !== null && (
+          <div className="-mt-4 mb-6 flex items-center gap-1.5 text-xs text-muted-foreground">
+            {collectExternally ? (
+              <>
+                <Wallet className="w-3.5 h-3.5 text-amber-600" />
+                <span>Payment collected at appointment by {business.name}</span>
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Pays online via Polished</span>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Guest Banner */}
         {accountType === 'guest' && (
