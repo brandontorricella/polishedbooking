@@ -24,6 +24,7 @@ export interface BookingWithDetails {
     address: string | null;
     city: string | null;
     state: string | null;
+    collect_payments_externally?: boolean | null;
   };
   service?: {
     id: string;
@@ -55,7 +56,7 @@ export const useBookings = () => {
         .from('bookings')
         .select(`
           *,
-          business:businesses(id, name, profile_photo_url, address, city, state),
+          business:businesses(id, name, profile_photo_url, address, city, state, collect_payments_externally),
           service:services(id, name, duration, price)
         `)
         .eq('client_id', user.id)
