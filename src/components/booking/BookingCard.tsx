@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
-import { Calendar, Clock, MapPin, MessageSquare, ChevronRight, CheckCircle, XCircle, AlertCircle, MoreVertical, Loader2, Monitor } from 'lucide-react';
+import { Calendar, Clock, MapPin, MessageSquare, ChevronRight, CheckCircle, XCircle, AlertCircle, MoreVertical, Loader2, Monitor, Wallet } from 'lucide-react';
 import { VirtualSessionLink } from './VirtualSessionLink';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,6 +77,11 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
                   <div className="flex items-center gap-1 text-muted-foreground"><Calendar className="w-4 h-4" /><span>{format(bookingDate, 'MMM d, yyyy')}</span></div>
                   <div className="flex items-center gap-1 text-muted-foreground"><Clock className="w-4 h-4" /><span>{formatTime(booking.booking_time)}</span></div>
                   <Badge className={status.className}><StatusIcon className="w-3 h-3 mr-1" />{status.label}</Badge>
+                  {!isPast && booking.business?.collect_payments_externally && (
+                    <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900">
+                      <Wallet className="w-3 h-3 mr-1" />Pay at appointment
+                    </Badge>
+                  )}
                 </div>
                 {booking.business?.city && (
                   <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground"><MapPin className="w-3 h-3" /><span>{booking.business.city}, {booking.business.state}</span></div>
