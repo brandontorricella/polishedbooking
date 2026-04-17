@@ -469,7 +469,7 @@ function ReportResultsView({ report, data, onRerun, isRunning }: {
 }) {
   const config = report.config;
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     const csvRows: string[][] = [['Metric', 'Value']];
     if (data.summary) {
       Object.entries(data.summary).forEach(([key, value]) => {
@@ -483,7 +483,78 @@ function ReportResultsView({ report, data, onRerun, isRunning }: {
         csvRows.push([row.date, String(row.count), String(row.completed), String(row.revenue)]);
       });
     }
-    const csv = csvRows.map(row => row.join(',')).join('\n');
+
+    // Bookings detail incl. payment method + collected externally column
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const now = new Date();
+      const sub = (d: Date, days: number) => new Date(d.getTime() - days * 86400000);
+      let start: Date, end: Date;
+      switch (config.date_range) {
+        case '7_days': start = sub(now, 7); end = now; break;
+        case '30_days': start = sub(now, 30); end = now; break;
+        case '90_days': start = sub(now, 90); end = now; break;
+        case 'this_month': start = new Date(now.getFullYear(), now.getMonth(), 1); end = now; break;
+        case 'last_month':
+          start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          end = new Date(now.getFullYear(), now.getMonth(), 0);
+          break;
+        case 'this_year': start = new Date(now.getFullYear(), 0, 1); end = now; break;
+        case 'custom': start = new Date(config.custom_start); end = new Date(config.custom_end); break;
+        default: start = sub(now, 30); end = now;
+      }
+      const startStr = format(start, 'yyyy-MM-dd');
+      const endStr = format(end, 'yyyy-MM-dd');
+
+      let q = supabase
+        .from('bookings')
+        .select('id, booking_date, booking_time, status, total_price, final_service_amount, tip_amount, payment_auth_type, payment_collected_inperson, service_id, staff_id')
+        .eq('business_id', report.business_id)
+        .gte('booking_date', startStr)
+        .lte('booking_date', endStr);
+      if (config.service_ids?.length > 0) q = q.in('service_id', config.service_ids);
+      if (config.staff_ids?.length > 0) q = q.in('staff_id', config.staff_ids);
+
+      const { data: bookings } = await q;
+      const ids = (bookings || []).map(b => b.id);
+      const payMap: Record<string, { method: string; note: string | null }> = {};
+      if (ids.length > 0) {
+        const { data: pays } = await supabase
+          .from('inperson_payments')
+          .select('booking_id, payment_method, payment_method_note')
+          .in('booking_id', ids);
+        (pays || []).forEach((p: any) => {
+          payMap[p.booking_id] = { method: p.payment_method, note: p.payment_method_note };
+        });
+      }
+      if (bookings && bookings.length > 0) {
+        csvRows.push([]);
+        csvRows.push(['Bookings Detail']);
+        csvRows.push(['Booking ID', 'Date', 'Time', 'Status', 'Service Amount', 'Tip', 'Payment Method', 'Collected Externally']);
+        bookings.forEach((b: any) => {
+          const isExt = b.payment_auth_type === 'external' || !!b.payment_collected_inperson;
+          const ext = payMap[b.id];
+          const method = isExt
+            ? (ext?.method ? `${ext.method}${ext.note ? ` (${ext.note.replace(/,/g, ';')})` : ''}` : 'external')
+            : (b.payment_auth_type || 'online');
+          csvRows.push([
+            b.id,
+            b.booking_date,
+            b.booking_time,
+            b.status || '',
+            String(Number(b.final_service_amount ?? b.total_price ?? 0).toFixed(2)),
+            String(Number(b.tip_amount || 0).toFixed(2)),
+            method,
+            isExt ? 'Yes' : 'No',
+          ]);
+        });
+      }
+    } catch (err) {
+      console.error('Failed to append bookings detail to CSV', err);
+    }
+
+    const esc = (v: string) => /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    const csv = csvRows.map(row => row.map(c => esc(String(c ?? ''))).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
