@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { recordStaffCommission } from "../_shared/commission.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,6 +72,12 @@ serve(async (req) => {
       }
 
       await supabaseAdmin.from("bookings").update(updates).eq("id", b.id);
+      await recordStaffCommission(supabaseAdmin, {
+        bookingId: b.id,
+        businessId: (b as any).business_id,
+        serviceAmount: amount,
+        tipAmount: 0,
+      });
       processed++;
     }
 
